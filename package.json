@@ -1,7 +1,7 @@
 {
     "name": "typeshi",
     "version": "1.0.0",
-    "description": "TypeScript utility modules for shared use across projects",
+    "description": "TypeScript utility modules",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "files": [
