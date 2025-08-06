@@ -40,9 +40,9 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ArgumentValidation = exports.TypeValidation = void 0;
+exports.ArgumentValidation = void 0;
 __exportStar(require("./utils/regex"), exports);
 __exportStar(require("./utils/io"), exports);
 __exportStar(require("./config"), exports);
-exports.TypeValidation = __importStar(require("./utils/typeValidation"));
+__exportStar(require("./utils/typeValidation"), exports);
 exports.ArgumentValidation = __importStar(require("./utils/argumentValidation"));

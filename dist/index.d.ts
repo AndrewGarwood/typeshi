@@ -5,5 +5,5 @@
 export * from "./utils/regex";
 export * from "./utils/io";
 export * from "./config";
-export * as TypeValidation from "./utils/typeValidation";
+export * from "./utils/typeValidation";
 export * as ArgumentValidation from "./utils/argumentValidation";
