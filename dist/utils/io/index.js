@@ -20,4 +20,5 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./dateTime"), exports);
 __exportStar(require("./reading"), exports);
 __exportStar(require("./writing"), exports);
+__exportStar(require("./logging"), exports);
 __exportStar(require("./types"), exports);
