@@ -2,8 +2,8 @@
  * @file src/index.ts
  * Main entry point for the typeshi utility package
  */
-export * from "./utils/regex";
-export * from "./utils/io";
-export * from "./config";
-export * from "./utils/typeValidation";
+export * as re from "./utils/regex";
+export * as io from "./utils/io";
+export * as config from "./config";
+export * as TypeValdiation from "./utils/typeValidation";
 export * as ArgumentValidation from "./utils/argumentValidation";
