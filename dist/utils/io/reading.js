@@ -1,0 +1,669 @@
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.isDirectory = isDirectory;
+exports.isFile = isFile;
+exports.isValidCsv = isValidCsv;
+exports.validatePath = validatePath;
+exports.getDelimiterFromFilePath = getDelimiterFromFilePath;
+exports.readJsonFileAsObject = readJsonFileAsObject;
+exports.validateFileExtension = validateFileExtension;
+exports.concatenateFiles = concatenateFiles;
+exports.getRows = getRows;
+exports.getExcelRows = getExcelRows;
+exports.getCsvRows = getCsvRows;
+exports.getOneToOneDictionary = getOneToOneDictionary;
+exports.getColumnValues = getColumnValues;
+exports.getIndexedColumnValues = getIndexedColumnValues;
+exports.handleFileArgument = handleFileArgument;
+exports.getDirectoryFiles = getDirectoryFiles;
+exports.parseExcelForOneToMany = parseExcelForOneToMany;
+exports.parseCsvForOneToMany = parseCsvForOneToMany;
+/**
+ * @file src/utils/io/reading.ts
+ */
+const node_path_1 = __importDefault(require("node:path"));
+const fs_1 = __importDefault(require("fs"));
+const stream_1 = require("stream");
+const csv_parser_1 = __importDefault(require("csv-parser"));
+const xlsx_1 = __importDefault(require("xlsx"));
+const regex_1 = require("../regex");
+const config_1 = require("../../config");
+const types_1 = require("./types");
+const typeValidation_1 = require("../typeValidation");
+const validate = __importStar(require("../argumentValidation"));
+function isDirectory(pathString) {
+    return fs_1.default.existsSync(pathString) && fs_1.default.statSync(pathString).isDirectory();
+}
+function isFile(pathString) {
+    return fs_1.default.existsSync(pathString) && fs_1.default.statSync(pathString).isFile();
+}
+/**
+ * @consideration make requiredHeaders a rest parameter i.e. `...string[]`
+ * @TODO handle csv where a value contains the delimiter character
+ * @param filePath `string` - must be a string to an existing file, otherwise return `false`.
+ * @param requiredHeaders `string[]` - `optional` array of headers that must be present in the CSV file.
+ * - If provided, the function checks if all required headers are present in the CSV header `row`
+ * - - `if` the file has `header` not in `requiredHeaders`, it's still considered `valid`
+ * @returns **`isValidCsv`** `boolean`
+ * - **`true`** `if` the CSV file at `filePath` is valid (all rows have the same number of columns as the header),
+ * - **`false`** `otherwise`.
+ */
+function isValidCsv(filePath, requiredHeaders) {
+    validate.existingPathArgument(`reading.isValidCsv`, { filePath });
+    const delimiter = getDelimiterFromFilePath(filePath);
+    const data = fs_1.default.readFileSync(filePath, 'utf8');
+    const lines = data.split('\n');
+    if (lines.length < 2) {
+        config_1.mainLogger.error(`[ERROR isValidCsv()]: file has less than 2 lines: ${filePath}`);
+        return false;
+    }
+    const headerRow = lines[0].split(delimiter).map(col => col.trim());
+    if (headerRow.length < 1) {
+        config_1.mainLogger.error(`[ERROR isValidCsv()]: no header found in file: ${filePath}`);
+        return false;
+    }
+    if ((0, typeValidation_1.isNonEmptyArray)(requiredHeaders)) {
+        const hasRequiredHeaders = requiredHeaders.every(header => {
+            if (!(0, typeValidation_1.isNonEmptyString)(header)) {
+                config_1.mainLogger.warn([
+                    `[reading.isValidCsv]: Invalid parameter: 'requiredHeaders`,
+                    `requiredHeaders must be of type: Array<string>`,
+                    `found array element of type: '${typeof header}' (skipping)`
+                ].join(config_1.INDENT_LOG_LINE));
+                return true; // skip headers if they are not strings
+            }
+            return headerRow.includes(header);
+        });
+        if (!hasRequiredHeaders) {
+            config_1.mainLogger.warn([`[isValidCsv()]: Required headers missing from headerRow`,
+                `filePath: '${filePath}'`,
+                `requiredHeaders: ${JSON.stringify(requiredHeaders)}`,
+                ` csvFileHeaders: ${JSON.stringify(headerRow)}`
+            ].join(config_1.INDENT_LOG_LINE));
+            return false;
+        }
+    }
+    // Check if all rows have the same number of columns as the header
+    for (let i = 1; i < lines.length; i++) {
+        // this is a naive way to check nested delims, 
+        // should instead do it by iterating through string and identifying 
+        // quotation mark start and end pairs
+        // const nestedDelimiterPattern = new RegExp(
+        //     `(?<=(^|${delimiter})".+)` + delimiter + `(?=.+"(${delimiter}|$))`, 
+        //     "ig"
+        // );
+        const rowValues = (lines[i]
+            // .replace(nestedDelimiterPattern, '_')
+            .split(delimiter)
+            .map(val => val.trim()));
+        if (headerRow.length !== rowValues.length
+            && i !== lines.length - 1 // allow for empty last row in files.
+        ) {
+            config_1.mainLogger.warn([`[isValidCsv()]: Invalid row found: header.length !== rowValues.length`,
+                `   header.length: ${headerRow.length},`,
+                `rowValues.length: ${rowValues.length}`,
+                ` -> Difference =  ${headerRow.length - rowValues.length}`,
+                `   header: ${JSON.stringify(headerRow)}`,
+                `rowValues: ${JSON.stringify(rowValues)}`,
+                ` rowIndex: ${i},`,
+                ` filePath: '${filePath}'`].join(config_1.INDENT_LOG_LINE), config_1.NEW_LINE + `returning false...`);
+            return false;
+        }
+    }
+    return true;
+}
+/** paths to folders or files */
+async function validatePath(...paths) {
+    for (const path of paths) {
+        if (!fs_1.default.existsSync(path)) {
+            throw new Error(`[ERROR reading.validatePath()]: path does not exist: ${path}`);
+        }
+    }
+}
+/**
+ * Determines the proper delimiter based on file type or extension
+ * @param filePath `string` Path to the file
+ * @param fileType Explicit file type or `'auto'` for detection
+ * @returns **`delimiter`** `{`{@link DelimiterCharacterEnum}` | string}` The delimiter character
+ * @throws an error if the file extension is unsupported
+ */
+function getDelimiterFromFilePath(filePath, fileType) {
+    if (fileType && fileType === types_1.DelimitedFileTypeEnum.CSV)
+        return types_1.DelimiterCharacterEnum.COMMA;
+    if (fileType && fileType === types_1.DelimitedFileTypeEnum.TSV)
+        return types_1.DelimiterCharacterEnum.TAB;
+    // Auto-detect based on file extension
+    const extension = filePath.split('.').pop()?.toLowerCase();
+    if (extension === types_1.DelimitedFileTypeEnum.CSV) {
+        return types_1.DelimiterCharacterEnum.COMMA;
+    }
+    else if (extension === types_1.DelimitedFileTypeEnum.TSV) {
+        return types_1.DelimiterCharacterEnum.TAB;
+    }
+    else {
+        throw new Error(`[reading.getDelimiterFromFilePath()] Unsupported file extension: ${extension}`);
+    }
+}
+/**
+ * @param filePath `string`
+ * @returns **`jsonData`** — `Record<string, any>`
+ * - JSON data as an object
+ */
+function readJsonFileAsObject(filePath) {
+    filePath = validateFileExtension(filePath, 'json');
+    validate.existingPathArgument(`reading.readJsonFileAsObject`, { filePath });
+    try {
+        const data = fs_1.default.readFileSync(filePath, 'utf8');
+        const jsonData = JSON.parse(data);
+        return jsonData;
+    }
+    catch (err) {
+        config_1.mainLogger.error('[readJsonFileAsObject()] Error reading or parsing the JSON file:', config_1.INDENT_LOG_LINE + `Given filePath: '${filePath}'`);
+        throw new Error(JSON.stringify(err));
+    }
+}
+/**
+ * @param filePath `string`
+ * @param expectedExtension `string`
+ * @returns **`validatedFilePath`** `string`
+ */
+function validateFileExtension(filePath, expectedExtension) {
+    validate.multipleStringArguments(`reading.validateFileExtension`, { filePath, expectedExtension });
+    expectedExtension = expectedExtension.replace(/\./, '');
+    if (filePath.endsWith(`.${expectedExtension}`)) {
+        return filePath;
+    }
+    return filePath + '.' + expectedExtension;
+}
+/**
+ * - {@link getDirectoryFiles}
+ * @param arg1 `Array<`{@link FileData}` | string> | string`
+ * - `files:` {@link FileData}`[]`
+ * - `filePaths:` `string[]`
+ * - `dirPath:` `string`
+ * @param sheetName `string`
+ * @param requiredHeaders `string[]` `if` left `undefined`,
+ * `requiredHeaders` will be set to the headers of first non empty file from `arg1`
+ * @param strictRequirement `boolean`
+ * - `Default` = `true`
+ * - `if` `true`, then every `row` **must** have headers/keys exactly equal to `requiredHeaders`
+ * - `else` `false`, then if a `row` is missing one or more `header` in `requiredHeaders`,
+ * for each missing `header`, set `row[header] = ''` (empty string),
+ * @param targetExtensions `string[]` try to read rows of all files whose type is in `targetExtensions`
+ * @returns **`concatenatedRows`** `Promise<Record<string, any>[]>`
+ */
+async function concatenateFiles(arg1, sheetName = 'Sheet1', requiredHeaders = [], strictRequirement = true, targetExtensions = ['.csv', '.tsv', '.xlsx']) {
+    const source = `[reading.concatenateDirectoryFiles()]`;
+    validate.stringArgument(source, { sheetName });
+    validate.arrayArgument(source, { targetExtensions }, 'string', typeValidation_1.isNonEmptyString);
+    let files;
+    if ((0, typeValidation_1.isNonEmptyArray)(arg1)) {
+        files = arg1;
+    }
+    else if (isDirectory(arg1)) {
+        files = getDirectoryFiles(arg1, ...targetExtensions);
+    }
+    else if (isFile(arg1)
+        && (0, regex_1.stringEndsWithAnyOf)(arg1, targetExtensions, regex_1.RegExpFlagsEnum.IGNORE_CASE)) {
+        files = [arg1];
+    }
+    else {
+        let message = [`${source} Invalid parameter: 'arg1'`,
+            `Expected: arg1: (Array<FileData | string> | string) to be one of:`,
+            `files: FileData[] | filePaths: string[] | filePath: string | dirPath: string`,
+            `Received: ${typeof arg1}`
+        ].join(config_1.INDENT_LOG_LINE);
+        config_1.mainLogger.error(message);
+        throw new Error(message);
+    }
+    if (!(0, typeValidation_1.isNonEmptyArray)(files)) { // i.e. isEmptyArray.... shouldn't get here
+        config_1.mainLogger.error(`${source} how did this happen, we're smarter than this`);
+        return [];
+    }
+    else if (files.length === 1) {
+        return await getRows(files[0], sheetName);
+    } // else if files.length > 1, need to make sure each file has same headers
+    const concatenatedRows = [];
+    let haveDefinedRequiredHeaders = ((0, typeValidation_1.isNonEmptyArray)(requiredHeaders)
+        && requiredHeaders.every(h => (0, typeValidation_1.isNonEmptyString)(h))
+        ? true : false);
+    for (const fileRepresentative of files) {
+        const rows = await getRows(fileRepresentative, sheetName);
+        if (!(0, typeValidation_1.isNonEmptyArray)(rows)) {
+            continue;
+        }
+        if (!haveDefinedRequiredHeaders) {
+            let firstValidRow = rows.find(row => !(0, typeValidation_1.isNullLike)(row));
+            if (!firstValidRow) {
+                continue;
+            }
+            requiredHeaders = Object.keys(firstValidRow);
+            haveDefinedRequiredHeaders = true;
+        }
+        if (!(0, typeValidation_1.isNonEmptyArray)(requiredHeaders)) {
+            config_1.mainLogger.warn(`${source} No requiredHeaders defined,`, `skipping file: '${(0, types_1.isFileData)(fileRepresentative)
+                ? fileRepresentative.fileName : fileRepresentative}'`);
+            continue;
+        }
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            if (!(0, typeValidation_1.hasKeys)(row, requiredHeaders)) {
+                let missingHeaders = requiredHeaders.filter(h => !(0, typeValidation_1.hasKeys)(row, h));
+                if (strictRequirement) {
+                    let message = [`${source} Invalid row: missing required header(s)`,
+                        `(strictRequirement === true)`,
+                        `           file: '${(0, types_1.isFileData)(fileRepresentative)
+                            ? fileRepresentative.fileName : fileRepresentative}'`,
+                        `       rowIndex: ${i}`,
+                        `requiredHeaders: ${JSON.stringify(requiredHeaders)}`,
+                        ` missingHeaders: ${JSON.stringify(missingHeaders)}`
+                    ].join(config_1.INDENT_LOG_LINE);
+                    config_1.mainLogger.error(message);
+                    throw new Error(message);
+                }
+                for (const header of missingHeaders) {
+                    row[header] = '';
+                }
+            }
+            concatenatedRows.push(row);
+        }
+    }
+    return concatenatedRows;
+}
+/**
+ * @param arg1 {@link FileData}` | string` one of the following:
+ * - `fileData:` {@link FileData} = `{ fileName: string; fileContent: string; }`
+ * - `filePath:` `string`
+ * @param sheetName `string` `optional`
+ * - defined/used `if` `arg1` pertains to an excel file and you want to specify which sheet to read
+ * - `Default` = `'Sheet1'`
+ * @returns **`rows`** `Promise<Record<string, any>[]>`
+ */
+async function getRows(arg1, sheetName = 'Sheet1') {
+    if ((0, types_1.isFileData)(arg1)) {
+        const { fileName } = arg1;
+        if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+            return getExcelRows(arg1, sheetName);
+        }
+        return getCsvRows(arg1);
+    }
+    else if ((0, typeValidation_1.isNonEmptyString)(arg1)) { // assume it's a file path
+        if (arg1.endsWith('.xlsx') || arg1.endsWith('.xls')) {
+            return getExcelRows(arg1, sheetName);
+        }
+        return getCsvRows(arg1);
+    }
+    else {
+        throw new Error(`[reading.getRows()] Invalid argument: 'arg1' must be a FileData object or a string file path.`);
+    }
+}
+async function getExcelRows(arg1, sheetName = 'Sheet1') {
+    const source = 'reading.getExcelRows';
+    validate.stringArgument(source, { sheetName });
+    const excelExtensions = ['.xlsx', '.xls', '.xlsm'];
+    let filePath;
+    let fileContent;
+    let buffer;
+    if ((0, types_1.isFileData)(arg1) && (0, typeValidation_1.isNonEmptyString)(arg1.fileName)
+        && (0, regex_1.stringEndsWithAnyOf)(arg1.fileName, excelExtensions)) {
+        filePath = arg1.fileName;
+        fileContent = arg1.fileContent;
+        buffer = Buffer.from(fileContent, 'base64');
+    }
+    else if ((0, typeValidation_1.isNonEmptyString)(arg1) && (0, regex_1.stringEndsWithAnyOf)(arg1, excelExtensions)) {
+        filePath = arg1;
+        validate.existingFileArgument(`${source}.filePath`, excelExtensions, { filePath });
+        buffer = fs_1.default.readFileSync(filePath);
+    }
+    else {
+        throw new Error([
+            `[reading.getExcelRows()] Invalid argument: 'arg1' (FileData or filePath)`,
+            `must be a FileData object or a string file path.`,
+            `Received: ${JSON.stringify(arg1)}`
+        ].join(config_1.INDENT_LOG_LINE));
+    }
+    try {
+        const workbook = xlsx_1.default.read(buffer, { type: 'buffer' });
+        sheetName = (workbook.SheetNames.includes(sheetName)
+            ? sheetName
+            : workbook.SheetNames[0]);
+        const sheet = workbook.Sheets[sheetName];
+        const jsonData = xlsx_1.default.utils.sheet_to_json(sheet);
+        return jsonData;
+    }
+    catch (error) {
+        config_1.mainLogger.error([
+            `[reading.getExcelRows()] Error reading or parsing the Excel file.`,
+            `Received arg1 = ${JSON.stringify(arg1)}, sheetName: '${sheetName}'`,
+        ].join(config_1.INDENT_LOG_LINE), JSON.stringify(error, null, 4));
+        return [];
+    }
+}
+/**
+ * @param filePath `string`
+ * @returns **`rows`** `Promise<Record<string, any>[]>`
+ * - an array of objects representing rows from a CSV file.
+ */
+async function getCsvRows(arg1) {
+    const source = '[reading.getCsvRows()]';
+    const csvExtensions = [types_1.DelimitedFileTypeEnum.CSV, types_1.DelimitedFileTypeEnum.TSV].map(ext => `.${ext}`);
+    let filePath;
+    let fileContent;
+    let delimiter = types_1.DelimiterCharacterEnum.COMMA;
+    let buffer;
+    if ((0, types_1.isFileData)(arg1) && (0, typeValidation_1.isNonEmptyString)(arg1.fileName)
+        && (0, regex_1.stringEndsWithAnyOf)(arg1.fileName, csvExtensions)) {
+        filePath = arg1.fileName;
+        fileContent = arg1.fileContent;
+        buffer = Buffer.from(fileContent, 'base64');
+        delimiter = getDelimiterFromFilePath(filePath);
+    }
+    else if ((0, typeValidation_1.isNonEmptyString)(arg1) && (0, regex_1.stringEndsWithAnyOf)(arg1, csvExtensions)) {
+        filePath = arg1;
+        validate.existingFileArgument(`${source}.filePath`, csvExtensions, { filePath });
+        try {
+            buffer = fs_1.default.readFileSync(filePath);
+        }
+        catch (error) {
+            throw new Error([
+                `${source} Error making buffer when reading file: '${filePath}'`,
+                `Error: ${error instanceof Error ? error.message : String(error)}`
+            ].join(config_1.INDENT_LOG_LINE));
+        }
+        delimiter = getDelimiterFromFilePath(filePath);
+    }
+    else {
+        throw new Error([
+            `[reading.getCsvRows()] Invalid argument: 'arg1' (FileData or filePath)`,
+            `must be a FileData object or a string file path.`,
+            `Received: ${JSON.stringify(arg1)}`
+        ].join(config_1.INDENT_LOG_LINE));
+    }
+    const rows = [];
+    if (!buffer) {
+        throw new Error(`${source} No buffer available to read`);
+    }
+    const stream = stream_1.Readable.from(buffer.toString('utf8'));
+    return new Promise((resolve, reject) => {
+        stream
+            .pipe((0, csv_parser_1.default)({ separator: delimiter }))
+            .on('data', (row) => rows.push(row))
+            .on('end', () => {
+            config_1.SUPPRESSED_LOGS.push([`${source} Successfully read CSV file.`,
+                `filePath: '${filePath}'`,
+                `Number of rows read: ${rows.length}`
+            ].join(config_1.INDENT_LOG_LINE));
+            resolve(rows);
+        })
+            .on('error', (error) => {
+            config_1.mainLogger.error(`${source} Error reading CSV file:`, config_1.INDENT_LOG_LINE + `filePath: '${filePath}'`, config_1.NEW_LINE + `Error: ${JSON.stringify(error, null, 4)}`);
+            reject(error);
+        });
+    });
+}
+/**
+ * @param arg1 `string | Record<string, any>[]` - the file path to a CSV file or an array of rows.
+ * @param keyColumn `string` - the column name whose contents will be keys in the dictionary.
+ * @param valueColumn `string` - the column name whose contents will be used as values in the dictionary.
+ * @returns **`dict`** `Record<string, string>`
+ */
+async function getOneToOneDictionary(arg1, keyColumn, valueColumn) {
+    validate.multipleStringArguments(`reading.getOneToOneDictionary`, { keyColumn, valueColumn });
+    let rows = await handleFileArgument(arg1, getOneToOneDictionary.name, [keyColumn, valueColumn]);
+    const dict = {};
+    for (const row of rows) {
+        if (!(0, typeValidation_1.hasKeys)(row, [keyColumn, valueColumn])) {
+            config_1.mainLogger.error(`[getOneToOneDictionary()] Row missing keys: '${keyColumn}' or '${valueColumn}'`);
+            throw new Error(`[getOneToOneDictionary()] Row missing keys: '${keyColumn}' or '${valueColumn}'`);
+        }
+        const key = String(row[keyColumn]).trim();
+        const value = String(row[valueColumn]).trim();
+        if (!key || !value) {
+            config_1.mainLogger.warn(`[getOneToOneDictionary()] Row missing key or value.`, config_1.INDENT_LOG_LINE + `keyColumn: '${keyColumn}', valueColumn: '${valueColumn}'`);
+            continue;
+        }
+        if (dict[key]) {
+            config_1.mainLogger.warn(`[getOneToOneDictionary()] Duplicate key found: '${key}'`, config_1.INDENT_LOG_LINE + `overwriting value '${dict[key]}' with '${value}'`);
+        }
+        dict[key] = value;
+    }
+    return dict;
+}
+/**
+ * @TODO add CleanStringOptions param to apply to column values
+ * @param arg1 `string | Record<string, any>[]` - the `filePath` to a CSV file or an array of rows.
+ * @param columnName `string` - the column name whose values will be returned.
+ * @param allowDuplicates `boolean` - `optional` if `true`, allows duplicate values in the returned array, otherwise only unique values are returned.
+ * - Defaults to `false`.
+ * @returns **`values`** `Promise<Array<string>>` - sorted array of values (as strings) from the specified column.
+ */
+async function getColumnValues(arg1, columnName, allowDuplicates = false) {
+    validate.stringArgument(`reading.getColumnValues`, { columnName });
+    validate.booleanArgument(`reading.getColumnValues`, { allowDuplicates });
+    let rows = await handleFileArgument(arg1, getColumnValues.name, [columnName]);
+    const values = [];
+    for (const row of rows) {
+        if (!(0, typeValidation_1.isNonEmptyString)(String(row[columnName])))
+            continue;
+        const value = String(row[columnName]).trim();
+        if (allowDuplicates || !values.includes(value)) {
+            values.push(value);
+        }
+    }
+    return values.sort();
+}
+/**
+ * @param arg1 `string | Record<string, any>[]` - the `filePath` to a CSV file or an array of rows.
+ * @param columnName `string` - the column name whose values will be returned.
+ * @returns **`indexedColumnValues`** `Promise<Record<string, number[]>>`
+ */
+async function getIndexedColumnValues(arg1, columnName) {
+    validate.stringArgument(`reading.getIndexedColumnValues`, `columnName`, columnName);
+    let rows = await handleFileArgument(arg1, getIndexedColumnValues.name, [columnName]);
+    const valueDict = {};
+    for (const rowIndex in rows) {
+        const row = rows[rowIndex];
+        if (!(0, typeValidation_1.isNonEmptyString)(String(row[columnName])))
+            continue;
+        const value = String(row[columnName]).trim();
+        if (!valueDict[value]) {
+            valueDict[value] = [];
+        }
+        valueDict[value].push(Number(rowIndex));
+    }
+    return valueDict;
+}
+/**
+ * formerly `handleFilePathOrRowsArgument`
+ * - {@link getRows}`(filePath: string)`
+ * @param arg1 `string | FileData | Record<string, any>[]`
+ * @param invocationSource `string`
+ * @param requiredHeaders `string[]` `optional`
+ * @returns **`rows`** `Promise<Record<string, any>[]>`
+ */
+async function handleFileArgument(arg1, invocationSource, requiredHeaders = []) {
+    const source = `[reading.handleFileArgument()]`;
+    validate.stringArgument(source, { invocationSource });
+    validate.arrayArgument(source, { requiredHeaders }, 'string', typeValidation_1.isNonEmptyString, true);
+    let rows = [];
+    // Handle file path validation only for string inputs
+    if ((0, typeValidation_1.isNonEmptyString)(arg1) && !isValidCsv(arg1, requiredHeaders)) {
+        throw new Error([
+            `${source} Invalid CSV filePath provided: '${arg1}'`,
+            `        Source:   ${invocationSource}`,
+            `requiredHeaders ? ${(0, typeValidation_1.isNonEmptyArray)(requiredHeaders)
+                ? JSON.stringify(requiredHeaders)
+                : 'none'}`
+        ].join(config_1.INDENT_LOG_LINE));
+    }
+    if ((0, typeValidation_1.isNonEmptyString)(arg1)) { // arg1 is file path string
+        rows = await getRows(arg1);
+    }
+    else if ((0, types_1.isFileData)(arg1)) { // arg1 is FileData { fileName: string; fileContent: string; }
+        rows = await getRows(arg1);
+    }
+    else if ((0, typeValidation_1.isNonEmptyArray)(arg1)) { // arg1 is already array of rows
+        if (arg1.some(v => typeof v !== 'object')) {
+            throw new Error([
+                `${source} Error: Invalid 'arg1' (Record<string, any>[]) param:`,
+                `There exists an element in the param array that is not an object.`,
+                `Source: ${invocationSource}`,
+            ].join(config_1.INDENT_LOG_LINE));
+        }
+        rows = arg1;
+    }
+    else {
+        throw new Error([
+            `${source} Invalid parameter: 'arg1' (string | FileData | Record<string, any>[])`,
+            `arg1 must be a file path string, FileData object, or an array of rows.`,
+            `Source: ${invocationSource}`,
+        ].join(config_1.INDENT_LOG_LINE));
+    }
+    return rows;
+}
+/**
+ * @param dir `string` path to target directory
+ * @param targetExtensions `string[] optional` - array of file extensions to filter files by.
+ * - `If` not provided, all files in the directory will be returned.
+ * - `If` provided, only files with extensions matching the array will be returned.
+ * @returns **`targetFiles`** `string[]` array of full file paths
+ */
+function getDirectoryFiles(dir, ...targetExtensions) {
+    validate.existingDirectoryArgument(`reading.getDirectoryFiles`, { dir });
+    validate.arrayArgument(`reading.getDirectoryFiles`, { targetExtensions }, 'string', typeValidation_1.isNonEmptyString, true);
+    // ensure all target extensions start with period
+    for (let i = 0; i < targetExtensions.length; i++) {
+        const ext = targetExtensions[i];
+        if (!ext.startsWith('.')) {
+            targetExtensions[i] = `.${ext}`;
+        }
+    }
+    const targetFiles = fs_1.default.readdirSync(dir).filter(f => (0, typeValidation_1.isNonEmptyArray)(targetExtensions)
+        ? true // get all files in dir, regardless of extension
+        : (0, regex_1.stringEndsWithAnyOf)(f, targetExtensions, regex_1.RegExpFlagsEnum.IGNORE_CASE)).map(file => node_path_1.default.join(dir, file));
+    return targetFiles;
+}
+/**
+ * @deprecated
+ * @TODO implement overload that uses CleanStringOptions
+ * @param filePath `string`
+ * @param sheetName `string`
+ * @param keyColumn `string`
+ * @param valueColumn `string`
+ * @param options - {@link ParseOneToManyOptions}
+ * = `{ keyStripOptions`?: {@link StringStripOptions}, `valueStripOptions`?: {@link StringStripOptions}, keyCaseOptions`?: {@link StringCaseOptions}, `valueCaseOptions`?: {@link StringCaseOptions}, `keyPadOptions`?: {@link StringPadOptions}, `valuePadOptions`?: {@link StringPadOptions} `}`
+ * - {@link StringStripOptions} = `{ char`: `string`, `escape`?: `boolean`, `stripLeftCondition`?: `(s: string, ...args: any[]) => boolean`, `leftArgs`?: `any[]`, `stripRightCondition`?: `(s: string, ...args: any[]) => boolean`, `rightArgs`?: `any[] }`
+ * - {@link StringCaseOptions} = `{ toUpper`?: `boolean`, `toLower`?: `boolean`, `toTitle`?: `boolean }`
+ * - {@link StringPadOptions} = `{ padLength`: `number`, `padChar`?: `string`, `padLeft`?: `boolean`, `padRight`?: `boolean }`
+ * @returns **`dict`** `Record<string, Array<string>>` — key-value pairs where key is from `keyColumn` and value is an array of values from `valueColumn`
+ */
+function parseExcelForOneToMany(filePath, sheetName, keyColumn, valueColumn, options = {}) {
+    filePath = validateFileExtension(filePath, 'xlsx');
+    validate.multipleStringArguments(`reading.parseExcelForOneToMany`, { filePath, sheetName, keyColumn, valueColumn });
+    try {
+        const { keyStripOptions, valueStripOptions, keyCaseOptions, valueCaseOptions, keyPadOptions, valuePadOptions } = options;
+        const workbook = xlsx_1.default.readFile(filePath);
+        const sheet = workbook.Sheets[sheetName];
+        const jsonData = xlsx_1.default.utils.sheet_to_json(sheet);
+        const dict = {};
+        jsonData.forEach(row => {
+            let key = (0, regex_1.clean)(String(row[keyColumn]), keyStripOptions, keyCaseOptions, keyPadOptions).trim().replace(/\.$/, '');
+            let val = (0, regex_1.clean)(String(row[valueColumn]), valueStripOptions, valueCaseOptions, valuePadOptions).trim().replace(/\.$/, '');
+            if (!dict[key]) {
+                dict[key] = [];
+            }
+            if (!dict[key].includes(val)) {
+                dict[key].push(val);
+            }
+        });
+        return dict;
+    }
+    catch (err) {
+        config_1.mainLogger.error('Error reading or parsing the Excel file:', err, config_1.INDENT_LOG_LINE + 'Given File Path:', '"' + filePath + '"');
+        return {};
+    }
+}
+/**
+ * @deprecated
+ * @param filePath `string`
+ * @param keyColumn `string`
+ * @param valueColumn `string`
+ * @param delimiter {@link DelimiterCharacters} | `string`
+ * @param options {@link ParseOneToManyOptions}
+ * = `{ keyCaseOptions`?: {@link StringCaseOptions}, `valueCaseOptions`?: {@link StringCaseOptions}, `keyPadOptions`?: {@link StringPadOptions}, `valuePadOptions`?: {@link StringPadOptions} `}`
+ * - {@link StringCaseOptions} = `{ toUpper`?: `boolean`, `toLower`?: `boolean`, `toTitle`?: `boolean }`
+ * - {@link StringPadOptions} = `{ padLength`: `number`, `padChar`?: `string`, `padLeft`?: `boolean`, `padRight`?: `boolean }`
+ * @returns `Record<string, Array<string>>` - key-value pairs where key is from `keyColumn` and value is an array of values from `valueColumn`
+ */
+function parseCsvForOneToMany(filePath, keyColumn, valueColumn, delimiter = types_1.DelimiterCharacterEnum.COMMA, options = {}) {
+    filePath = validateFileExtension(filePath, (delimiter === types_1.DelimiterCharacterEnum.TAB) ? 'tsv' : 'csv');
+    validate.stringArgument(`reading.parseCsvForOneToMany`, `filePath`, filePath);
+    validate.stringArgument(`reading.parseCsvForOneToMany`, `keyColumn`, keyColumn);
+    validate.stringArgument(`reading.parseCsvForOneToMany`, `valueColumn`, valueColumn);
+    try {
+        const { keyStripOptions, valueStripOptions, keyCaseOptions, valueCaseOptions, keyPadOptions, valuePadOptions } = options;
+        const data = fs_1.default.readFileSync(filePath, 'utf8');
+        const lines = data.split('\n');
+        const dict = {};
+        const header = lines[0].split(delimiter).map(col => col.trim());
+        const keyIndex = header.indexOf(keyColumn);
+        const valueIndex = header.indexOf(valueColumn);
+        if (keyIndex === -1 || valueIndex === -1) {
+            throw new Error(`Key or value column not found in CSV file.`);
+        }
+        for (let i = 1; i < lines.length; i++) {
+            const line = lines[i].split(delimiter).map(col => col.trim());
+            if (line.length > 1) {
+                let key = (0, regex_1.clean)(line[keyIndex], keyStripOptions, keyCaseOptions, keyPadOptions);
+                let val = (0, regex_1.clean)(line[valueIndex], valueStripOptions, valueCaseOptions, valuePadOptions);
+                if (!dict[key]) {
+                    dict[key] = [];
+                }
+                if (!dict[key].includes(val)) {
+                    dict[key].push(val);
+                }
+            }
+        }
+        return dict;
+    }
+    catch (err) {
+        config_1.mainLogger.error('Error reading or parsing the CSV file:', err, config_1.INDENT_LOG_LINE + 'Given File Path:', '"' + filePath + '"');
+        return {};
+    }
+}

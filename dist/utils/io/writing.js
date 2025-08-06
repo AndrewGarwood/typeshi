@@ -1,0 +1,240 @@
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.writeObjectToJson = writeObjectToJson;
+exports.indentedStringify = indentedStringify;
+exports.getFileNameTimestamp = getFileNameTimestamp;
+exports.writeListsToCsv = writeListsToCsv;
+exports.trimFile = trimFile;
+exports.clearFile = clearFile;
+exports.writeRowsToCsv = writeRowsToCsv;
+/**
+ * @file src/utils/io/writing.ts
+ */
+const fs = __importStar(require("fs"));
+const setupLog_1 = require("../../config/setupLog");
+const reading_1 = require("./reading");
+const types_1 = require("./types");
+const typeValidation_1 = require("../typeValidation");
+const validate = __importStar(require("../argumentValidation"));
+const fs_1 = require("fs");
+function writeObjectToJson(
+/** {@link WriteJsonOptions} `| Record<string, any> | string`, */
+arg1, filePath, indent = 4, enableOverwrite = true) {
+    if (!arg1) {
+        setupLog_1.mainLogger.error('[writing.writeObjectToJson()] No data to write to JSON file');
+        return;
+    }
+    let data;
+    let outputFilePath;
+    let outputIndent = indent;
+    let outputEnableOverwrite = enableOverwrite;
+    // Handle options object overload
+    if ((0, types_1.isWriteJsonOptions)(arg1)) {
+        data = arg1.data;
+        outputFilePath = arg1.filePath;
+        outputIndent = arg1.indent ?? indent;
+        outputEnableOverwrite = arg1.enableOverwrite ?? enableOverwrite;
+    }
+    else {
+        if (!(0, typeValidation_1.isNonEmptyString)(filePath)) {
+            setupLog_1.mainLogger.error('[writing.writeObjectToJson()] filePath is required when not using WriteJsonOptions object');
+            return;
+        }
+        data = arg1;
+        outputFilePath = filePath;
+    }
+    // Convert data to object if it's a string (should be valid JSON)
+    let objectData;
+    if (typeof data === 'string') {
+        try {
+            objectData = JSON.parse(data);
+        }
+        catch (error) {
+            setupLog_1.mainLogger.error('[writing.writeObjectToJson()] Error parsing string to JSON', error);
+            return;
+        }
+    }
+    else { // is already an object
+        objectData = data;
+    }
+    const outputPath = (0, reading_1.validateFileExtension)(outputFilePath, 'json');
+    try {
+        const jsonData = JSON.stringify(objectData, null, outputIndent);
+        if (outputEnableOverwrite) {
+            fs.writeFileSync(outputPath, jsonData, { flag: 'w' });
+        }
+        else {
+            fs.appendFileSync(outputPath, jsonData, { flag: 'a' });
+        }
+        // mlog.info(`[writing.writeObjectToJson()] file saved to '${outputPath}'`)
+    }
+    catch (error) {
+        setupLog_1.mainLogger.error('[writing.writeObjectToJson()] Error writing to JSON file', error);
+        throw error;
+    }
+}
+/**
+ * @param data `Record<string, any> | string` - JSON data to stringify
+ * @param indent `number` `optional`, default=`0` - number of additional indents to add to each line
+ * @param spaces `number` `optional`, default=`4`
+ * @returns **`jsonString`** `string`
+ */
+function indentedStringify(data, indent = 0, spaces = 4) {
+    if (!data) {
+        return '';
+    }
+    let jsonString = typeof data === 'string'
+        ? data : JSON.stringify(data, null, spaces);
+    jsonString = jsonString
+        .split('\n')
+        .map(line => setupLog_1.INDENT_LOG_LINE + '\t'.repeat(indent) + line)
+        .join('')
+        .replace(/^\n\t. /, '').replace(/•/g, '');
+    return jsonString;
+}
+/**
+ * @returns **`timestamp`** `string` = `(${MM}-${DD})-(${HH}-${mm}.${ss}.${ms})`
+ */
+function getFileNameTimestamp() {
+    const now = new Date();
+    const MM = String(now.getMonth() + 1).padStart(2, '0');
+    const DD = String(now.getDate()).padStart(2, '0');
+    const HH = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    const ss = String(now.getSeconds()).padStart(2, '0');
+    const ms = String(now.getMilliseconds()).padStart(3, '0');
+    return `(${MM}-${DD})-(${HH}-${mm}.${ss}.${ms})`;
+}
+/**
+ * @param listData `Record<string, Array<string>>` map col names to col values
+ * @param outputPath `string`
+ * @param delimiter `string` - optional, default=`'\t'`
+ * @param columnDelimiter `string` - optional, default=`''`
+ */
+function writeListsToCsv(listData, outputPath, delimiter = types_1.DelimiterCharacterEnum.TAB, columnDelimiter = '') {
+    const listNames = Object.keys(listData);
+    const listValues = Object.values(listData);
+    // Get the maximum length of the lists
+    const maxLength = Math.max(...listValues.map(list => list.length));
+    let csvContent = listNames.join(delimiter) + '\n';
+    if ((0, typeValidation_1.isNonEmptyString)(columnDelimiter)) {
+        delimiter = delimiter + columnDelimiter + delimiter;
+    }
+    for (let i = 0; i < maxLength; i++) {
+        const row = listValues.map(list => list[i] || '').join(delimiter);
+        csvContent += row + '\n';
+    }
+    fs.writeFile(outputPath, csvContent, (err) => {
+        if (err) {
+            setupLog_1.mainLogger.error('Error writing to CSV file', err);
+            return;
+        }
+        setupLog_1.mainLogger.info(`CSV file has been saved to ${outputPath}`);
+    });
+}
+/**
+ * @TODO consider if should allow other file extensions
+ * @description Trims a text file to keep only the last 10MB of data if it exceeds 10MB.
+ * @param max - Maximum size in MB to keep in the file, default is `5` -> 5MB.
+ * @param filePaths arbitrary number of text file paths to trim
+ */
+function trimFile(max = 5, ...filePaths) {
+    const MAX_BYTES = max * 1024 * 1024;
+    for (const filePath of filePaths) {
+        if (!filePath || !fs.existsSync(filePath)
+            || !filePath.toLowerCase().endsWith('.txt')) {
+            setupLog_1.mainLogger.error(`File does not exist or is not text: ${filePath}`);
+            continue;
+        }
+        try {
+            const stats = fs.statSync(filePath);
+            if (stats.size <= MAX_BYTES)
+                return;
+            const fd = fs.openSync(filePath, 'r+');
+            const buffer = Buffer.alloc(MAX_BYTES);
+            fs.readSync(fd, buffer, 0, MAX_BYTES, stats.size - MAX_BYTES);
+            fs.ftruncateSync(fd, 0);
+            fs.writeSync(fd, buffer, 0, MAX_BYTES, 0);
+            fs.closeSync(fd);
+            setupLog_1.mainLogger.info(`Trimmed file to last ${max}MB: ${filePath}`);
+        }
+        catch (e) {
+            setupLog_1.mainLogger.error('Error trimming file to last 10MB', e);
+            throw e;
+        }
+    }
+}
+/**
+ * Clears the content of the specified log file(s).
+ * @param filePaths - The path(s) to the log file(s) to clear.
+ */
+function clearFile(...filePaths) {
+    for (const filePath of filePaths) {
+        if (!filePath || !(0, fs_1.existsSync)(filePath)) {
+            setupLog_1.mainLogger.warn(`clearFile() Log file does not exist: ${filePath}`);
+            continue;
+        }
+        (0, fs_1.writeFileSync)(filePath, '', { encoding: 'utf-8' });
+    }
+}
+/**
+ * @param rows `Record<string, any>[]` - array of objects to write to CSV
+ * @param outputPath `string` - path to the output CSV file.
+ * @returns **`void`**
+ */
+function writeRowsToCsv(rows, outputPath) {
+    validate.arrayArgument('writeRowsToCsv', 'rows', rows, typeValidation_1.TypeOfEnum.OBJECT);
+    validate.stringArgument('writeRowsToCsv', 'outputPath', outputPath);
+    const delimiter = (0, reading_1.getDelimiterFromFilePath)(outputPath);
+    const headers = Object.keys(rows[0] || {});
+    if ((0, typeValidation_1.isEmptyArray)(headers)) {
+        setupLog_1.mainLogger.error(`[writeRowsToCsv()] No headers found in rows, nothing to write.`, setupLog_1.INDENT_LOG_LINE + `Intended outputPath: '${outputPath}'`);
+        return;
+    }
+    if (rows.some(row => !(0, typeValidation_1.hasKeys)(row, headers))) {
+        setupLog_1.mainLogger.error(`[writeRowsToCsv()] Some rows do not have all headers!`, setupLog_1.INDENT_LOG_LINE + `headers: ${JSON.stringify(headers)}`, setupLog_1.INDENT_LOG_LINE + `Intended outputPath: '${outputPath}'`);
+        return;
+    }
+    const csvContent = [headers.join(delimiter)].concat(rows.map(row => headers.map(header => row[header] || '').join(delimiter))).join('\n');
+    try {
+        fs.writeFileSync(outputPath, csvContent, { encoding: 'utf-8' });
+        setupLog_1.mainLogger.info(`[writeRowsToCsv()] file has been saved to '${outputPath}'`);
+    }
+    catch (e) {
+        setupLog_1.mainLogger.error('[writeRowsToCsv()] Error writing to CSV file', e);
+        throw e;
+    }
+}
