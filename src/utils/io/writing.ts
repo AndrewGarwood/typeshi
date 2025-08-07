@@ -4,7 +4,7 @@
 import * as fs from "fs";
 import { mainLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL } from "../../config/setupLog";
 import { getCurrentPacificTime } from "./dateTime";
-import { validateFileExtension, getDelimiterFromFilePath } from "./reading";
+import { coerceFileExtension, getDelimiterFromFilePath } from "./reading";
 import { DelimitedFileTypeEnum, DelimiterCharacterEnum, isWriteJsonOptions, WriteJsonOptions } from "./types";
 import { hasKeys, isEmptyArray, isNonEmptyString, TypeOfEnum, } from "../typeValidation";
 import * as validate from "../argumentValidation";
@@ -88,7 +88,7 @@ export function writeObjectToJson(
         objectData = data;
     }
     
-    const outputPath = validateFileExtension(outputFilePath, 'json');
+    const outputPath = coerceFileExtension(outputFilePath, 'json');
     try {
         const jsonData = JSON.stringify(objectData, null, outputIndent);
         if (outputEnableOverwrite) {

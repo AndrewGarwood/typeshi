@@ -2,8 +2,7 @@
  * @file src/utils/regex/configureParameters.ts
  */
 import { 
-    StringCaseOptions, StringPadOptions, StringStripOptions, StringReplaceParams, 
-    StringReplaceOptions, CleanStringOptions 
+    StringStripOptions, StringReplaceParams, 
 } from "./types";
 import { getRegexConstants } from "../../config/dataLoader";
 
