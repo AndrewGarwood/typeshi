@@ -1,28 +1,77 @@
-import { DelimiterCharacterEnum, DelimitedFileTypeEnum, FileData, ParseOneToManyOptions } from "./types";
+import { FileData, ParseOneToManyOptions } from "./types/Io";
+import { DelimiterCharacterEnum } from "./types";
 export declare function isDirectory(pathString: string): boolean;
 export declare function isFile(pathString: string): boolean;
 /**
- * @consideration make requiredHeaders a rest parameter i.e. `...string[]`
- * @TODO handle csv where a value contains the delimiter character
+ * Validates CSV structure by properly parsing quoted fields and checking consistency
  * @param filePath `string` - must be a string to an existing file, otherwise return `false`.
  * @param requiredHeaders `string[]` - `optional` array of headers that must be present in the CSV file.
- * - If provided, the function checks if all required headers are present in the CSV header `row`
- * - - `if` the file has `header` not in `requiredHeaders`, it's still considered `valid`
+ * - If provided, the function checks if all required headers are present in the CSV header row
+ * @param options `object` - optional configuration
+ * - `allowEmptyRows`: `boolean` - if true, allows rows with all empty fields (default: true)
+ * - `allowInconsistentColumns`: `boolean` - if true, allows rows with different column counts (default: false)
+ * - `maxRowsToCheck`: `number` - maximum number of rows to validate (default: all rows)
  * @returns **`isValidCsv`** `boolean`
- * - **`true`** `if` the CSV file at `filePath` is valid (all rows have the same number of columns as the header),
+ * - **`true`** `if` the CSV file at `filePath` is valid (proper structure and formatting),
  * - **`false`** `otherwise`.
  */
-export declare function isValidCsv(filePath: string, requiredHeaders?: string[]): boolean;
+export declare function isValidCsv(filePath: string, requiredHeaders?: string[], options?: {
+    allowEmptyRows?: boolean;
+    allowInconsistentColumns?: boolean;
+    maxRowsToCheck?: number;
+}): boolean;
+/**
+ * Analyzes a CSV file and returns detailed validation information
+ * @param filePath `string` - path to the CSV file
+ * @param options `object` - validation options
+ * @returns **`analysis`** `object` - detailed analysis of the CSV file
+ */
+export declare function analyzeCsv(filePath: string, options?: {
+    sampleSize?: number;
+    checkEncoding?: boolean;
+    detectDelimiter?: boolean;
+}): {
+    isValid: boolean;
+    issues: string[];
+    warnings: string[];
+    stats: {
+        totalRows: number;
+        headerCount: number;
+        maxRowLength: number;
+        minRowLength: number;
+        emptyRows: number;
+        encoding: string | null;
+        detectedDelimiter: string | null;
+    };
+    headers: string[];
+};
+/**
+ * Attempts to repair common CSV formatting issues
+ * @param filePath `string` - path to the CSV file to repair
+ * @param outputPath `string` - path where the repaired CSV will be saved
+ * @param options `object` - repair options
+ * @returns **`repairResult`** `object` - result of the repair operation
+ */
+export declare function repairCsv(filePath: string, outputPath: string, options?: {
+    fixQuoting?: boolean;
+    removeEmptyRows?: boolean;
+    standardizeLineEndings?: boolean;
+    fillMissingColumns?: boolean;
+    fillValue?: string;
+}): {
+    success: boolean;
+    repairsMade: string[];
+    errors: string[];
+};
 /** paths to folders or files */
 export declare function validatePath(...paths: string[]): Promise<void>;
 /**
  * Determines the proper delimiter based on file type or extension
  * @param filePath `string` Path to the file
- * @param fileType Explicit file type or `'auto'` for detection
  * @returns **`delimiter`** `{`{@link DelimiterCharacterEnum}` | string}` The delimiter character
  * @throws an error if the file extension is unsupported
  */
-export declare function getDelimiterFromFilePath(filePath: string, fileType?: DelimitedFileTypeEnum): DelimiterCharacterEnum | string;
+export declare function getDelimiterFromFilePath(filePath: string): DelimiterCharacterEnum | string;
 /**
  * @param filePath `string`
  * @returns **`jsonData`** — `Record<string, any>`
@@ -34,7 +83,7 @@ export declare function readJsonFileAsObject(filePath: string): Record<string, a
  * @param expectedExtension `string`
  * @returns **`validatedFilePath`** `string`
  */
-export declare function validateFileExtension(filePath: string, expectedExtension: string): string;
+export declare function coerceFileExtension(filePath: string, expectedExtension: string): string;
 /**
  * - {@link getDirectoryFiles}
  * @param arg1 `Array<`{@link FileData}` | string> | string`
@@ -110,7 +159,6 @@ export declare function handleFileArgument(arg1: string | FileData | Record<stri
  */
 export declare function getDirectoryFiles(dir: string, ...targetExtensions: string[]): string[];
 /**
- * @deprecated
  * @TODO implement overload that uses CleanStringOptions
  * @param filePath `string`
  * @param sheetName `string`
@@ -125,7 +173,6 @@ export declare function getDirectoryFiles(dir: string, ...targetExtensions: stri
  */
 export declare function parseExcelForOneToMany(filePath: string, sheetName: string, keyColumn: string, valueColumn: string, options?: ParseOneToManyOptions): Record<string, Array<string>>;
 /**
- * @deprecated
  * @param filePath `string`
  * @param keyColumn `string`
  * @param valueColumn `string`

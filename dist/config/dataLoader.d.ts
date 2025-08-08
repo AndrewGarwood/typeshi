@@ -11,6 +11,16 @@ export declare enum DataDomainEnum {
  */
 export declare function initializeData(...domains: DataDomainEnum[]): Promise<void>;
 export declare function getRegexConstants(): RegexConstants;
+/**
+ * `Sync` Get company keyword list
+ * @returns **`COMPANY_KEYWORD_LIST`** `string[]`
+ */
+export declare function getCompanyKeywordList(): string[];
+/**
+ * Get job title suffix list
+ * @returns **`JOB_TITLE_SUFFIX_LIST`** `string[]`
+ */
+export declare function getJobTitleSuffixList(): string[];
 export declare function isDataInitialized(): boolean;
 /**
  * @interface **`RegexConstants`**

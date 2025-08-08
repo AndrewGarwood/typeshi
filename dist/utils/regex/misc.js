@@ -1,12 +1,14 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.KOREA_ADDRESS_LATIN_TEXT_PATTERN = exports.DATE_STRING_PATTERN = void 0;
-exports.extractSku = extractSku;
 /**
  * @file src/utils/regex/misc.ts
  */
-const typeValidation_1 = require("../typeValidation");
-const config_1 = require("../../config");
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.KOREA_ADDRESS_LATIN_TEXT_PATTERN = exports.DATE_STRING_PATTERN = exports.FILE_NAME_WITH_EXTENSION_PATTERN = void 0;
+exports.extractLeaf = extractLeaf;
+/**
+ * = `= /^[^/\\:*?"<>|]+(\.[^/\\:*?"<>|]+)$/`
+ */
+exports.FILE_NAME_WITH_EXTENSION_PATTERN = /^[^/\\:*?"<>|]+(\.[^/\\:*?"<>|]+)$/;
 /**
  * `re` = `/^\s*(\d{4}-\d{2}-\d{2}|\d{1,2}[\/-]\d{1,2}[\/-]\d{4})\s*$/`
  * 1. matches `YYYY-MM-DD` (ISO) format.
@@ -16,24 +18,34 @@ exports.DATE_STRING_PATTERN = new RegExp(/^\s*(\d{4}-\d{2}-\d{2}|\d{1,2}[\/-]\d{
 /** e.g. `"Pangyo-ro, Bundag-Gu, Seongnam-si"` */
 exports.KOREA_ADDRESS_LATIN_TEXT_PATTERN = new RegExp(/^\s*([a-zA-Z]{2,}-[a-zA-Z]{2,},\s*){1,}[a-zA-Z]{2,}-[a-zA-Z]{2,}\s*$/);
 /**
- * - checks if matches `skuPattern = /(?<=^.*:)(\w|-)*(?= .*$)/`
- * - checks if included in `skuExceptions = ['DISCOUNT (Discount)', 'S&H (Shipping)']`
- * @param skuValue `string` - the initial column value to extract SKU from
- * @returns **`sku`**: `string` - the extracted SKU or empty string if no valid SKU found
+ * @consideration `removeClasses` is unnecessary, can assume true if a value for
+ * classDelimiter is provided -> have to remove default value for classDelimiter
+ * @param value `string` - the string value from which to extract `leaf`
+ * @param removeClasses `boolean` - remove string prefixes from result `leaf`
+ * - `Default` = `true`
+ * - e.g. `'CLASSA:SKU-1'` -> `sku` with classes removed = `'SKU-1'`
+ * @param classDelimiter `string` - the character used to delimit the item's classes
+ * - `Default` = `':'` (colon character)
+ * - e.g. `classDelimiter` of `'CLASSA:SKU-1'` = `':'`
+ * @returns **`leaf`**: `string` - the extracted `leaf` or the original value if no extraction performed
  */
-function extractSku(skuValue) {
-    const skuExceptions = ['DISCOUNT (Discount)', 'S&H (Shipping)'];
-    const skuPattern = new RegExp(/(?<=^.*:)(\w|-)*(?= .*$)/);
-    // e.g. skuValue: string = 'Miracu:3FX18101802GA (Miracu Thread Forte Fix 10 units  (18GX100mm))';
-    if (skuPattern.test(skuValue)) {
-        const match = skuValue.match(skuPattern);
-        if (match && (0, typeValidation_1.isNonEmptyArray)(match)) {
-            return match[0].trim();
-        }
+function extractLeaf(value, removeClasses = true, classDelimiter = ':') {
+    let result = value;
+    if (value.includes(' (')) { // remove description enclosed in parentheses
+        result = value.split(' (')[0];
+        // const match = skuValue.match(skuPattern);
+        // if (isNonEmptyArray(match)) {
+        //     return match[0].trim();
+        // } 
     }
-    else if (skuExceptions.includes(skuValue)) {
-        return skuValue.split(' ')[0]; // return the skuValue as is if it is an exception
+    if (removeClasses && result.includes(classDelimiter)) {
+        let classifierSplit = result.split(classDelimiter);
+        result = classifierSplit[classifierSplit.length - 1];
     }
-    config_1.mainLogger.warn('extractSku() - No valid SKU found in the provided value:', skuValue);
-    return '';
+    // if (value.includes(':')) {mlog.debug([`[regex.misc.extractLeaf()]`,
+    //     `      initial value: '${value}'`,
+    //     `after removeClasses: '${result}'`,
+    //     ].join(TAB));
+    // STOP_RUNNING(0)}
+    return result || value;
 }

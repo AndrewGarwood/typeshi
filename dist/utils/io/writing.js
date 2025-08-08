@@ -38,6 +38,7 @@ exports.indentedStringify = indentedStringify;
 exports.getFileNameTimestamp = getFileNameTimestamp;
 exports.writeListsToCsv = writeListsToCsv;
 exports.trimFile = trimFile;
+exports.clearFileSync = clearFileSync;
 exports.clearFile = clearFile;
 exports.writeRowsToCsv = writeRowsToCsv;
 /**
@@ -90,7 +91,7 @@ arg1, filePath, indent = 4, enableOverwrite = true) {
     else { // is already an object
         objectData = data;
     }
-    const outputPath = (0, reading_1.validateFileExtension)(outputFilePath, 'json');
+    const outputPath = (0, reading_1.coerceFileExtension)(outputFilePath, 'json');
     try {
         const jsonData = JSON.stringify(objectData, null, outputIndent);
         if (outputEnableOverwrite) {
@@ -168,11 +169,11 @@ function writeListsToCsv(listData, outputPath, delimiter = types_1.DelimiterChar
 /**
  * @TODO consider if should allow other file extensions
  * @description Trims a text file to keep only the last 10MB of data if it exceeds 10MB.
- * @param max - Maximum size in MB to keep in the file, default is `5` -> 5MB.
+ * @param maxMB - Maximum size in MB to keep in the file, default is `5` -> 5MB.
  * @param filePaths arbitrary number of text file paths to trim
  */
-function trimFile(max = 5, ...filePaths) {
-    const MAX_BYTES = max * 1024 * 1024;
+function trimFile(maxMB = 5, ...filePaths) {
+    const MAX_BYTES = maxMB * 1024 * 1024;
     for (const filePath of filePaths) {
         if (!filePath || !fs.existsSync(filePath)
             || !filePath.toLowerCase().endsWith('.txt')) {
@@ -189,7 +190,7 @@ function trimFile(max = 5, ...filePaths) {
             fs.ftruncateSync(fd, 0);
             fs.writeSync(fd, buffer, 0, MAX_BYTES, 0);
             fs.closeSync(fd);
-            setupLog_1.mainLogger.info(`Trimmed file to last ${max}MB: ${filePath}`);
+            setupLog_1.mainLogger.info(`Trimmed file to last ${maxMB}MB: ${filePath}`);
         }
         catch (e) {
             setupLog_1.mainLogger.error('Error trimming file to last 10MB', e);
@@ -198,26 +199,76 @@ function trimFile(max = 5, ...filePaths) {
     }
 }
 /**
- * Clears the content of the specified log file(s).
+ * `sync` Clears the content of the specified log file(s).
  * @param filePaths - The path(s) to the log file(s) to clear.
  */
-function clearFile(...filePaths) {
+function clearFileSync(...filePaths) {
     for (const filePath of filePaths) {
         if (!filePath || !(0, fs_1.existsSync)(filePath)) {
-            setupLog_1.mainLogger.warn(`clearFile() Log file does not exist: ${filePath}`);
+            setupLog_1.mainLogger.warn(`clearFileSync() Log file does not exist: ${filePath}`);
             continue;
         }
-        (0, fs_1.writeFileSync)(filePath, '', { encoding: 'utf-8' });
+        try {
+            (0, fs_1.writeFileSync)(filePath, '', { encoding: 'utf-8', flag: 'w' });
+        }
+        catch (error) {
+            if (error.code === 'EBUSY' || error.code === 'EMFILE') {
+                // File is busy, try again after a short delay
+                setTimeout(() => {
+                    try {
+                        (0, fs_1.writeFileSync)(filePath, '', { encoding: 'utf-8', flag: 'w' });
+                    }
+                    catch (retryError) {
+                        setupLog_1.mainLogger.warn(`clearFileSync() Failed to clear file after retry: ${filePath}`, retryError);
+                    }
+                }, 50);
+            }
+            else {
+                setupLog_1.mainLogger.warn(`clearFileSync() Failed to clear file: ${filePath}`, error);
+            }
+        }
     }
 }
 /**
+ * `async` func to ensure files are cleared before proceeding.
+ * @param filePaths - The path(s) to the log file(s) to clear.
+ */
+async function clearFile(...filePaths) {
+    const promises = filePaths.map(async (filePath) => {
+        if (!filePath || !(0, fs_1.existsSync)(filePath)) {
+            setupLog_1.mainLogger.warn(`clearFile() Log file does not exist: ${filePath}`);
+            return;
+        }
+        return new Promise((resolve, reject) => {
+            const tryWrite = (attempt = 1) => {
+                try {
+                    (0, fs_1.writeFileSync)(filePath, '', { encoding: 'utf-8', flag: 'w' });
+                    resolve();
+                }
+                catch (error) {
+                    if ((error.code === 'EBUSY' || error.code === 'EMFILE') && attempt < 3) {
+                        setTimeout(() => tryWrite(attempt + 1), 50 * attempt);
+                    }
+                    else {
+                        setupLog_1.mainLogger.warn(`clearFile() Failed to clear file: ${filePath}`, error);
+                        resolve(); // Don't reject, just warn and continue
+                    }
+                }
+            };
+            tryWrite();
+        });
+    });
+    await Promise.all(promises);
+}
+/**
+ * - can write to `tsv` by having `outputPath` end with `'.tsv'`
  * @param rows `Record<string, any>[]` - array of objects to write to CSV
  * @param outputPath `string` - path to the output CSV file.
  * @returns **`void`**
  */
 function writeRowsToCsv(rows, outputPath) {
-    validate.arrayArgument('writeRowsToCsv', 'rows', rows, typeValidation_1.TypeOfEnum.OBJECT);
-    validate.stringArgument('writeRowsToCsv', 'outputPath', outputPath);
+    validate.arrayArgument('writeRowsToCsv', { rows }, typeValidation_1.TypeOfEnum.OBJECT);
+    validate.stringArgument('writeRowsToCsv', { outputPath });
     const delimiter = (0, reading_1.getDelimiterFromFilePath)(outputPath);
     const headers = Object.keys(rows[0] || {});
     if ((0, typeValidation_1.isEmptyArray)(headers)) {
@@ -225,7 +276,10 @@ function writeRowsToCsv(rows, outputPath) {
         return;
     }
     if (rows.some(row => !(0, typeValidation_1.hasKeys)(row, headers))) {
-        setupLog_1.mainLogger.error(`[writeRowsToCsv()] Some rows do not have all headers!`, setupLog_1.INDENT_LOG_LINE + `headers: ${JSON.stringify(headers)}`, setupLog_1.INDENT_LOG_LINE + `Intended outputPath: '${outputPath}'`);
+        setupLog_1.mainLogger.error([`[writeRowsToCsv()] Some rows do not have all headers!`,
+            `headers: ${JSON.stringify(headers)}`,
+            `Intended outputPath: '${outputPath}'`
+        ].join(setupLog_1.INDENT_LOG_LINE));
         return;
     }
     const csvContent = [headers.join(delimiter)].concat(rows.map(row => headers.map(header => row[header] || '').join(delimiter))).join('\n');

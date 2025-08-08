@@ -41,16 +41,22 @@ export declare function writeListsToCsv(listData: Record<string, Array<string>>,
 /**
  * @TODO consider if should allow other file extensions
  * @description Trims a text file to keep only the last 10MB of data if it exceeds 10MB.
- * @param max - Maximum size in MB to keep in the file, default is `5` -> 5MB.
+ * @param maxMB - Maximum size in MB to keep in the file, default is `5` -> 5MB.
  * @param filePaths arbitrary number of text file paths to trim
  */
-export declare function trimFile(max?: number, ...filePaths: string[]): void;
+export declare function trimFile(maxMB?: number, ...filePaths: string[]): void;
 /**
- * Clears the content of the specified log file(s).
+ * `sync` Clears the content of the specified log file(s).
  * @param filePaths - The path(s) to the log file(s) to clear.
  */
-export declare function clearFile(...filePaths: string[]): void;
+export declare function clearFileSync(...filePaths: string[]): void;
 /**
+ * `async` func to ensure files are cleared before proceeding.
+ * @param filePaths - The path(s) to the log file(s) to clear.
+ */
+export declare function clearFile(...filePaths: string[]): Promise<void>;
+/**
+ * - can write to `tsv` by having `outputPath` end with `'.tsv'`
  * @param rows `Record<string, any>[]` - array of objects to write to CSV
  * @param outputPath `string` - path to the output CSV file.
  * @returns **`void`**

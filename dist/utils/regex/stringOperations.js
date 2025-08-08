@@ -140,8 +140,14 @@ function stringContainsAnyOf(str, substrings, ...flags) {
 function equivalentAlphanumericStrings(s1, s2, tolerance = 0.90) {
     if (!s1 || !s2)
         return false;
-    let s1Alphabetical = (0, cleaning_1.clean)(s1, undefined, { toLower: true }, undefined, [{ searchValue: /[^A-Za-z0-9]/g, replaceValue: '' }]).split('').sort().join('');
-    let s2Alphabetical = (0, cleaning_1.clean)(s2, undefined, { toLower: true }, undefined, [{ searchValue: /[^A-Za-z0-9]/g, replaceValue: '' }]).split('').sort().join('');
+    const cleanOptions = {
+        case: { toLower: true },
+        replace: [
+            { searchValue: /[^A-Za-z0-9]/g, replaceValue: '' }
+        ]
+    };
+    let s1Alphabetical = (0, cleaning_1.clean)(s1, cleanOptions).split('').sort().join('');
+    let s2Alphabetical = (0, cleaning_1.clean)(s2, cleanOptions).split('').sort().join('');
     if (s1Alphabetical.length === 0 || s2Alphabetical.length === 0) {
         return false;
     }

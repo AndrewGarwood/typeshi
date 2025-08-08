@@ -234,7 +234,3 @@ var TypeOfEnum;
     TypeOfEnum["OBJECT"] = "object";
     TypeOfEnum["FUNCTION"] = "function";
 })(TypeOfEnum || (exports.TypeOfEnum = TypeOfEnum = {}));
-/*
-const has = (prop: string) =>
-    Object.prototype.hasOwnProperty.call(obj, prop);
-*/

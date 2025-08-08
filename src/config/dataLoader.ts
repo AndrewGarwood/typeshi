@@ -90,6 +90,23 @@ export function getRegexConstants(): RegexConstants {
     }
     return regexConstants;
 }
+/**
+ * `Sync` Get company keyword list
+ * @returns **`COMPANY_KEYWORD_LIST`** `string[]`
+ */
+export function getCompanyKeywordList(): string[] {
+    const constants = getRegexConstants();
+    return constants.COMPANY_KEYWORD_LIST;
+}
+
+/**
+ * Get job title suffix list
+ * @returns **`JOB_TITLE_SUFFIX_LIST`** `string[]`
+ */
+export function getJobTitleSuffixList(): string[] {
+    const constants = getRegexConstants();
+    return constants.JOB_TITLE_SUFFIX_LIST;
+}
 
 
 export function isDataInitialized(): boolean {

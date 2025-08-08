@@ -7,16 +7,16 @@ exports.extractEmail = extractEmail;
  * @file src/utils/regex/email.ts
  */
 const stringOperations_1 = require("./stringOperations");
-const configureParameters_1 = require("./configureParameters");
+const StringOptions_1 = require("./types/StringOptions");
 /** `re` = `/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/` */
-exports.EMAIL_REGEX = new RegExp(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/, configureParameters_1.RegExpFlagsEnum.GLOBAL);
+exports.EMAIL_REGEX = new RegExp(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/, StringOptions_1.RegExpFlagsEnum.GLOBAL);
 /**return true if matches {@link EMAIL_REGEX} and does not include substring `'@benev'`  */
 function isValidEmail(email) {
     if (!email)
         return false;
     email = email.trim();
     return exports.EMAIL_REGEX.test(email)
-        && !(0, stringOperations_1.stringContainsAnyOf)(email, /@benev/, configureParameters_1.RegExpFlagsEnum.IGNORE_CASE, configureParameters_1.RegExpFlagsEnum.GLOBAL);
+        && !(0, stringOperations_1.stringContainsAnyOf)(email, /@benev/, StringOptions_1.RegExpFlagsEnum.IGNORE_CASE, StringOptions_1.RegExpFlagsEnum.GLOBAL);
 }
 /** @returns **`email`**: `string` - the first email that matches {@link EMAIL_REGEX} or an empty string `''`*/
 function extractEmail(email) {

@@ -22,4 +22,4 @@ export declare function formatDebugLogFile(inputFilePath: string, outputFilePath
  * If not provided, uses LOCAL_LOG_DIR from setupLog.ts
  * @returns `void`
  */
-export declare function formatAllDebugLogs(logDirectory?: string): void;
+export declare function formatAllDebugLogs(logDirectory: string): void;

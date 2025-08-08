@@ -1,4 +1,4 @@
-import { RegExpFlagsEnum } from "./configureParameters";
+import { RegExpFlagsEnum } from "./types/StringOptions";
 /**
  * Checks if a string ends with any of the specified suffixes.
  * @param s The `string` to check.

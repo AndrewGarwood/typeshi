@@ -11,11 +11,11 @@ exports.applyStripOptions = applyStripOptions;
  */
 const config_1 = require("../../config");
 const typeValidation_1 = require("../typeValidation");
-const typeGuards_1 = require("./types/typeGuards");
+const _1 = require("./");
 function clean(s, arg2, arg3, arg4, arg5) {
     if (!s)
         return '';
-    const { strip: stripOptions, case: caseOptions, pad: padOptions, replace: replaceOptions } = ((0, typeGuards_1.isCleanStringOptions)(arg2)
+    const { strip: stripOptions, case: caseOptions, pad: padOptions, replace: replaceOptions } = ((0, _1.isCleanStringOptions)(arg2)
         ? arg2
         : {
             strip: arg2,
@@ -71,7 +71,7 @@ function applyReplaceOptions(s, replaceOptions) {
         if (params.searchValue instanceof RegExp && params.searchValue.global) {
             params.searchValue.lastIndex = 0;
         }
-        s = initialValue.replace(params.searchValue, params.replaceValue);
+        s = initialValue.replace(params.searchValue, params.replaceValue).trim();
     }
     return s;
 }

@@ -124,7 +124,6 @@ export function hasNonTrivialKeys(
     return hasKeyWithNonTrivialValue;
 }
 
-
 /**
  * @TODO add overload on param `keys` where keys = `{ required: string[], optional: string[] }`
  * @note maybe redundant with the syntax `key in obj` ? but able to check more than one
@@ -258,8 +257,3 @@ export enum TypeOfEnum {
     OBJECT = 'object',
     FUNCTION = 'function',
 }
-
-/*
-const has = (prop: string) =>
-    Object.prototype.hasOwnProperty.call(obj, prop);
-*/

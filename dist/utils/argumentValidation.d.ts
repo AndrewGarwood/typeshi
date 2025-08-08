@@ -124,6 +124,19 @@ export declare function objectArgument(source: string, label: string, value?: an
 export declare function objectArgument(source: string, labeledObject: {
     [label: string]: any;
 }, objectTypeName?: string, objectTypeGuard?: (value: any) => boolean, allowEmpty?: boolean): void;
+/**
+ * @param source `string` indicating what called `validateObjectArgument`
+ * @param labeledValue `{ [label: string]: any }` a single object dict mapping label to value
+ * @param labeledTypeGuard `{ [functionName: string]: (value: any) => boolean }` a single object dict mapping type guard function name to the function
+ * @param allowEmpty `boolean` optional, if `true`, allows `value` to be an empty object `{} or undefined`
+ * @description This overload automatically derives the object type name from the type guard function name using regex.
+ * For example, if the type guard function is named `isRecordOptions`, the object type name will be extracted as `RecordOptions`.
+ */
+export declare function objectArgument(source: string, labeledValue: {
+    [label: string]: any;
+}, labeledTypeGuard: {
+    [functionName: string]: (value: any) => boolean;
+}, allowEmpty?: boolean): void;
 export declare function enumArgument(source: string, enumLabel: string, enumObject: Record<string, string> | Record<string, number>, label: string, value: any): string | number;
 export declare function enumArgument(source: string, 
 /**
@@ -146,7 +159,7 @@ labeledValue: {
  * @returns **`bracketedString`** `string`
  */
 export declare const bracketed: (s: string) => string;
-/** */
+/** use existingFileArgument() or existingDirectoryArgument() */
 export declare function existingPathArgument(source: string, arg2: string | {
     [label: string]: any;
 }, value?: any, extension?: string): void;

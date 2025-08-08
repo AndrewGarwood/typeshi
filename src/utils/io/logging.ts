@@ -5,7 +5,7 @@ import * as fs from "fs";
 import { mainLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL } from "../../config/setupLog";
 import { isNonEmptyArray, isNonEmptyString, } from "../typeValidation";
 import * as validate from "../argumentValidation";
-import * as path from "path";
+import path from "node:path";
 
 /**
  * Auto-formats debug logs at the end of application execution.
@@ -24,8 +24,6 @@ export function autoFormatLogsOnExit(
                     formatDebugLogFile(filePath);
                 }
             }
-        } else {
-            formatAllDebugLogs();
         }
     } catch (error) {
         // Don't throw errors during exit formatting to avoid disrupting the main flow
@@ -45,7 +43,7 @@ export function formatDebugLogFile(
     inputFilePath: string,
     outputFilePath?: string
 ): void {
-    validate.existingFileArgument(`logging.formatDebugLogFile`, '.txt',{inputFilePath});
+    validate.existingPathArgument(`logging.formatDebugLogFile`, {inputFilePath});
     // Generate output path if not provided
     if (!outputFilePath) {
         const parsedPath = path.parse(inputFilePath);
@@ -57,7 +55,6 @@ export function formatDebugLogFile(
     try {
         const fileContent = fs.readFileSync(inputFilePath, 'utf-8');
         const formattedContent = formatLogContent(fileContent);
-        
         fs.writeFileSync(outputFilePath, formattedContent, { encoding: 'utf-8' });
         // mlog.info(`[formatDebugLogFile()] Formatted log file saved to '${outputFilePath}'`);
     } catch (error) {
@@ -85,13 +82,11 @@ function formatLogContent(content: string): string {
             currentJsonObject = line;
         } else if (insideJsonObject) {
             currentJsonObject += '\n' + line;
-            
             // Count braces to detect end of JSON object
             for (const char of line) {
                 if (char === '{') braceCount++;
                 if (char === '}') braceCount--;
             }
-            
             if (braceCount === 0) {
                 // End of JSON object, process it
                 try {
@@ -108,7 +103,6 @@ function formatLogContent(content: string): string {
                         currentJsonObject,''
                     );
                 }
-                
                 insideJsonObject = false;
                 currentJsonObject = '';
             }
@@ -180,18 +174,9 @@ function unescapeString(s: string): string {
  * @returns `void`
  */
 export function formatAllDebugLogs(
-    logDirectory?: string
+    logDirectory: string
 ): void {
-    let logDir: string = logDirectory || '';
-    if (!logDir) {
-        try {
-            const { LOCAL_LOG_DIR } = require('../../config/setupLog');
-            logDir = LOCAL_LOG_DIR;
-        } catch (error) {
-            mlog.error('[formatAllDebugLogs()] Could not import LOCAL_LOG_DIR');
-        }
-    }
-    
+    let logDir: string = logDirectory;
     if (!fs.existsSync(logDir)) {
         mlog.warn(`[formatAllDebugLogs()] Log directory does not exist: ${logDir}`);
         return;

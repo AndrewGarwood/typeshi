@@ -12,11 +12,7 @@ export declare const CREDENTIAL_PATTERN: RegExp;
  */
 export declare const LAST_NAME_COMMA_FIRST_NAME_PATTERN: RegExp;
 export declare const REMOVE_ATTN_SALUTATION_PREFIX: StringReplaceParams;
-/**
- * re = `/(, (` + JOB_TITLE_SUFFIX_LIST.join('|') + `)\.?,?){asterisk}/g`,
- */
-export declare function getJobTitleSuffixPatternFromList(): RegExp;
-export declare const JOB_TITLE_SUFFIX_PATTERN_FROM_LIST: RegExp;
+export declare function getJobTitleSuffixPattern(): RegExp;
 /**
  * `re` = `/((, ?| )(MSPA|APRN|BSN|FNP-C|LME|DDS|DOO|Ph\.?D\.|MSN-RN|R\.?N|N\.?P|CRNA|FAAD|FNP|P.?A.?C|PA-C|PA|DMD|NMD|MD|M\.D|DO|L\.?E\.?|CMA|CANS|O.?M|Frcs|FRCS|FACS|FAC)\.?,?)+/g`
  * */
@@ -29,10 +25,9 @@ export declare const REMOVE_JOB_TITLE_SUFFIX: StringReplaceParams;
  */
 export declare const CLEAN_NAME_REPLACE_OPTIONS: StringReplaceOptions;
 /**
- * - **`if`** `name` contains a digit or contains any of {@link COMPANY_KEYWORDS_PATTERN} or `/[0-9!#&@]/`,
- * - - `then` do not attempt to extract name and return empty strings
+ * **if** `name` contains a digit or contains any of {@link COMPANY_KEYWORDS_PATTERN} or `/[0-9!#&@]/`,
+ * - `then` do not attempt to extract name and return empty strings
  * @param name `string` - the full name from which to extract 3 parts: the first, middle, and last names
- * @param includeJobTitleSuffix `boolean (optional)` `Default` = `true`
  * @returns `{first: string, middle?: string, last?: string}` - the first, middle, and last names
  * @example
  * let name = 'John Doe';
@@ -62,9 +57,6 @@ export declare function extractJobTitleSuffix(s: string): string;
  * - `re` = `/\b(?:company|corp|inc|co\.?,? ltd\.?|ltd|\.?l\.?lc|plc . . .)\b/` `i`
  * */
 export declare const COMPANY_KEYWORDS_PATTERN: RegExp;
-/**
- * - `re` = `\b(?:corp|inc|co\.?,? ltd\.?|ltd|(p\.)?l\.?l\.?c|p\.?c|plc|llp|s\.c)\.?\s*$/` `i`
- * */
 export declare const COMPANY_ABBREVIATION_PATTERN: RegExp;
 /**
  * @param {string} s - `string` - the string to check

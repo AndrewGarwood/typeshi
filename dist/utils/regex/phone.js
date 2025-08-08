@@ -4,7 +4,7 @@ exports.PHONE_REGEX_LIST = exports.KOREA_PHONE_REGEX = exports.JAPAN_PHONE_REGEX
 exports.extractPhone = extractPhone;
 exports.formatPhone = formatPhone;
 const cleaning_1 = require("./cleaning");
-const configureParameters_1 = require("./configureParameters");
+const StringOptions_1 = require("./types/StringOptions");
 /**
  * @param phone - `string` - phone number to test
  * @returns **`phone`** - formatted phone number or empty string if unable to format it
@@ -82,7 +82,7 @@ function formatPhone(phone, re, groupFormat) {
  * - **`$4`** - Last four digits - `(\d{4})`
  * - **`$5`** - Extension (optional) - `( ?ext ?(\d{3,4}))?`
  * */
-exports.PHONE_REGEX = new RegExp(/(?:^|\D)(\d{1,3}[-.\s]?)?\(?(\d{3})\)?[-.\s]?(\d{3})[-.\s]?(\d{4})[-.\s]?(?:ext|x|ex)?(?:[-:.\s]*)?(\d{1,4})?(?:\D|$)/, configureParameters_1.RegExpFlagsEnum.IGNORE_CASE + configureParameters_1.RegExpFlagsEnum.GLOBAL);
+exports.PHONE_REGEX = new RegExp(/(?:^|\D)(\d{1,3}[-.\s]?)?\(?(\d{3})\)?[-.\s]?(\d{3})[-.\s]?(\d{4})[-.\s]?(?:ext|x|ex)?(?:[-:.\s]*)?(\d{1,4})?(?:\D|$)/, StringOptions_1.RegExpFlagsEnum.IGNORE_CASE + StringOptions_1.RegExpFlagsEnum.GLOBAL);
 // /(?:^\D*(\d{1,3})[-.\s]?)?\(?(\d{3})\)?[-.\s]?(\d{3})[-.\s]?(\d{4})[-.\s]?(?:ext|x|ex)?(?:[-:.\s]*)?(\d{1,4})?(?:\D*$)/i; 
 /**
  * @description
@@ -92,7 +92,7 @@ exports.PHONE_REGEX = new RegExp(/(?:^|\D)(\d{1,3}[-.\s]?)?\(?(\d{3})\)?[-.\s]?(
  * - **`$2`** - First four digits - `(\d{4})`
  * - **`$3`** - Last four digits - `(\d{4})`
  */
-exports.HONG_KONG_PHONE_REGEX = new RegExp(/(?:^|\D)(852)[-.\s]?(\d{4})[-.\s]?(\d{4})(?:\D|$)/, configureParameters_1.RegExpFlagsEnum.GLOBAL);
+exports.HONG_KONG_PHONE_REGEX = new RegExp(/(?:^|\D)(852)[-.\s]?(\d{4})[-.\s]?(\d{4})(?:\D|$)/, StringOptions_1.RegExpFlagsEnum.GLOBAL);
 /**
  * @description
  * `re` = `/(?:^|\D)(86)[-.\s]?(\d{2,3})[-.\s]?(\d{4})[-.\s]?(\d{4})(?:\D|$)/`
@@ -102,7 +102,7 @@ exports.HONG_KONG_PHONE_REGEX = new RegExp(/(?:^|\D)(852)[-.\s]?(\d{4})[-.\s]?(\
  * - **`$3`** - First four digits - `(\d{4})`
  * - **`$4`** - Last four digits - `(\d{4})`
  */
-exports.CHINA_PHONE_REGEX = new RegExp(/(?:^|\D)(86)[-.\s]?(\d{2,3})[-.\s]?(\d{4})[-.\s]?(\d{4})(?:\D|$)/, configureParameters_1.RegExpFlagsEnum.GLOBAL);
+exports.CHINA_PHONE_REGEX = new RegExp(/(?:^|\D)(86)[-.\s]?(\d{2,3})[-.\s]?(\d{4})[-.\s]?(\d{4})(?:\D|$)/, StringOptions_1.RegExpFlagsEnum.GLOBAL);
 /**
  * @description
  * `re` = `/(?:^|\D)(81)[-.\s]?(\d{1})[-.\s]?(\d{4})[-.\s]?(\d{4})(?:\D|$)/`
@@ -112,7 +112,7 @@ exports.CHINA_PHONE_REGEX = new RegExp(/(?:^|\D)(86)[-.\s]?(\d{2,3})[-.\s]?(\d{4
  * - **`$3`** - First four digits - `(\d{4})`
  * - **`$4`** - Last four digits - `(\d{4})`
  */
-exports.JAPAN_PHONE_REGEX = new RegExp(/(?:^|\D)(81)[-.\s]?(\d{1})[-.\s]?(\d{4})[-.\s]?(\d{4})(?:\D|$)/, configureParameters_1.RegExpFlagsEnum.GLOBAL);
+exports.JAPAN_PHONE_REGEX = new RegExp(/(?:^|\D)(81)[-.\s]?(\d{1})[-.\s]?(\d{4})[-.\s]?(\d{4})(?:\D|$)/, StringOptions_1.RegExpFlagsEnum.GLOBAL);
 /**
  * @description
  * `re` = `/(?:^|\D)(82)[-).\s]?(\d{1,2})?[-.\s]?(\d{3,4})[-.\s]?(\d{4})(?:\D|$)/`
@@ -122,7 +122,7 @@ exports.JAPAN_PHONE_REGEX = new RegExp(/(?:^|\D)(81)[-.\s]?(\d{1})[-.\s]?(\d{4})
  * - **`$3`** - First three digits - `(\d{3})`
  * - **`$4`** - Last four digits - `(\d{4})`
  */
-exports.KOREA_PHONE_REGEX = new RegExp(/(?:^|\D)(82)[-).\s]?(\d{1,2})?[-.\s]?(\d{3,4})[-.\s]?(\d{4})(?:\D|$)/, configureParameters_1.RegExpFlagsEnum.GLOBAL);
+exports.KOREA_PHONE_REGEX = new RegExp(/(?:^|\D)(82)[-).\s]?(\d{1,2})?[-.\s]?(\d{3,4})[-.\s]?(\d{4})(?:\D|$)/, StringOptions_1.RegExpFlagsEnum.GLOBAL);
 exports.PHONE_REGEX_LIST = [
     { re: exports.CHINA_PHONE_REGEX, groupFormat: '$1-$2-$3-$4' },
     { re: exports.HONG_KONG_PHONE_REGEX, groupFormat: '$1-$2-$3' },

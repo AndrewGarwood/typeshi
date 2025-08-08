@@ -39,6 +39,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DataDomainEnum = void 0;
 exports.initializeData = initializeData;
 exports.getRegexConstants = getRegexConstants;
+exports.getCompanyKeywordList = getCompanyKeywordList;
+exports.getJobTitleSuffixList = getJobTitleSuffixList;
 exports.isDataInitialized = isDataInitialized;
 /**
  * @file src/config/dataLoader.ts
@@ -120,6 +122,22 @@ function getRegexConstants() {
         throw new Error('[dataLoader.getRegexConstants()] Regex constants not initialized. Call initializeData() first.');
     }
     return regexConstants;
+}
+/**
+ * `Sync` Get company keyword list
+ * @returns **`COMPANY_KEYWORD_LIST`** `string[]`
+ */
+function getCompanyKeywordList() {
+    const constants = getRegexConstants();
+    return constants.COMPANY_KEYWORD_LIST;
+}
+/**
+ * Get job title suffix list
+ * @returns **`JOB_TITLE_SUFFIX_LIST`** `string[]`
+ */
+function getJobTitleSuffixList() {
+    const constants = getRegexConstants();
+    return constants.JOB_TITLE_SUFFIX_LIST;
 }
 function isDataInitialized() {
     return dataInitialized;

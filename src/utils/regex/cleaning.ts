@@ -3,10 +3,10 @@
  */
 import { mainLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL } from "../../config";
 import { isNonEmptyArray } from "../typeValidation";
-import { RegExpFlagsEnum } from "./configureParameters";
-import { CleanStringOptions, StringCaseOptions, StringPadOptions, 
-    StringReplaceOptions,StringReplaceParams, StringStripOptions } from "./";
-import { isCleanStringOptions } from "./types/typeGuards";
+import { 
+    CleanStringOptions, isCleanStringOptions, StringCaseOptions, 
+    StringPadOptions, StringReplaceOptions, StringStripOptions 
+} from "./";
 
 export function clean(s: string, options?: CleanStringOptions): string
 /**
@@ -109,7 +109,7 @@ export function applyReplaceOptions(s: string, replaceOptions: StringReplaceOpti
         if (params.searchValue instanceof RegExp && params.searchValue.global) {
             params.searchValue.lastIndex = 0;
         }
-        s = initialValue.replace(params.searchValue, params.replaceValue)
+        s = initialValue.replace(params.searchValue, params.replaceValue).trim();
     }
     return s;
 }

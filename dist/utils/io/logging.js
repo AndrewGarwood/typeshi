@@ -32,6 +32,9 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.autoFormatLogsOnExit = autoFormatLogsOnExit;
 exports.formatDebugLogFile = formatDebugLogFile;
@@ -43,7 +46,7 @@ const fs = __importStar(require("fs"));
 const setupLog_1 = require("../../config/setupLog");
 const typeValidation_1 = require("../typeValidation");
 const validate = __importStar(require("../argumentValidation"));
-const path = __importStar(require("path"));
+const node_path_1 = __importDefault(require("node:path"));
 /**
  * Auto-formats debug logs at the end of application execution.
  * Call this function when your main application is finishing.
@@ -60,9 +63,6 @@ function autoFormatLogsOnExit(filePaths) {
                 }
             }
         }
-        else {
-            formatAllDebugLogs();
-        }
     }
     catch (error) {
         // Don't throw errors during exit formatting to avoid disrupting the main flow
@@ -78,11 +78,11 @@ function autoFormatLogsOnExit(filePaths) {
  * @returns `void`
  */
 function formatDebugLogFile(inputFilePath, outputFilePath) {
-    validate.existingFileArgument(`logging.formatDebugLogFile`, '.txt', { inputFilePath });
+    validate.existingPathArgument(`logging.formatDebugLogFile`, { inputFilePath });
     // Generate output path if not provided
     if (!outputFilePath) {
-        const parsedPath = path.parse(inputFilePath);
-        outputFilePath = path.join(parsedPath.dir, `${parsedPath.name}.FORMATTED${parsedPath.ext}`);
+        const parsedPath = node_path_1.default.parse(inputFilePath);
+        outputFilePath = node_path_1.default.join(parsedPath.dir, `${parsedPath.name}.FORMATTED${parsedPath.ext}`);
     }
     try {
         const fileContent = fs.readFileSync(inputFilePath, 'utf-8');
@@ -201,16 +201,7 @@ function unescapeString(s) {
  * @returns `void`
  */
 function formatAllDebugLogs(logDirectory) {
-    let logDir = logDirectory || '';
-    if (!logDir) {
-        try {
-            const { LOCAL_LOG_DIR } = require('../../config/setupLog');
-            logDir = LOCAL_LOG_DIR;
-        }
-        catch (error) {
-            setupLog_1.mainLogger.error('[formatAllDebugLogs()] Could not import LOCAL_LOG_DIR');
-        }
-    }
+    let logDir = logDirectory;
     if (!fs.existsSync(logDir)) {
         setupLog_1.mainLogger.warn(`[formatAllDebugLogs()] Log directory does not exist: ${logDir}`);
         return;
@@ -223,7 +214,7 @@ function formatAllDebugLogs(logDirectory) {
             return;
         }
         for (const txtFile of txtFiles) {
-            const inputPath = path.join(logDir, txtFile);
+            const inputPath = node_path_1.default.join(logDir, txtFile);
             try {
                 formatDebugLogFile(inputPath);
                 // mlog.info(`[formatAllDebugLogs()] Formatted: ${txtFile}`);
