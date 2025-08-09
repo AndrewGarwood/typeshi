@@ -575,7 +575,7 @@ function coerceFileExtension(filePath, expectedExtension) {
 async function concatenateFiles(arg1, sheetName = 'Sheet1', requiredHeaders = [], strictRequirement = true, targetExtensions = ['.csv', '.tsv', '.xlsx']) {
     const source = `[reading.concatenateDirectoryFiles()]`;
     validate.stringArgument(source, { sheetName });
-    validate.arrayArgument(source, { targetExtensions }, 'string', typeValidation_1.isNonEmptyString);
+    validate.arrayArgument(source, { targetExtensions, isNonEmptyString: typeValidation_1.isNonEmptyString });
     let files;
     if ((0, typeValidation_1.isNonEmptyArray)(arg1)) {
         files = arg1;
@@ -864,7 +864,7 @@ async function getIndexedColumnValues(arg1, columnName) {
 async function handleFileArgument(arg1, invocationSource, requiredHeaders = []) {
     const source = `reading.handleFileArgument`;
     validate.stringArgument(source, { invocationSource });
-    validate.arrayArgument(source, { requiredHeaders }, 'string', typeValidation_1.isNonEmptyString, true);
+    validate.arrayArgument(source, { requiredHeaders, isNonEmptyString: typeValidation_1.isNonEmptyString }, true);
     let rows = [];
     // Handle file path validation only for string inputs
     if ((0, typeValidation_1.isNonEmptyString)(arg1) && !isValidCsv(arg1, requiredHeaders)) {
@@ -909,8 +909,9 @@ async function handleFileArgument(arg1, invocationSource, requiredHeaders = []) 
  * @returns **`targetFiles`** `string[]` array of full file paths
  */
 function getDirectoryFiles(dir, ...targetExtensions) {
-    validate.existingPathArgument(`reading.getDirectoryFiles`, { dir });
-    validate.arrayArgument(`reading.getDirectoryFiles`, { targetExtensions }, 'string', typeValidation_1.isNonEmptyString, true);
+    const source = `[reading.getDirectoryFiles()]`;
+    validate.existingPathArgument(source, { dir });
+    validate.arrayArgument(source, { targetExtensions, isNonEmptyString: typeValidation_1.isNonEmptyString }, true);
     // ensure all target extensions start with period
     for (let i = 0; i < targetExtensions.length; i++) {
         const ext = targetExtensions[i];
@@ -975,9 +976,9 @@ function parseExcelForOneToMany(filePath, sheetName, keyColumn, valueColumn, opt
  */
 function parseCsvForOneToMany(filePath, keyColumn, valueColumn, delimiter = types_1.DelimiterCharacterEnum.COMMA, options = {}) {
     filePath = coerceFileExtension(filePath, (delimiter === types_1.DelimiterCharacterEnum.TAB) ? 'tsv' : 'csv');
-    validate.stringArgument(`reading.parseCsvForOneToMany`, `filePath`, filePath);
-    validate.stringArgument(`reading.parseCsvForOneToMany`, `keyColumn`, keyColumn);
-    validate.stringArgument(`reading.parseCsvForOneToMany`, `valueColumn`, valueColumn);
+    const source = `[reading.parseCsvForOneToMany()]`;
+    validate.existingFileArgument(source, ['.tsv', '.csv'], { filePath });
+    validate.multipleStringArguments(source, { keyColumn, valueColumn });
     try {
         const { keyStripOptions, valueStripOptions, keyCaseOptions, valueCaseOptions, keyPadOptions, valuePadOptions } = options;
         const data = fs_1.default.readFileSync(filePath, 'utf8');

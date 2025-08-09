@@ -123,7 +123,6 @@ export function hasNonTrivialKeys(
     });
     return hasKeyWithNonTrivialValue;
 }
-
 /**
  * @TODO add overload on param `keys` where keys = `{ required: string[], optional: string[] }`
  * @note maybe redundant with the syntax `key in obj` ? but able to check more than one
@@ -139,7 +138,7 @@ export function hasNonTrivialKeys(
  * - **`true`** `if` `obj` is of type 'object' and has the required key(s), 
  * - **`false`** `otherwise`
  */
-export function hasKeys<T extends Object>(
+export function hasKeys<T extends object>(
     obj: T, 
     keys: Array<keyof T> | string[] | string, 
     requireAll: boolean = true,
@@ -197,7 +196,7 @@ export function areEquivalentObjects(
     const keysB = Object.keys(objB);
     if (keysA.length !== keysB.length) return false;
     return keysA.every(key => {
-        if (!objB.hasOwnProperty(key)) return false; // key not in both objects
+        if (!hasKeys(objB, key)) return false; // key not in both objects
         const valA = objA[key];
         const valB = objB[key];
         if (Array.isArray(valA) && Array.isArray(valB)) {
@@ -240,9 +239,8 @@ export function isPrimitiveValue(
     return false;
 }
 
-
-
 /**
+ * @TODO deprecate and remove this
  * @enum {string} **`TypeOfEnum`**
  * @property **`STRING`** = `'string'`
  * @property **`NUMBER`** = `'number'`

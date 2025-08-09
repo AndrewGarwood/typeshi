@@ -181,7 +181,7 @@ function areEquivalentObjects(objA, objB) {
     if (keysA.length !== keysB.length)
         return false;
     return keysA.every(key => {
-        if (!objB.hasOwnProperty(key))
+        if (!hasKeys(objB, key))
             return false; // key not in both objects
         const valA = objA[key];
         const valB = objB[key];
@@ -219,6 +219,7 @@ function isPrimitiveValue(value) {
     return false;
 }
 /**
+ * @TODO deprecate and remove this
  * @enum {string} **`TypeOfEnum`**
  * @property **`STRING`** = `'string'`
  * @property **`NUMBER`** = `'number'`

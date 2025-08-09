@@ -79,7 +79,7 @@ export declare function hasNonTrivialKeys(obj: any): obj is Record<string, any> 
  * - **`true`** `if` `obj` is of type 'object' and has the required key(s),
  * - **`false`** `otherwise`
  */
-export declare function hasKeys<T extends Object>(obj: T, keys: Array<keyof T> | string[] | string, requireAll?: boolean, restrictKeys?: boolean): boolean;
+export declare function hasKeys<T extends object>(obj: T, keys: Array<keyof T> | string[] | string, requireAll?: boolean, restrictKeys?: boolean): boolean;
 /**
  * @param objA `Record<string, any>`
  * @param objB `Record<string, any>`
@@ -100,6 +100,7 @@ export declare function isNonEmptyString(value: any): value is string & {
 };
 export declare function isPrimitiveValue(value: any): value is string | number | boolean | null | undefined;
 /**
+ * @TODO deprecate and remove this
  * @enum {string} **`TypeOfEnum`**
  * @property **`STRING`** = `'string'`
  * @property **`NUMBER`** = `'number'`

@@ -267,16 +267,17 @@ async function clearFile(...filePaths) {
  * @returns **`void`**
  */
 function writeRowsToCsv(rows, outputPath) {
-    validate.arrayArgument('writeRowsToCsv', { rows }, typeValidation_1.TypeOfEnum.OBJECT);
-    validate.stringArgument('writeRowsToCsv', { outputPath });
+    const source = `[writing.writeRowsToCsv()]`;
+    validate.arrayArgument(source, { rows });
+    validate.stringArgument(source, { outputPath });
     const delimiter = (0, reading_1.getDelimiterFromFilePath)(outputPath);
     const headers = Object.keys(rows[0] || {});
     if ((0, typeValidation_1.isEmptyArray)(headers)) {
-        setupLog_1.mainLogger.error(`[writeRowsToCsv()] No headers found in rows, nothing to write.`, setupLog_1.INDENT_LOG_LINE + `Intended outputPath: '${outputPath}'`);
+        setupLog_1.mainLogger.error(`${source} No headers found in rows, nothing to write.`, setupLog_1.INDENT_LOG_LINE + `Intended outputPath: '${outputPath}'`);
         return;
     }
     if (rows.some(row => !(0, typeValidation_1.hasKeys)(row, headers))) {
-        setupLog_1.mainLogger.error([`[writeRowsToCsv()] Some rows do not have all headers!`,
+        setupLog_1.mainLogger.error([`${source} Some rows do not have all headers!`,
             `headers: ${JSON.stringify(headers)}`,
             `Intended outputPath: '${outputPath}'`
         ].join(setupLog_1.INDENT_LOG_LINE));
@@ -285,7 +286,7 @@ function writeRowsToCsv(rows, outputPath) {
     const csvContent = [headers.join(delimiter)].concat(rows.map(row => headers.map(header => row[header] || '').join(delimiter))).join('\n');
     try {
         fs.writeFileSync(outputPath, csvContent, { encoding: 'utf-8' });
-        setupLog_1.mainLogger.info(`[writeRowsToCsv()] file has been saved to '${outputPath}'`);
+        setupLog_1.mainLogger.info(`${source} file has been saved to '${outputPath}'`);
     }
     catch (e) {
         setupLog_1.mainLogger.error('[writeRowsToCsv()] Error writing to CSV file', e);

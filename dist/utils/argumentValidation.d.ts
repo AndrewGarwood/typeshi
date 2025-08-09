@@ -13,9 +13,9 @@ import { TypeOfEnum } from "./typeValidation";
  * for the argument corresponding to `label`
  * @throws {Error} if `value` is not a non-empty string
  *
- * **`message`**: `[source()] Invalid argument: '${label}'`
- * -  `Expected ${label} to be: non-empty string`
- * -  `Received ${label} value: ${typeof value}`
+ * **`msg`**: `[source()] Invalid argument: '${label}'`
+ * -  `Expected '${label}' to be: non-empty string`
+ * -  `Received '${label}' value: ${typeof value} = ${value}`
  */
 export declare function stringArgument(source: string, arg2: string | {
     [label: string]: any;
@@ -49,11 +49,26 @@ export declare function numberArgument(source: string, label: string, value: any
  *
  * @throws {Error} `if` `value` is not a `boolean`
  *
- * **`message`**: `[source()] Invalid argument: '${label}'`
- * -  `Expected ${label} to be: boolean`
- * -  `Received ${label} value: ${typeof value}`
+ * **`msg`**: `[source()] Invalid argument: '${label}'`
+ * -  `Expected '${label}' to be: boolean`
+ * -  `Received '${label}' value: ${typeof value} = ${value}`
  */
 export declare function booleanArgument(source: string, arg2: string | {
+    [label: string]: any;
+}, value?: any): void;
+/**
+ * @param source `string` indicating what called `validateFunctionArgument`
+ * @param arg2 `string` the argument/parameter name
+ * @param value `any` the value passed into the `source`
+ * for the argument corresponding to `label`
+ *
+ * @throws {Error} `if` `value` is not a function
+ *
+ * **`msg`**: `[source()] Invalid argument: '${label}'`
+ * -  `Expected '${label}' to be: function`
+ * -  `Received '${label}' value: ${typeof value} = ${value}`
+ */
+export declare function functionArgument(source: string, arg2: string | {
     [label: string]: any;
 }, value?: any): void;
 /**
@@ -71,39 +86,36 @@ export declare function booleanArgument(source: string, arg2: string | {
  * - `default` is `false`, meaning an empty array will throw an error
  * @throws {Error} `if` `value` is not a non-empty array or does not pass the type checks
  *
- * **`message`**: `[source()] Invalid argument: '${label}'`
- * -  `Expected ${label} to be: non-empty array`
- * -  `Received ${label} value: ${typeof value}`
+ * **`msg`**: `[source()] Invalid argument: '${label}'`
+ * -  `Expected '${label}' to be: non-empty array`
+ * -  `Received '${label}' value: ${typeof value} = ${value}`
  */
-export declare function arrayArgument(source: string, label: string, value?: any, elementType?: TypeOfEnum | string, elementTypeGuard?: (value: any) => boolean, allowEmpty?: boolean): void;
+export declare function arrayArgument(source: string, label: string, value: any, elementType?: TypeOfEnum | string, elementTypeGuard?: (value: any) => boolean, allowEmpty?: boolean): void;
 /**
+ * - {@link isNonEmptyArray}`(value: any): value is any[] & { length: number; }`
  * @param source `string` indicating what called `validateArrayArgument`
- * @param labeledArray `{ [label: string]: any }` a single object dict mapping label to value
- * @param elementType `TypeOfEnum | string` optional, the expected type of each element in the array
- * @param elementTypeGuard `(value: any) => boolean` optional, a type guard function
- * @param allowEmpty `boolean` optional, if `true`, allows `value` to be an empty array
+ * @param arg2 `string | { [label: string]: any }` the argument/parameter name or a single object dict mapping label to value
+ * @param arg3 `any | TypeOfEnum | string` the value passed into the `source` or the element type
+ * @param arg4 `TypeOfEnum | string | (value: any) => boolean` optional, element type or type guard function
+ * @param arg5 `(value: any) => boolean | boolean` optional, type guard function or allowEmpty boolean
+ * @param arg6 `boolean` optional, if `true`, allows `value` to be an empty array
  * - `default` is `false`, meaning an empty array will throw an error
  * @throws {Error} `if` `value` is not a non-empty array or does not pass the type checks
- */
-export declare function arrayArgument(source: string, labeledArray: {
-    [label: string]: any;
-}, elementType?: TypeOfEnum | string, elementTypeGuard?: (value: any) => boolean, allowEmpty?: boolean): void;
-/**
- * @param source `string` indicating what called `validateFunctionArgument`
- * @param arg2 `string` the argument/parameter name
- * @param value `any` the value passed into the `source`
- * for the argument corresponding to `label`
  *
- * @throws {Error} `if` `value` is not a function
+ * **`msg`**: `[source()] Invalid argument: '${label}'`
+ * -  `Expected '${label}' to be: non-empty array`
+ * -  `Received '${label}' value: ${typeof value} = ${value}`
  *
- * **`message`**: `[source()] Invalid argument: '${label}'`
- * -  `Expected ${label} to be: function`
- * -  `Received ${label} value: ${typeof value}`
+ * `if` `elementTypeGuard` is provided:
+ * -  `Expected '${label}' to be: non-empty array of ${elementType}`
+ * -  `Received '${label}' value: ${JSON.stringify(value)}`
+ * -  `Element typeGuard function: ${elementTypeGuard.name}(value: any): value is ${elementType}`
  */
-export declare function functionArgument(source: string, arg2: string | {
-    [label: string]: any;
-}, value?: any): void;
+export declare function arrayArgument(source: string, labeledArgs: {
+    [label: string]: any | ((value: any) => boolean);
+}, allowEmpty?: boolean): void;
 /**
+ * - `verbose` overload
  * @param source `string` indicating what called `validateObjectArgument`
  * @param label `string` the argument/parameter name
  * @param value `any` the value passed into the `source`
@@ -113,45 +125,19 @@ export declare function functionArgument(source: string, arg2: string | {
  * function that checks if the value is of the expected object type
  * @param allowEmpty `boolean` optional, if `true`, allows `value` to be an empty object `{} or undefined`
  */
-export declare function objectArgument(source: string, label: string, value?: any, objectTypeName?: string, objectTypeGuard?: (value: any) => boolean, allowEmpty?: boolean): void;
+export declare function objectArgument(source: string, label: string, value: any, objectTypeName?: string, objectTypeGuard?: (value: any) => boolean, allowEmpty?: boolean): void;
 /**
+ * - `concise` overload
  * @param source `string` indicating what called `validateObjectArgument`
- * @param labeledObject `{ [label: string]: any }` a single object dict mapping label to value
- * @param objectTypeName `string` the expected object type name
- * @param objectTypeGuard `(value: any) => boolean` optional, a type guard function
- * @param allowEmpty `boolean` optional, if `true`, allows `value` to be an empty object `{} or undefined`
- */
-export declare function objectArgument(source: string, labeledObject: {
-    [label: string]: any;
-}, objectTypeName?: string, objectTypeGuard?: (value: any) => boolean, allowEmpty?: boolean): void;
-/**
- * @param source `string` indicating what called `validateObjectArgument`
- * @param labeledValue `{ [label: string]: any }` a single object dict mapping label to value
- * @param labeledTypeGuard `{ [functionName: string]: (value: any) => boolean }` a single object dict mapping type guard function name to the function
- * @param allowEmpty `boolean` optional, if `true`, allows `value` to be an empty object `{} or undefined`
- * @description This overload automatically derives the object type name from the type guard function name using regex.
- * For example, if the type guard function is named `isRecordOptions`, the object type name will be extracted as `RecordOptions`.
- */
-export declare function objectArgument(source: string, labeledValue: {
-    [label: string]: any;
-}, labeledTypeGuard: {
-    [functionName: string]: (value: any) => boolean;
+ * */
+export declare function objectArgument(source: string, 
+/** maxLength = 2 */
+labeledArgs: {
+    [label: string]: any | ((value: any) => boolean);
 }, allowEmpty?: boolean): void;
-export declare function enumArgument(source: string, enumLabel: string, enumObject: Record<string, string> | Record<string, number>, label: string, value: any): string | number;
-export declare function enumArgument(source: string, 
-/**
- * @key the name of the enumObject
- * @value the enumObject itself
- * */
-labeledEnumObject: {
-    [enumLabel: string]: Record<string, string> | Record<string, number>;
-}, 
-/**
- * @key the name/lagel of the argument whose value should be typeof enumObject,
- * @value the value to check
- * */
-labeledValue: {
-    [label: string]: any;
+export declare function enumArgument(source: string, label: string, value: any, enumLabel: string, enumObject: Record<string, string> | Record<string, number>): string | number;
+export declare function enumArgument(source: string, labeledArgs: {
+    [label: string]: string | Record<string, number> | Record<string, string>;
 }): string | number;
 /**
  * @description surrounds `s` with brackets if it doesn't already have them

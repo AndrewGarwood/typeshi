@@ -276,18 +276,19 @@ export function writeRowsToCsv(
     rows: Record<string, any>[],
     outputPath: string,
 ): void {
-    validate.arrayArgument('writeRowsToCsv', {rows}, TypeOfEnum.OBJECT);
-    validate.stringArgument('writeRowsToCsv', {outputPath});
+    const source = `[writing.writeRowsToCsv()]`
+    validate.arrayArgument(source, {rows});
+    validate.stringArgument(source, {outputPath});
     const delimiter = getDelimiterFromFilePath(outputPath);
     const headers = Object.keys(rows[0] || {});
     if (isEmptyArray(headers)) {
-        mlog.error(`[writeRowsToCsv()] No headers found in rows, nothing to write.`,
+        mlog.error(`${source} No headers found in rows, nothing to write.`,
             TAB + `Intended outputPath: '${outputPath}'`,
         );
         return;
     }
     if (rows.some(row => !hasKeys(row, headers))) {
-        mlog.error([`[writeRowsToCsv()] Some rows do not have all headers!`,
+        mlog.error([`${source} Some rows do not have all headers!`,
             `headers: ${JSON.stringify(headers)}`,
             `Intended outputPath: '${outputPath}'`
         ].join(TAB));
@@ -298,7 +299,7 @@ export function writeRowsToCsv(
     ).join('\n');
     try {
         fs.writeFileSync(outputPath, csvContent, { encoding: 'utf-8' });
-        mlog.info(`[writeRowsToCsv()] file has been saved to '${outputPath}'`);
+        mlog.info(`${source} file has been saved to '${outputPath}'`);
     } catch (e) {
         mlog.error('[writeRowsToCsv()] Error writing to CSV file', e);
         throw e;

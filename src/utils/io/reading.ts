@@ -11,12 +11,14 @@ import { RegExpFlagsEnum, StringCaseOptions, stringEndsWithAnyOf,
 } from "../regex";
 import { FileData, ParseOneToManyOptions,} from "./types/Io";
 import { STOP_RUNNING } from "../../config";
-import { mainLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL, SUPPRESSED_LOGS as SUP 
-
+import { 
+    mainLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL, SUPPRESSED_LOGS as SUP 
 } from "../../config";
 import { DelimiterCharacterEnum, DelimitedFileTypeEnum, isFileData } from "./types";
-import { isNonEmptyArray, anyNull, isNullLike as isNull, hasKeys, isNonEmptyString, 
-    isEmptyArray } from "../typeValidation";
+import { 
+    isNonEmptyArray, isNullLike as isNull, hasKeys, isNonEmptyString, 
+    isEmptyArray 
+} from "../typeValidation";
 import * as validate from "../argumentValidation";
 import { indentedStringify } from "./writing";
 
@@ -632,7 +634,7 @@ export async function concatenateFiles(
 ): Promise<Record<string, any>[]> {
     const source = `[reading.concatenateDirectoryFiles()]`;
     validate.stringArgument(source, {sheetName});
-    validate.arrayArgument(source, {targetExtensions}, 'string', isNonEmptyString);
+    validate.arrayArgument(source, {targetExtensions, isNonEmptyString});
     let files: Array<FileData | string>;
     if (isNonEmptyArray(arg1)) {
         files = arg1;
@@ -957,7 +959,7 @@ export async function handleFileArgument(
 ): Promise<Record<string, any>[]> {
     const source = `reading.handleFileArgument`;
     validate.stringArgument(source, {invocationSource});
-    validate.arrayArgument(source, {requiredHeaders}, 'string', isNonEmptyString, true);
+    validate.arrayArgument(source, {requiredHeaders, isNonEmptyString}, true);
     let rows: Record<string, any>[] = [];
     // Handle file path validation only for string inputs
     if (isNonEmptyString(arg1) && !isValidCsv(arg1, requiredHeaders)) {
@@ -1004,10 +1006,9 @@ export function getDirectoryFiles(
     dir: string,
     ...targetExtensions: string[]
 ): string[] {
-    validate.existingPathArgument(`reading.getDirectoryFiles`, {dir});
-    validate.arrayArgument(`reading.getDirectoryFiles`, 
-        {targetExtensions}, 'string', isNonEmptyString, true
-    );
+    const source = `[reading.getDirectoryFiles()]`
+    validate.existingPathArgument(source, {dir});
+    validate.arrayArgument(source, {targetExtensions, isNonEmptyString}, true);
     // ensure all target extensions start with period
     for (let i = 0; i < targetExtensions.length; i++) {
         const ext = targetExtensions[i];
@@ -1105,9 +1106,9 @@ export function parseCsvForOneToMany(
     filePath = coerceFileExtension(filePath, 
         (delimiter === DelimiterCharacterEnum.TAB) ? 'tsv' : 'csv'
     );
-    validate.stringArgument(`reading.parseCsvForOneToMany`, `filePath`, filePath);
-    validate.stringArgument(`reading.parseCsvForOneToMany`, `keyColumn`, keyColumn);
-    validate.stringArgument(`reading.parseCsvForOneToMany`, `valueColumn`, valueColumn);
+    const source = `[reading.parseCsvForOneToMany()]`
+    validate.existingFileArgument(source, ['.tsv', '.csv'], {filePath})
+    validate.multipleStringArguments(source, {keyColumn, valueColumn});
     try {
         const { 
             keyStripOptions, valueStripOptions, 
