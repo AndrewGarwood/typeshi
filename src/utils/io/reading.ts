@@ -10,7 +10,6 @@ import { RegExpFlagsEnum, StringCaseOptions, stringEndsWithAnyOf,
     StringPadOptions, StringReplaceOptions, StringStripOptions, clean 
 } from "../regex";
 import { FileData, ParseOneToManyOptions,} from "./types/Io";
-import { STOP_RUNNING } from "../../config";
 import { 
     mainLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL, SUPPRESSED_LOGS as SUP 
 } from "../../config";
@@ -20,7 +19,6 @@ import {
     isEmptyArray 
 } from "../typeValidation";
 import * as validate from "../argumentValidation";
-import { indentedStringify } from "./writing";
 
 type FieldValue = Date | number | number[] | string | string[] | boolean | null;
 
@@ -32,9 +30,39 @@ export function isFile(pathString: string): boolean {
     return fs.existsSync(pathString) && fs.statSync(pathString).isFile();
 }
 
+const DEFAULT_CSV_VALIDATION_RULES = {
+    allowEmptyRows: true,
+    allowInconsistentColumns: true,
+    maxRowsToCheck: Infinity,
+}
+
+export interface CsvValidationOptions {
+    allowEmptyRows?: boolean;
+    allowInconsistentColumns?: boolean;
+    maxRowsToCheck?: number;
+}
 
 /**
- * Validates CSV structure by properly parsing quoted fields and checking consistency
+ * @notimplemented
+ * @TODO
+ * @param arg1 
+ * @param requiredHeaders 
+ * @param options 
+ * @returns 
+ */
+export async function isValidCsv(
+    arg1: string | FileData | Record<string, any>[],
+    requiredHeaders?: string[],
+    options: CsvValidationOptions = DEFAULT_CSV_VALIDATION_RULES
+): Promise<boolean> {
+    return false;
+}
+
+/**
+ * @problem has trouble handling case where column value contains a single double quote; 
+ * e.g. when it's used as the inches unit after a number 
+ * 
+ * `sync`
  * @param filePath `string` - must be a string to an existing file, otherwise return `false`.
  * @param requiredHeaders `string[]` - `optional` array of headers that must be present in the CSV file.
  * - If provided, the function checks if all required headers are present in the CSV header row
@@ -46,14 +74,10 @@ export function isFile(pathString: string): boolean {
  * - **`true`** `if` the CSV file at `filePath` is valid (proper structure and formatting),
  * - **`false`** `otherwise`. 
  */
-export function isValidCsv(
+export function isValidCsvSync(
     filePath: string,
     requiredHeaders?: string[],
-    options: {
-        allowEmptyRows?: boolean;
-        allowInconsistentColumns?: boolean;
-        maxRowsToCheck?: number;
-    } = {}
+    options: CsvValidationOptions = DEFAULT_CSV_VALIDATION_RULES
 ): boolean {
     const { 
         allowEmptyRows = true, 
@@ -71,7 +95,6 @@ export function isValidCsv(
         let currentLine = '';
         let inQuotes = false;
         let i = 0;
-        
         while (i < normalizedData.length) {
             const char = normalizedData[i];
             const nextChar = normalizedData[i + 1];
@@ -739,11 +762,17 @@ export async function getRows(
     }
 }
 
+/**
+ * @note excludes empty rows
+ * @param arg1 
+ * @param sheetName 
+ * @returns 
+ */
 export async function getExcelRows(
     arg1: FileData | string,
     sheetName: string = 'Sheet1'
 ): Promise<Record<string, any>[]> {
-    const source = 'reading.getExcelRows';
+    const source = '[reading.getExcelRows()]';
     validate.stringArgument(source, {sheetName});
     let filePath: string;
     let fileContent: string | undefined;
@@ -759,7 +788,7 @@ export async function getExcelRows(
         buffer = fs.readFileSync(filePath);
     } else {
         throw new Error([
-            `[reading.getExcelRows()] Invalid argument: 'arg1' (FileData or filePath)`,
+            `${source} Invalid argument: 'arg1' (FileData or filePath)`,
             `must be a FileData object or a string file path.`,
             `Received: ${JSON.stringify(arg1)}`
         ].join(TAB));
@@ -775,7 +804,7 @@ export async function getExcelRows(
         return jsonData;
     } catch (error) {
         mlog.error([
-            `[reading.getExcelRows()] Error reading or parsing the Excel file.`,
+            `${source} Error reading or parsing the Excel file.`,
             `Received arg1 = ${JSON.stringify(arg1)}, sheetName: '${sheetName}'`,
         ].join(TAB), JSON.stringify(error, null, 4));
         return [];
@@ -791,7 +820,7 @@ export async function getExcelRows(
 export async function getCsvRows(
     arg1: FileData | string
 ): Promise<Record<string, any>[]> {
-    const source = 'reading.getCsvRows';
+    const source = '[reading.getCsvRows()]';
     let filePath: string;
     let fileContent: string | undefined;
     let delimiter: DelimiterCharacterEnum | string = DelimiterCharacterEnum.COMMA;
@@ -804,26 +833,26 @@ export async function getCsvRows(
         delimiter = getDelimiterFromFilePath(filePath);
     } else if (isNonEmptyString(arg1) && stringEndsWithAnyOf(arg1, ['.csv', '.tsv'])) {
         filePath = arg1;
-        validate.existingPathArgument(`${source}.filePath`, {filePath});
+        validate.existingPathArgument(`${source}`, {filePath});
         try {
             buffer = fs.readFileSync(filePath);
         } catch (error) {
             throw new Error([
-                `[${source}()] Error making buffer when reading file: '${filePath}'`,
+                `${source} Error making buffer when reading file: '${filePath}'`,
                 `Error: ${error instanceof Error ? error.message : String(error)}`
             ].join(TAB));
         }
         delimiter = getDelimiterFromFilePath(filePath);
     } else {
         throw new Error([
-            `[reading.getCsvRows()] Invalid argument: 'arg1' (FileData or filePath)`,
+            `${source} Invalid argument: 'arg1' (FileData or filePath)`,
             `must be a FileData object or a string file path.`,
             `Received: ${JSON.stringify(arg1)}`
         ].join(TAB));
     }
     const rows: Record<string, any>[] = [];
     if (!buffer) {
-        throw new Error(`[${source}()] No buffer available to read`);
+        throw new Error(`${source} No buffer available to read`);
     }
     const stream = Readable.from(buffer.toString('utf8'));
     return new Promise((resolve, reject) => {
@@ -831,14 +860,14 @@ export async function getCsvRows(
             .pipe(csv({ separator: delimiter }))
             .on('data', (row: Record<string, any>) => rows.push(row))
             .on('end', () => {
-                SUP.push([`[${source}()] Successfully read CSV file.`,
+                SUP.push([`${source} Successfully read CSV file.`,
                     `filePath: '${filePath}'`,
                     `Number of rows read: ${rows.length}`
                 ].join(TAB));
                 resolve(rows)
             })
             .on('error', (error) => {
-                mlog.error(`[${source}()] Error reading CSV file:`, 
+                mlog.error(`${source} Error reading CSV file:`, 
                     TAB+`filePath: '${filePath}'`, 
                     NL+`Error: ${JSON.stringify(error, null, 4)}`
                 );
@@ -927,7 +956,7 @@ export async function getIndexedColumnValues(
     arg1: string | FileData | Record<string, any>[],
     columnName: string,
 ): Promise<Record<string, number[]>> {
-    validate.stringArgument(`reading.getIndexedColumnValues`, `columnName`, columnName);
+    validate.stringArgument(`reading.getIndexedColumnValues`, {columnName});
     let rows: Record<string, any>[] = await handleFileArgument(
         arg1, getIndexedColumnValues.name, [columnName]
     );
@@ -957,14 +986,14 @@ export async function handleFileArgument(
     invocationSource: string,
     requiredHeaders: string[] = []
 ): Promise<Record<string, any>[]> {
-    const source = `reading.handleFileArgument`;
+    const source = `[reading.handleFileArgument()]`;
     validate.stringArgument(source, {invocationSource});
     validate.arrayArgument(source, {requiredHeaders, isNonEmptyString}, true);
     let rows: Record<string, any>[] = [];
     // Handle file path validation only for string inputs
-    if (isNonEmptyString(arg1) && !isValidCsv(arg1, requiredHeaders)) {
+    if (isNonEmptyString(arg1) && !isValidCsvSync(arg1, requiredHeaders)) {
         throw new Error([
-            `[${source}()] Invalid CSV filePath provided: '${arg1}'`,
+            `${source} Invalid CSV filePath provided: '${arg1}'`,
             `        Source:   ${invocationSource}`,
             `requiredHeaders ? ${isNonEmptyArray(requiredHeaders) 
                 ? JSON.stringify(requiredHeaders) 
@@ -978,7 +1007,7 @@ export async function handleFileArgument(
     } else if (isNonEmptyArray(arg1)) { // arg1 is already array of rows
         if (arg1.some(v => typeof v !== 'object')) {
             throw new Error([
-                `[${source}()] Error: Invalid 'arg1' (Record<string, any>[]) param:`,
+                `${source} Error: Invalid 'arg1' (Record<string, any>[]) param:`,
                 `There exists an element in the param array that is not an object.`,
                 `Source: ${invocationSource}`,
             ].join(TAB))
@@ -986,7 +1015,7 @@ export async function handleFileArgument(
         rows = arg1 as Record<string, any>[];
     } else {
         throw new Error([
-            `[${source}()] Invalid parameter: 'arg1' (string | FileData | Record<string, any>[])`,
+            `${source} Invalid parameter: 'arg1' (string | FileData | Record<string, any>[])`,
             `arg1 must be a file path string, FileData object, or an array of rows.`,
             `Source: ${invocationSource}`,
         ].join(TAB));

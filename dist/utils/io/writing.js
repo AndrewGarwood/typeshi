@@ -37,6 +37,7 @@ exports.writeObjectToJson = writeObjectToJson;
 exports.indentedStringify = indentedStringify;
 exports.getFileNameTimestamp = getFileNameTimestamp;
 exports.writeListsToCsv = writeListsToCsv;
+exports.trimFileSync = trimFileSync;
 exports.trimFile = trimFile;
 exports.clearFileSync = clearFileSync;
 exports.clearFile = clearFile;
@@ -45,6 +46,7 @@ exports.writeRowsToCsv = writeRowsToCsv;
  * @file src/utils/io/writing.ts
  */
 const fs = __importStar(require("fs"));
+const env_1 = require("../../config/env");
 const setupLog_1 = require("../../config/setupLog");
 const reading_1 = require("./reading");
 const types_1 = require("./types");
@@ -62,7 +64,6 @@ arg1, filePath, indent = 4, enableOverwrite = true) {
     let outputFilePath;
     let outputIndent = indent;
     let outputEnableOverwrite = enableOverwrite;
-    // Handle options object overload
     if ((0, types_1.isWriteJsonOptions)(arg1)) {
         data = arg1.data;
         outputFilePath = arg1.filePath;
@@ -77,7 +78,6 @@ arg1, filePath, indent = 4, enableOverwrite = true) {
         data = arg1;
         outputFilePath = filePath;
     }
-    // Convert data to object if it's a string (should be valid JSON)
     let objectData;
     if (typeof data === 'string') {
         try {
@@ -168,11 +168,12 @@ function writeListsToCsv(listData, outputPath, delimiter = types_1.DelimiterChar
 }
 /**
  * @TODO consider if should allow other file extensions
- * @description Trims a text file to keep only the last 10MB of data if it exceeds 10MB.
  * @param maxMB - Maximum size in MB to keep in the file, default is `5` -> 5MB.
  * @param filePaths arbitrary number of text file paths to trim
  */
-function trimFile(maxMB = 5, ...filePaths) {
+function trimFileSync(maxMB = 5, ...filePaths) {
+    if ((0, typeValidation_1.isEmptyArray)(filePaths))
+        return;
     const MAX_BYTES = maxMB * 1024 * 1024;
     for (const filePath of filePaths) {
         if (!filePath || !fs.existsSync(filePath)
@@ -197,6 +198,35 @@ function trimFile(maxMB = 5, ...filePaths) {
             throw e;
         }
     }
+}
+async function trimFile(maxMB = 5, ...filePaths) {
+    if ((0, typeValidation_1.isEmptyArray)(filePaths))
+        return;
+    const MAX_BYTES = maxMB * 1024 * 1024;
+    for (const filePath of filePaths) {
+        if (!filePath || !fs.existsSync(filePath)
+            || !filePath.toLowerCase().endsWith('.txt')) {
+            setupLog_1.mainLogger.error(`File does not exist or is not text: ${filePath}`);
+            continue;
+        }
+        try {
+            const stats = fs.statSync(filePath);
+            if (stats.size <= MAX_BYTES)
+                return;
+            const fd = fs.openSync(filePath, 'r+');
+            const buffer = Buffer.alloc(MAX_BYTES);
+            fs.readSync(fd, buffer, 0, MAX_BYTES, stats.size - MAX_BYTES);
+            fs.ftruncateSync(fd, 0);
+            fs.writeSync(fd, buffer, 0, MAX_BYTES, 0);
+            fs.closeSync(fd);
+            setupLog_1.mainLogger.info(`Trimmed file to last ${maxMB}MB: ${filePath}`);
+        }
+        catch (e) {
+            setupLog_1.mainLogger.error('Error trimming file to last 10MB', e);
+            throw e;
+        }
+    }
+    await (0, env_1.DELAY)(1000, `[trimFile()] Releasing file handles...`);
 }
 /**
  * `sync` Clears the content of the specified log file(s).
@@ -259,6 +289,7 @@ async function clearFile(...filePaths) {
         });
     });
     await Promise.all(promises);
+    await (0, env_1.DELAY)(1000, `[clearFile()] Releasing file handles...`);
 }
 /**
  * - can write to `tsv` by having `outputPath` end with `'.tsv'`

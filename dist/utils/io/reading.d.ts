@@ -2,8 +2,25 @@ import { FileData, ParseOneToManyOptions } from "./types/Io";
 import { DelimiterCharacterEnum } from "./types";
 export declare function isDirectory(pathString: string): boolean;
 export declare function isFile(pathString: string): boolean;
+export interface CsvValidationOptions {
+    allowEmptyRows?: boolean;
+    allowInconsistentColumns?: boolean;
+    maxRowsToCheck?: number;
+}
 /**
- * Validates CSV structure by properly parsing quoted fields and checking consistency
+ * @notimplemented
+ * @TODO
+ * @param arg1
+ * @param requiredHeaders
+ * @param options
+ * @returns
+ */
+export declare function isValidCsv(arg1: string | FileData | Record<string, any>[], requiredHeaders?: string[], options?: CsvValidationOptions): Promise<boolean>;
+/**
+ * @problem has trouble handling case where column value contains a single double quote;
+ * e.g. when it's used as the inches unit after a number
+ *
+ * `sync`
  * @param filePath `string` - must be a string to an existing file, otherwise return `false`.
  * @param requiredHeaders `string[]` - `optional` array of headers that must be present in the CSV file.
  * - If provided, the function checks if all required headers are present in the CSV header row
@@ -15,11 +32,7 @@ export declare function isFile(pathString: string): boolean;
  * - **`true`** `if` the CSV file at `filePath` is valid (proper structure and formatting),
  * - **`false`** `otherwise`.
  */
-export declare function isValidCsv(filePath: string, requiredHeaders?: string[], options?: {
-    allowEmptyRows?: boolean;
-    allowInconsistentColumns?: boolean;
-    maxRowsToCheck?: number;
-}): boolean;
+export declare function isValidCsvSync(filePath: string, requiredHeaders?: string[], options?: CsvValidationOptions): boolean;
 /**
  * Analyzes a CSV file and returns detailed validation information
  * @param filePath `string` - path to the CSV file
@@ -112,6 +125,12 @@ export declare function concatenateFiles(arg1: Array<FileData | string> | string
  * @returns **`rows`** `Promise<Record<string, any>[]>`
  */
 export declare function getRows(arg1: FileData | string, sheetName?: string): Promise<Record<string, any>[]>;
+/**
+ * @note excludes empty rows
+ * @param arg1
+ * @param sheetName
+ * @returns
+ */
 export declare function getExcelRows(arg1: FileData | string, sheetName?: string): Promise<Record<string, any>[]>;
 /**
  * @param filePath `string`

@@ -40,11 +40,11 @@ export declare function getFileNameTimestamp(): string;
 export declare function writeListsToCsv(listData: Record<string, Array<string>>, outputPath: string, delimiter?: string, columnDelimiter?: string): void;
 /**
  * @TODO consider if should allow other file extensions
- * @description Trims a text file to keep only the last 10MB of data if it exceeds 10MB.
  * @param maxMB - Maximum size in MB to keep in the file, default is `5` -> 5MB.
  * @param filePaths arbitrary number of text file paths to trim
  */
-export declare function trimFile(maxMB?: number, ...filePaths: string[]): void;
+export declare function trimFileSync(maxMB?: number, ...filePaths: string[]): void;
+export declare function trimFile(maxMB?: number, ...filePaths: string[]): Promise<void>;
 /**
  * `sync` Clears the content of the specified log file(s).
  * @param filePaths - The path(s) to the log file(s) to clear.

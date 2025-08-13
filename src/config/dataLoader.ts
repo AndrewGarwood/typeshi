@@ -1,7 +1,5 @@
 /**
  * @file src/config/dataLoader.ts
- * @description Centralized data loading to avoid circular dependencies 
- * and ensure proper initialization order
  */
 import { STOP_RUNNING, DATA_DIR } from "./env";
 import { mainLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL, INFO_LOGS as INFO } from "./setupLog";

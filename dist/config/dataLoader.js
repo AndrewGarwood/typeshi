@@ -44,8 +44,6 @@ exports.getJobTitleSuffixList = getJobTitleSuffixList;
 exports.isDataInitialized = isDataInitialized;
 /**
  * @file src/config/dataLoader.ts
- * @description Centralized data loading to avoid circular dependencies
- * and ensure proper initialization order
  */
 const env_1 = require("./env");
 const setupLog_1 = require("./setupLog");

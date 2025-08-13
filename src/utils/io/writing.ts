@@ -2,6 +2,7 @@
  * @file src/utils/io/writing.ts
  */
 import * as fs from "fs";
+import { DELAY } from "../../config/env";
 import { mainLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL } from "../../config/setupLog";
 import { coerceFileExtension, getDelimiterFromFilePath } from "./reading";
 import { DelimiterCharacterEnum, isWriteJsonOptions, WriteJsonOptions } from "./types";
@@ -52,7 +53,6 @@ export function writeObjectToJson(
     let outputFilePath: string;
     let outputIndent: number = indent;
     let outputEnableOverwrite: boolean = enableOverwrite;
-    // Handle options object overload
     if (isWriteJsonOptions(arg1)) {
         data = arg1.data;
         outputFilePath = arg1.filePath;
@@ -67,7 +67,6 @@ export function writeObjectToJson(
         outputFilePath = filePath;
     }
     
-    // Convert data to object if it's a string (should be valid JSON)
     let objectData: Record<string, any>;
     if (typeof data === 'string') {
         try {
@@ -176,11 +175,11 @@ export function writeListsToCsv(
 
 /**
  * @TODO consider if should allow other file extensions
- * @description Trims a text file to keep only the last 10MB of data if it exceeds 10MB.
  * @param maxMB - Maximum size in MB to keep in the file, default is `5` -> 5MB.
  * @param filePaths arbitrary number of text file paths to trim
  */
-export function trimFile(maxMB: number=5, ...filePaths: string[]): void {
+export function trimFileSync(maxMB: number=5, ...filePaths: string[]): void {
+    if (isEmptyArray(filePaths)) return;
     const MAX_BYTES = maxMB * 1024 * 1024;
     for (const filePath of filePaths) {
         if (!filePath || !fs.existsSync(filePath) 
@@ -203,6 +202,33 @@ export function trimFile(maxMB: number=5, ...filePaths: string[]): void {
             throw e;
         }
     }
+}
+
+export async function trimFile(maxMB: number=5, ...filePaths: string[]): Promise<void> {
+    if (isEmptyArray(filePaths)) return;
+    const MAX_BYTES = maxMB * 1024 * 1024;
+    for (const filePath of filePaths) {
+        if (!filePath || !fs.existsSync(filePath) 
+            || !filePath.toLowerCase().endsWith('.txt')) {
+            mlog.error(`File does not exist or is not text: ${filePath}`);
+            continue;
+        }
+        try {
+            const stats = fs.statSync(filePath);
+            if (stats.size <= MAX_BYTES) return;
+            const fd = fs.openSync(filePath, 'r+');
+            const buffer = Buffer.alloc(MAX_BYTES);
+            fs.readSync(fd, buffer, 0, MAX_BYTES, stats.size - MAX_BYTES);
+            fs.ftruncateSync(fd, 0);
+            fs.writeSync(fd, buffer, 0, MAX_BYTES, 0);
+            fs.closeSync(fd);
+            mlog.info(`Trimmed file to last ${maxMB}MB: ${filePath}`);
+        } catch (e) {
+            mlog.error('Error trimming file to last 10MB', e);
+            throw e;
+        }
+    }
+    await DELAY(1000, `[trimFile()] Releasing file handles...`);
 }
 
 /**
@@ -264,6 +290,7 @@ export async function clearFile(...filePaths: string[]): Promise<void> {
     });
     
     await Promise.all(promises);
+    await DELAY(1000, `[clearFile()] Releasing file handles...`);
 }
 
 /**

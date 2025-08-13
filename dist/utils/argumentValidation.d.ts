@@ -7,7 +7,7 @@
 import { TypeOfEnum } from "./typeValidation";
 /**
  * - {@link isNonEmptyString}`(value: any): value is string & { length: number; }`
- * @param source `string` indicating what called `validateStringArgument()`
+ * @param source `string` indicating what called `stringArgument()`
  * @param arg2 `string | { [label: string]: any }` the argument/parameter name
  * @param value `string` the value passed into the `source`
  * for the argument corresponding to `label`
@@ -32,8 +32,6 @@ export declare function existingFileArgument(source: string, extension: string |
 export declare function existingDirectoryArgument(source: string, arg2: string | {
     [label: string]: any;
 }, value?: any): void;
-export declare function isDirectory(pathString: string): boolean;
-export declare function isFile(pathString: string): boolean;
 export declare function numericStringArgument(source: string, arg2: string | {
     [label: string]: any;
 }, value?: any): void;
@@ -42,7 +40,7 @@ export declare function numberArgument(source: string, labeledNumber: {
 }, requireInteger?: boolean): void;
 export declare function numberArgument(source: string, label: string, value: any, requireInteger?: boolean): void;
 /**
- * @param source `string` indicating what called `validateBooleanArgument()`
+ * @param source `string` indicating what called `booleanArgument()`
  * @param arg2 `string | { [label: string]: any }` the argument/parameter name
  * @param value `any` the value passed into the `source`
  * for the argument corresponding to `label`
@@ -57,7 +55,7 @@ export declare function booleanArgument(source: string, arg2: string | {
     [label: string]: any;
 }, value?: any): void;
 /**
- * @param source `string` indicating what called `validateFunctionArgument`
+ * @param source `string` indicating what called `functionArgument`
  * @param arg2 `string` the argument/parameter name
  * @param value `any` the value passed into the `source`
  * for the argument corresponding to `label`
@@ -114,9 +112,14 @@ export declare function arrayArgument(source: string, label: string, value: any,
 export declare function arrayArgument(source: string, labeledArgs: {
     [label: string]: any | ((value: any) => boolean);
 }, allowEmpty?: boolean): void;
+type ObjectArgumentOptions = {
+    [valueLabel: string]: any;
+} & {
+    [typeGuardLabel: string]: (value: any) => boolean;
+};
 /**
  * - `verbose` overload
- * @param source `string` indicating what called `validateObjectArgument`
+ * @param source `string` indicating what called `objectArgument`
  * @param label `string` the argument/parameter name
  * @param value `any` the value passed into the `source`
  * for the argument corresponding to `label`
@@ -128,16 +131,22 @@ export declare function arrayArgument(source: string, labeledArgs: {
 export declare function objectArgument(source: string, label: string, value: any, objectTypeName?: string, objectTypeGuard?: (value: any) => boolean, allowEmpty?: boolean): void;
 /**
  * - `concise` overload
- * @param source `string` indicating what called `validateObjectArgument`
+ * @param source `string` indicating what called `objectArgument`
  * */
 export declare function objectArgument(source: string, 
 /** maxLength = 2 */
-labeledArgs: {
+labeledArgs: ObjectArgumentOptions | {
     [label: string]: any | ((value: any) => boolean);
 }, allowEmpty?: boolean): void;
-export declare function enumArgument(source: string, label: string, value: any, enumLabel: string, enumObject: Record<string, string> | Record<string, number>): string | number;
-export declare function enumArgument(source: string, labeledArgs: {
-    [label: string]: string | Record<string, number> | Record<string, string>;
+type EnumObject = Record<string, string> | Record<string, number>;
+type EnumArgumentOptions = {
+    [valueLabel: string]: any;
+} & {
+    [enumLabel: string]: EnumObject;
+};
+export declare function enumArgument(source: string, label: string, value: any, enumLabel: string, enumObject: EnumObject): string | number;
+export declare function enumArgument(source: string, labeledArgs: EnumArgumentOptions | {
+    [label: string]: string | EnumObject;
 }): string | number;
 /**
  * @description surrounds `s` with brackets if it doesn't already have them
@@ -149,3 +158,4 @@ export declare const bracketed: (s: string) => string;
 export declare function existingPathArgument(source: string, arg2: string | {
     [label: string]: any;
 }, value?: any, extension?: string): void;
+export {};
