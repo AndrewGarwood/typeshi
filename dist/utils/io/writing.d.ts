@@ -56,6 +56,8 @@ export declare function clearFileSync(...filePaths: string[]): void;
  */
 export declare function clearFile(...filePaths: string[]): Promise<void>;
 /**
+ * @consideration maybe it would be better to have the delimiter be an explicit param rather
+ * than implicitly determined by `outputPath`
  * - can write to `tsv` by having `outputPath` end with `'.tsv'`
  * @param rows `Record<string, any>[]` - array of objects to write to CSV
  * @param outputPath `string` - path to the output CSV file.

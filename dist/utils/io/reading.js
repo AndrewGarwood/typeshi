@@ -863,15 +863,20 @@ async function getColumnValues(arg1, columnName, allowDuplicates = false) {
  * @param columnName `string` - the column name whose values will be returned.
  * @returns **`indexedColumnValues`** `Promise<Record<string, number[]>>`
  */
-async function getIndexedColumnValues(arg1, columnName) {
-    validate.stringArgument(`reading.getIndexedColumnValues`, { columnName });
+async function getIndexedColumnValues(arg1, columnName, cleaner) {
+    const source = `[reading.getIndexedColumnValues()]`;
+    validate.stringArgument(source, { columnName });
+    if (cleaner)
+        validate.functionArgument(source, { cleaner });
     let rows = await handleFileArgument(arg1, getIndexedColumnValues.name, [columnName]);
     const valueDict = {};
     for (const rowIndex in rows) {
         const row = rows[rowIndex];
         if (!(0, typeValidation_1.isNonEmptyString)(String(row[columnName])))
             continue;
-        const value = String(row[columnName]).trim();
+        const value = (cleaner
+            ? await cleaner(String(row[columnName]))
+            : String(row[columnName])).trim();
         if (!valueDict[value]) {
             valueDict[value] = [];
         }

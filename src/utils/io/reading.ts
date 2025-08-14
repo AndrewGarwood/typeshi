@@ -20,8 +20,6 @@ import {
 } from "../typeValidation";
 import * as validate from "../argumentValidation";
 
-type FieldValue = Date | number | number[] | string | string[] | boolean | null;
-
 export function isDirectory(pathString: string): boolean {
     return fs.existsSync(pathString) && fs.statSync(pathString).isDirectory();
 }
@@ -955,8 +953,11 @@ export async function getColumnValues(
 export async function getIndexedColumnValues(
     arg1: string | FileData | Record<string, any>[],
     columnName: string,
+    cleaner?: (s: string) => string | Promise<string>
 ): Promise<Record<string, number[]>> {
-    validate.stringArgument(`reading.getIndexedColumnValues`, {columnName});
+    const source = `[reading.getIndexedColumnValues()]`
+    validate.stringArgument(source, {columnName});
+    if (cleaner) validate.functionArgument(source, {cleaner})
     let rows: Record<string, any>[] = await handleFileArgument(
         arg1, getIndexedColumnValues.name, [columnName]
     );
@@ -964,7 +965,10 @@ export async function getIndexedColumnValues(
     for (const rowIndex in rows) {
         const row = rows[rowIndex];
         if (!isNonEmptyString(String(row[columnName]))) continue;
-        const value = String(row[columnName]).trim();
+        const value = (cleaner 
+            ? await cleaner(String(row[columnName])) 
+            : String(row[columnName])
+        ).trim();
         if (!valueDict[value]) {
             valueDict[value] = [];
         }

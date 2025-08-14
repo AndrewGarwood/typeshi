@@ -1,4 +1,4 @@
-import { StringReplaceOptions, StringStripOptions, StringReplaceParams } from ".";
+import { StringReplaceOptions, StringReplaceParams } from ".";
 /** `re` = /`^\s*((attention|attn|atn):)?\s*((Mr|Ms|Mrs|Dr|Prof)\.?)*\s*`/`i` */
 export declare const ATTN_SALUTATION_PREFIX_PATTERN: RegExp;
 /** `re` = /`^(Mr\.|Ms\.|Mrs\.|Dr\.|Mx\.)`/`i` */
@@ -12,7 +12,6 @@ export declare const CREDENTIAL_PATTERN: RegExp;
  */
 export declare const LAST_NAME_COMMA_FIRST_NAME_PATTERN: RegExp;
 export declare const REMOVE_ATTN_SALUTATION_PREFIX: StringReplaceParams;
-export declare function getJobTitleSuffixPattern(): RegExp;
 /**
  * `re` = `/((, ?| )(MSPA|APRN|BSN|FNP-C|LME|DDS|DOO|Ph\.?D\.|MSN-RN|R\.?N|N\.?P|CRNA|FAAD|FNP|P.?A.?C|PA-C|PA|DMD|NMD|MD|M\.D|DO|L\.?E\.?|CMA|CANS|O.?M|Frcs|FRCS|FACS|FAC)\.?,?)+/g`
  * */
@@ -58,9 +57,3 @@ export declare function extractJobTitleSuffix(s: string): string;
  * */
 export declare const COMPANY_KEYWORDS_PATTERN: RegExp;
 export declare const COMPANY_ABBREVIATION_PATTERN: RegExp;
-/**
- * @param {string} s - `string` - the string to check
- * @returns `!s.endsWith('Ph.D.') && !`{@link stringEndsWithAnyOf}`(s`, {@link COMPANY_ABBREVIATION_PATTERN} as RegExp, `[`{@link RegExpFlagsEnum.IGNORE_CASE}`]) && !stringEndsWithAnyOf(s, /\b[A-Z]\.?\b/, [RegExpFlagsEnum.IGNORE_CASE]);` */
-export declare function doesNotEndWithKnownAbbreviation(s: string): boolean;
-/** strip leading `.` and (trailing `.` if satisfy stripRightCondition: {@link doesNotEndWithKnownAbbreviation}) */
-export declare const STRIP_DOT_IF_NOT_END_WITH_ABBREVIATION: StringStripOptions;

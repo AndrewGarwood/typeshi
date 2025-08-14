@@ -289,9 +289,11 @@ async function clearFile(...filePaths) {
         });
     });
     await Promise.all(promises);
-    await (0, env_1.DELAY)(1000, `[clearFile()] Releasing file handles...`);
+    await (0, env_1.DELAY)(1000, ` > [clearFile()] Releasing file handles...`);
 }
 /**
+ * @consideration maybe it would be better to have the delimiter be an explicit param rather
+ * than implicitly determined by `outputPath`
  * - can write to `tsv` by having `outputPath` end with `'.tsv'`
  * @param rows `Record<string, any>[]` - array of objects to write to CSV
  * @param outputPath `string` - path to the output CSV file.

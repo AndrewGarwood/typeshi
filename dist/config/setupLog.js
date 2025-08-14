@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DEBUG_LOGS = exports.INFO_LOGS = exports.SUPPRESSED_LOGS = exports.mainLogger = exports.NEW_LINE = exports.INDENT_LOG_LINE = void 0;
+exports.formatLogObj = formatLogObj;
 /**
  * @file src/config/setupLog.ts
  * @reference https://tslog.js.org/#/?id=pretty-templates-and-styles-color-settings
@@ -93,16 +94,20 @@ const MAIN_LOGGER_SETTINGS = {
     prettyLogTimeZone: "local",
     prettyLogStyles: PRETTY_LOG_STYLES,
 };
-/**`type: "pretty"` */
+/**
+ * `type: "pretty"`
+ * @example
+ *
+ * mainLogger.attachTransport((logObj: ILogObj & ILogObjMeta) => {
+ *  appendFileSync(
+ *      DEFAULT_LOG_FILEPATH,
+ *      JSON.stringify(formatLogObj(logObj)) + "\n",
+ *      { encoding: "utf-8" }
+ *  );
+ * });
+ *
+ * */
 exports.mainLogger = new tslog_1.Logger(MAIN_LOGGER_SETTINGS);
-// commented out, so the user can attach transport in their own project
-// mainLogger.attachTransport((logObj: ILogObj & ILogObjMeta) => {
-//     appendFileSync(
-//         DEFAULT_LOG_FILEPATH, 
-//         JSON.stringify(formatLogObj(logObj)) + "\n", 
-//         { encoding: "utf-8" }
-//     );
-// });
 /**
  * compress metadata into `logObj['-1']` then return stringified `logObj`
  * @param logObj {@link ILogObj}

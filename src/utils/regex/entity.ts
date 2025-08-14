@@ -2,13 +2,15 @@
  * @file src/utils/regex/entity.ts
  */
 import { mainLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL, 
-    DEBUG_LOGS as DEBUG } from "../../config";
-import { StringReplaceOptions, StringStripOptions, KOREA_ADDRESS_LATIN_TEXT_PATTERN, StringReplaceParams,  } from ".";
+    DEBUG_LOGS as DEBUG 
+} from "../../config";
+import { StringReplaceOptions, 
+    KOREA_ADDRESS_LATIN_TEXT_PATTERN, 
+    StringReplaceParams, STRIP_DOT_IF_NOT_END_WITH_ABBREVIATION,  
+} from ".";
 import { RegExpFlagsEnum } from "./types/StringOptions";
 import { clean } from "./cleaning";
-import { getJobTitleSuffixList, getCompanyKeywordList } from "../../config/dataLoader";
 import { stringContainsAnyOf, stringEndsWithAnyOf } from "./stringOperations";
-const SUPPRESS: any[] = [];
 
 /** `re` = /`^\s*((attention|attn|atn):)?\s*((Mr|Ms|Mrs|Dr|Prof)\.?)*\s*`/`i` */
 export const ATTN_SALUTATION_PREFIX_PATTERN = new RegExp(
@@ -32,28 +34,13 @@ export const CREDENTIAL_PATTERN = /((([A-Z]\.){1})*|([A-Z]{1,4}(\.|-)?))*/;
  * `re` = `/^\s*([A-Za-z'-]{2,})\s*,\s*(?:(?:[A-Z]{1,4}\.?\,?\s*)+)?([A-Za-z'-]+(?:\s+[A-Za-z.'-]+)*)\s*$/`
  */
 export const LAST_NAME_COMMA_FIRST_NAME_PATTERN = new RegExp(
-    /^\s*([A-Za-z'-]{2,})\s*,\s*(?:(?:[A-Z]{1,4}\.?\,?\s*)+)?([A-Za-z'-]+(?:\s+[A-Za-z.'-]+)*)\s*$/,
+    /^\s*([A-Za-z'-]{2,})\s*,\s*(?:(?:[A-Z]{1,4}\.?,?\s*)+)?([A-Za-z'-]+(?:\s+[A-Za-z.'-]+)*)\s*$/,
     RegExpFlagsEnum.IGNORE_CASE
 );
 
 export const REMOVE_ATTN_SALUTATION_PREFIX: StringReplaceParams = {
     searchValue: ATTN_SALUTATION_PREFIX_PATTERN, replaceValue: ''
 };
-/**
- * re = `/(, (` + getJobTitleSuffixList().join('|') + `)\.?,?){asterisk}/g`,
- */
-let _jobTitleSuffixPattern: RegExp | null = null;
-export function getJobTitleSuffixPattern(): RegExp {
-    if (_jobTitleSuffixPattern === null) {
-        _jobTitleSuffixPattern = new RegExp(
-            `(, (` + getJobTitleSuffixList().join('|') + `)\.?)+`,
-            RegExpFlagsEnum.GLOBAL
-        );
-    }
-    return _jobTitleSuffixPattern;
-}
-
-
 /** 
  * `re` = `/((, ?| )(MSPA|APRN|BSN|FNP-C|LME|DDS|DOO|Ph\.?D\.|MSN-RN|R\.?N|N\.?P|CRNA|FAAD|FNP|P.?A.?C|PA-C|PA|DMD|NMD|MD|M\.D|DO|L\.?E\.?|CMA|CANS|O.?M|Frcs|FRCS|FACS|FAC)\.?,?)+/g`  
  * */
@@ -109,7 +96,7 @@ export function extractName(
         || KOREA_ADDRESS_LATIN_TEXT_PATTERN.test(name)) {
         return { first: '', middle: '', last: '' };
     }
-    SUPPRESS.push(`extractName()`,
+    DEBUG.push(`extractName()`,
         TAB + `  originalName = "${originalName}"`,
         TAB + `  cleaned name = "${name}"`,
         TAB + `jobTitleSuffix = "${jobTitleSuffix}"`
@@ -126,7 +113,7 @@ export function extractName(
         strip: STRIP_DOT_IF_NOT_END_WITH_ABBREVIATION, 
         replace: [{searchValue: /(^[-+])*/g, replaceValue: ''}]
     }));
-    SUPPRESS.push(NL + `nameSplit.length === ${nameSplit.length},`,
+    DEBUG.push(NL + `nameSplit.length === ${nameSplit.length},`,
         `nameSplit: ${JSON.stringify(nameSplit)}`
     );
     if (nameSplit.length == 1) {
@@ -203,11 +190,11 @@ export function extractJobTitleSuffix(
         { searchValue: /,$/g, replaceValue: '' }
     ]});
     if (JOB_TITLE_SUFFIX_PATTERN.test(s)) {
-        SUPPRESS.push(NL + `[regex/entity.extractJobTitleSuffix()]`, TAB + `s = "${s}"`);
+        DEBUG.push(NL + `[regex/entity.extractJobTitleSuffix()]`, TAB + `s = "${s}"`);
         const jobTitleMatch = s.match(JOB_TITLE_SUFFIX_PATTERN);
         if (jobTitleMatch && jobTitleMatch.length > 0) {
             let jobTitle = jobTitleMatch[0].replace(/^\s*,\s*/g, '').trim();
-            SUPPRESS.push(TAB + `jobTitleMatch[0] = "${jobTitleMatch[0]}" -> trim and return "${jobTitle}"`);
+            DEBUG.push(TAB + `jobTitleMatch[0] = "${jobTitleMatch[0]}" -> trim and return "${jobTitle}"`);
             return jobTitle;
         }
     }
@@ -227,28 +214,3 @@ export const COMPANY_KEYWORDS_PATTERN: RegExp =
 
 export const COMPANY_ABBREVIATION_PATTERN: RegExp =
 /\b(?:corp|inc|co\.?,? ltd\.?|ltd|(p\.)?l\.?l\.?c|p\.?c|plc|llp|s\.c)\.?\s*$/i;
-
-/** 
- * @param {string} s - `string` - the string to check
- * @returns `!s.endsWith('Ph.D.') && !`{@link stringEndsWithAnyOf}`(s`, {@link COMPANY_ABBREVIATION_PATTERN} as RegExp, `[`{@link RegExpFlagsEnum.IGNORE_CASE}`]) && !stringEndsWithAnyOf(s, /\b[A-Z]\.?\b/, [RegExpFlagsEnum.IGNORE_CASE]);` */
-export function doesNotEndWithKnownAbbreviation(s: string): boolean {
-    if (!s) return false;
-    s = s.trim();
-    /** matches 1 to 2 occurences of a single letter followed by an optional period */
-    const initialsPattern = /\b([A-Z]\.?){1}([A-Z]\.?)?\b/;
-    return (!s.endsWith('Ph.D.') 
-        && !stringEndsWithAnyOf(s, /\b[A-Z]{2}\.?\b/) 
-        && !stringEndsWithAnyOf(s, JOB_TITLE_SUFFIX_PATTERN, RegExpFlagsEnum.IGNORE_CASE) 
-        && !stringEndsWithAnyOf(s, COMPANY_ABBREVIATION_PATTERN, RegExpFlagsEnum.IGNORE_CASE) 
-        && !stringEndsWithAnyOf(s, initialsPattern, RegExpFlagsEnum.IGNORE_CASE)
-    );
-}
-
-/** strip leading `.` and (trailing `.` if satisfy stripRightCondition: {@link doesNotEndWithKnownAbbreviation}) */
-export const STRIP_DOT_IF_NOT_END_WITH_ABBREVIATION: StringStripOptions = {
-    char: '.',
-    escape: true,
-    stripLeftCondition: undefined,
-    leftArgs: undefined,
-    stripRightCondition: doesNotEndWithKnownAbbreviation,
-}

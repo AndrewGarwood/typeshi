@@ -159,7 +159,7 @@ export declare function getColumnValues(arg1: string | FileData | Record<string,
  * @param columnName `string` - the column name whose values will be returned.
  * @returns **`indexedColumnValues`** `Promise<Record<string, number[]>>`
  */
-export declare function getIndexedColumnValues(arg1: string | FileData | Record<string, any>[], columnName: string): Promise<Record<string, number[]>>;
+export declare function getIndexedColumnValues(arg1: string | FileData | Record<string, any>[], columnName: string, cleaner?: (s: string) => string | Promise<string>): Promise<Record<string, number[]>>;
 /**
  * formerly `handleFilePathOrRowsArgument`
  * - {@link getRows}`(filePath: string)`

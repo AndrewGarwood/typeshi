@@ -12,7 +12,7 @@ export declare const DATA_DIR: string;
  * */
 export declare const STOP_RUNNING: (exitCode?: number, ...msg: any[]) => void;
 /**
- * @description async func to pause execution for specified amount of milliseconds
+ * @description `async` func to pause execution for specified amount of milliseconds
  * - default message =  `'> Pausing for ${ms} milliseconds.'`
  * - `if` pass in `null` as second argument, no message will be logged
  * @param ms `number` - milliseconds to pause execution for.

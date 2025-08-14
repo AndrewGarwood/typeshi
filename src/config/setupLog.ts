@@ -101,23 +101,27 @@ const MAIN_LOGGER_SETTINGS: ISettingsParam<ILogObj> = {
     prettyLogStyles: PRETTY_LOG_STYLES,
 }
 
-/**`type: "pretty"` */
+/**
+ * `type: "pretty"` 
+ * @example
+ * 
+ * mainLogger.attachTransport((logObj: ILogObj & ILogObjMeta) => {
+ *  appendFileSync(
+ *      DEFAULT_LOG_FILEPATH, 
+ *      JSON.stringify(formatLogObj(logObj)) + "\n", 
+ *      { encoding: "utf-8" }
+ *  );
+ * });
+ * 
+ * */
 export const mainLogger = new Logger<ILogObj>(MAIN_LOGGER_SETTINGS);
-// commented out, so the user can attach transport in their own project
-// mainLogger.attachTransport((logObj: ILogObj & ILogObjMeta) => {
-//     appendFileSync(
-//         DEFAULT_LOG_FILEPATH, 
-//         JSON.stringify(formatLogObj(logObj)) + "\n", 
-//         { encoding: "utf-8" }
-//     );
-// });
 
 /**
  * compress metadata into `logObj['-1']` then return stringified `logObj`
  * @param logObj {@link ILogObj}
  * @returns `string`
  */
-function formatLogObj(logObj: ILogObj | (ILogObj & ILogObjMeta)): string {
+export function formatLogObj(logObj: ILogObj | (ILogObj & ILogObjMeta)): string {
     const meta = logObj['_meta'] as IMeta;
     const { logLevelName, date, path } = meta;
     const timestamp = date ? date.toLocaleString() : '';

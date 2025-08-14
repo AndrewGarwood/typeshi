@@ -1,10 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.STRIP_DOT_IF_NOT_END_WITH_ABBREVIATION = exports.COMPANY_ABBREVIATION_PATTERN = exports.COMPANY_KEYWORDS_PATTERN = exports.CLEAN_NAME_REPLACE_OPTIONS = exports.REMOVE_JOB_TITLE_SUFFIX = exports.JOB_TITLE_SUFFIX_PATTERN = exports.REMOVE_ATTN_SALUTATION_PREFIX = exports.LAST_NAME_COMMA_FIRST_NAME_PATTERN = exports.CREDENTIAL_PATTERN = exports.MIDDLE_INITIAL_REGEX = exports.SALUTATION_REGEX = exports.ATTN_SALUTATION_PREFIX_PATTERN = void 0;
-exports.getJobTitleSuffixPattern = getJobTitleSuffixPattern;
+exports.COMPANY_ABBREVIATION_PATTERN = exports.COMPANY_KEYWORDS_PATTERN = exports.CLEAN_NAME_REPLACE_OPTIONS = exports.REMOVE_JOB_TITLE_SUFFIX = exports.JOB_TITLE_SUFFIX_PATTERN = exports.REMOVE_ATTN_SALUTATION_PREFIX = exports.LAST_NAME_COMMA_FIRST_NAME_PATTERN = exports.CREDENTIAL_PATTERN = exports.MIDDLE_INITIAL_REGEX = exports.SALUTATION_REGEX = exports.ATTN_SALUTATION_PREFIX_PATTERN = void 0;
 exports.extractName = extractName;
 exports.extractJobTitleSuffix = extractJobTitleSuffix;
-exports.doesNotEndWithKnownAbbreviation = doesNotEndWithKnownAbbreviation;
 /**
  * @file src/utils/regex/entity.ts
  */
@@ -12,9 +10,7 @@ const config_1 = require("../../config");
 const _1 = require(".");
 const StringOptions_1 = require("./types/StringOptions");
 const cleaning_1 = require("./cleaning");
-const dataLoader_1 = require("../../config/dataLoader");
 const stringOperations_1 = require("./stringOperations");
-const SUPPRESS = [];
 /** `re` = /`^\s*((attention|attn|atn):)?\s*((Mr|Ms|Mrs|Dr|Prof)\.?)*\s*`/`i` */
 exports.ATTN_SALUTATION_PREFIX_PATTERN = new RegExp(/^\s*((attention|attn|atn):)?\s*((Mr|Ms|Mrs|Dr|Prof)\.?)*\s*/, StringOptions_1.RegExpFlagsEnum.IGNORE_CASE);
 /** `re` = /`^(Mr\.|Ms\.|Mrs\.|Dr\.|Mx\.)`/`i` */
@@ -26,20 +22,10 @@ exports.CREDENTIAL_PATTERN = /((([A-Z]\.){1})*|([A-Z]{1,4}(\.|-)?))*/;
 /**
  * `re` = `/^\s*([A-Za-z'-]{2,})\s*,\s*(?:(?:[A-Z]{1,4}\.?\,?\s*)+)?([A-Za-z'-]+(?:\s+[A-Za-z.'-]+)*)\s*$/`
  */
-exports.LAST_NAME_COMMA_FIRST_NAME_PATTERN = new RegExp(/^\s*([A-Za-z'-]{2,})\s*,\s*(?:(?:[A-Z]{1,4}\.?\,?\s*)+)?([A-Za-z'-]+(?:\s+[A-Za-z.'-]+)*)\s*$/, StringOptions_1.RegExpFlagsEnum.IGNORE_CASE);
+exports.LAST_NAME_COMMA_FIRST_NAME_PATTERN = new RegExp(/^\s*([A-Za-z'-]{2,})\s*,\s*(?:(?:[A-Z]{1,4}\.?,?\s*)+)?([A-Za-z'-]+(?:\s+[A-Za-z.'-]+)*)\s*$/, StringOptions_1.RegExpFlagsEnum.IGNORE_CASE);
 exports.REMOVE_ATTN_SALUTATION_PREFIX = {
     searchValue: exports.ATTN_SALUTATION_PREFIX_PATTERN, replaceValue: ''
 };
-/**
- * re = `/(, (` + getJobTitleSuffixList().join('|') + `)\.?,?){asterisk}/g`,
- */
-let _jobTitleSuffixPattern = null;
-function getJobTitleSuffixPattern() {
-    if (_jobTitleSuffixPattern === null) {
-        _jobTitleSuffixPattern = new RegExp(`(, (` + (0, dataLoader_1.getJobTitleSuffixList)().join('|') + `)\.?)+`, StringOptions_1.RegExpFlagsEnum.GLOBAL);
-    }
-    return _jobTitleSuffixPattern;
-}
 /**
  * `re` = `/((, ?| )(MSPA|APRN|BSN|FNP-C|LME|DDS|DOO|Ph\.?D\.|MSN-RN|R\.?N|N\.?P|CRNA|FAAD|FNP|P.?A.?C|PA-C|PA|DMD|NMD|MD|M\.D|DO|L\.?E\.?|CMA|CANS|O.?M|Frcs|FRCS|FACS|FAC)\.?,?)+/g`
  * */
@@ -82,7 +68,7 @@ function extractName(name, includeJobTitleSuffix = true) {
         || _1.KOREA_ADDRESS_LATIN_TEXT_PATTERN.test(name)) {
         return { first: '', middle: '', last: '' };
     }
-    SUPPRESS.push(`extractName()`, config_1.INDENT_LOG_LINE + `  originalName = "${originalName}"`, config_1.INDENT_LOG_LINE + `  cleaned name = "${name}"`, config_1.INDENT_LOG_LINE + `jobTitleSuffix = "${jobTitleSuffix}"`);
+    config_1.DEBUG_LOGS.push(`extractName()`, config_1.INDENT_LOG_LINE + `  originalName = "${originalName}"`, config_1.INDENT_LOG_LINE + `  cleaned name = "${name}"`, config_1.INDENT_LOG_LINE + `jobTitleSuffix = "${jobTitleSuffix}"`);
     let nameSplit = name.split(/(?<!,)\s+/);
     if (nameSplit.length === 0) {
         return { first: '', middle: '', last: '' };
@@ -92,10 +78,10 @@ function extractName(name, includeJobTitleSuffix = true) {
         nameSplit.push(nameSplit.shift() || '');
     }
     nameSplit.map((namePart) => (0, cleaning_1.clean)(namePart, {
-        strip: exports.STRIP_DOT_IF_NOT_END_WITH_ABBREVIATION,
+        strip: _1.STRIP_DOT_IF_NOT_END_WITH_ABBREVIATION,
         replace: [{ searchValue: /(^[-+])*/g, replaceValue: '' }]
     }));
-    SUPPRESS.push(config_1.NEW_LINE + `nameSplit.length === ${nameSplit.length},`, `nameSplit: ${JSON.stringify(nameSplit)}`);
+    config_1.DEBUG_LOGS.push(config_1.NEW_LINE + `nameSplit.length === ${nameSplit.length},`, `nameSplit: ${JSON.stringify(nameSplit)}`);
     if (nameSplit.length == 1) {
         return {
             first: nameSplit[0].replace(/(,|\.)$/g, ''),
@@ -162,11 +148,11 @@ function extractJobTitleSuffix(s) {
             { searchValue: /,$/g, replaceValue: '' }
         ] });
     if (exports.JOB_TITLE_SUFFIX_PATTERN.test(s)) {
-        SUPPRESS.push(config_1.NEW_LINE + `[regex/entity.extractJobTitleSuffix()]`, config_1.INDENT_LOG_LINE + `s = "${s}"`);
+        config_1.DEBUG_LOGS.push(config_1.NEW_LINE + `[regex/entity.extractJobTitleSuffix()]`, config_1.INDENT_LOG_LINE + `s = "${s}"`);
         const jobTitleMatch = s.match(exports.JOB_TITLE_SUFFIX_PATTERN);
         if (jobTitleMatch && jobTitleMatch.length > 0) {
             let jobTitle = jobTitleMatch[0].replace(/^\s*,\s*/g, '').trim();
-            SUPPRESS.push(config_1.INDENT_LOG_LINE + `jobTitleMatch[0] = "${jobTitleMatch[0]}" -> trim and return "${jobTitle}"`);
+            config_1.DEBUG_LOGS.push(config_1.INDENT_LOG_LINE + `jobTitleMatch[0] = "${jobTitleMatch[0]}" -> trim and return "${jobTitle}"`);
             return jobTitle;
         }
     }
@@ -180,26 +166,3 @@ function extractJobTitleSuffix(s) {
 // );
 exports.COMPANY_KEYWORDS_PATTERN = /\b(?:compan(y|ies)|[+@&]+|corporation|corporate|(drop)?box|corp|inc|co\.|co\.?,? ltd\.?|ltd|(p\.)?l\.?l\.?c|plc|llp|(un)?limited|nys|oc|mc|pr|local|group|consulting|consultant(s)?|vcc|bcp|center|(in)?pack(aging|age)?|electric|chemical|Exhibit(s)?|business|Factory|employee|print(s|ing)?|Pharmaceutical(s)?|vista ?print|associates|association|account(s)?|art(s)?|AMZ|independent|beauty|beautiful(ly)?|meditech|medaesthetic|partners|Acupuncture|Affiliate(s)?|telecom|maps|cosmetic(s)?|connections|practice|computer|service(s)?|skincare|skin|face|facial|body|artisan(s)?|Alchemy|plastic|advanced|surgical|surgery|surgeons|administrators|laser|practice|scientific|science|health|healthcare|medical|med|med( |i)?spa|spa|SpaMedica|perfect|surgeons|(med)?(a)?esthetic(s|a)?|salon|lounge|studio|wellness|courier|capital|financ(e|ing)|collector|dept(\.)?|HVAC|insurance|ins|surety|freight|fine art|solution(s)?|trad(e|ing)|renewal|department|inst\.|institute|instant|university|college|America(n)?|US(A)?|global|digital|virtual|orange|coast(al)?|tree|franchise|orthopedic(s)?|academy|advertising|travel|technologies|flash|international|tech|clinic(s|al)?|Exterminator|Nightclub|management|foundation|aid|product(ions|ion|s)?|industr(y|ies|ial)|biomed|bio|bio-chem|lubian|technology|technical|special(ist(s)?|ities)?|support|innovat(e|ive|ion(s)?)|county|united|state(s)?|the|one|of|for|by|and|on|or|at|it|the|about|plan|legal|valley|republic|recruit(ing)?|media|southern|office|post office|clean(er|ers)|transport|law|contract|high|food|meal|therapy|therapeutic(s)?|dental|laboratory|instrument|southwest|ingredient(s)?|commerce|city|Laboratories|lab|logistics|newport|radio|video|photo(graphy)?|korea|communication(s)|derm(atology|atologist(s)?)|new|express|goods|mission|depot|treasur(e|er|y)|revenue|biolab|Orders|staff(ing|ed)?|investors|envelope|refresh|Anti|AgingMajestic|motors|museum|event|Kaiser|pacific|visa|platinum|level|Rejuvenation|bespoke|Cardio|speed|pro|tax|firm|DC|square|store|weight|group|Buy|balance(d)?|buckhead|market(s)?|Bulk|perks|GPT|Boutique|supplement(s)?|vitamin(s)?|plus|sales|salesforce|precision|fitness|image|premier|Fulfillment|final|elite|elase|sculpt(ing)?|botox|south|Hills|symposium|wifi|online|worldwide|tv|derm([a-z]+)|wine|rent(al(s)?)?|mail|plumber(s)?|Sociedade|card|\.com)\b/i;
 exports.COMPANY_ABBREVIATION_PATTERN = /\b(?:corp|inc|co\.?,? ltd\.?|ltd|(p\.)?l\.?l\.?c|p\.?c|plc|llp|s\.c)\.?\s*$/i;
-/**
- * @param {string} s - `string` - the string to check
- * @returns `!s.endsWith('Ph.D.') && !`{@link stringEndsWithAnyOf}`(s`, {@link COMPANY_ABBREVIATION_PATTERN} as RegExp, `[`{@link RegExpFlagsEnum.IGNORE_CASE}`]) && !stringEndsWithAnyOf(s, /\b[A-Z]\.?\b/, [RegExpFlagsEnum.IGNORE_CASE]);` */
-function doesNotEndWithKnownAbbreviation(s) {
-    if (!s)
-        return false;
-    s = s.trim();
-    /** matches 1 to 2 occurences of a single letter followed by an optional period */
-    const initialsPattern = /\b([A-Z]\.?){1}([A-Z]\.?)?\b/;
-    return (!s.endsWith('Ph.D.')
-        && !(0, stringOperations_1.stringEndsWithAnyOf)(s, /\b[A-Z]{2}\.?\b/)
-        && !(0, stringOperations_1.stringEndsWithAnyOf)(s, exports.JOB_TITLE_SUFFIX_PATTERN, StringOptions_1.RegExpFlagsEnum.IGNORE_CASE)
-        && !(0, stringOperations_1.stringEndsWithAnyOf)(s, exports.COMPANY_ABBREVIATION_PATTERN, StringOptions_1.RegExpFlagsEnum.IGNORE_CASE)
-        && !(0, stringOperations_1.stringEndsWithAnyOf)(s, initialsPattern, StringOptions_1.RegExpFlagsEnum.IGNORE_CASE));
-}
-/** strip leading `.` and (trailing `.` if satisfy stripRightCondition: {@link doesNotEndWithKnownAbbreviation}) */
-exports.STRIP_DOT_IF_NOT_END_WITH_ABBREVIATION = {
-    char: '.',
-    escape: true,
-    stripLeftCondition: undefined,
-    leftArgs: undefined,
-    stripRightCondition: doesNotEndWithKnownAbbreviation,
-};

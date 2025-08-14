@@ -1,11 +1,16 @@
 /**
  * @file src/utils/regex/configureParameters.ts
  */
-import { StringStripOptions, StringReplaceParams } from "./types";
+import { StringStripOptions, StringReplaceParams } from ".";
 export declare function getCompanyKeywordList(): string[];
 export declare function getJobTitleSuffixList(): string[];
 /** strip leading `.` and (trailing `.` if satisfy stripRightCondition: {@link doesNotEndWithKnownAbbreviation}) */
-export { STRIP_DOT_IF_NOT_END_WITH_ABBREVIATION } from "./entity";
+/**
+ * @param {string} s - `string` - the string to check
+ * @returns `!s.endsWith('Ph.D.') && !`{@link stringEndsWithAnyOf}`(s`, {@link COMPANY_ABBREVIATION_PATTERN} as RegExp, `[`{@link RegExpFlagsEnum.IGNORE_CASE}`]) && !stringEndsWithAnyOf(s, /\b[A-Z]\.?\b/, [RegExpFlagsEnum.IGNORE_CASE]);` */
+export declare function doesNotEndWithKnownAbbreviation(s: string): boolean;
+/** strip leading `.` and (trailing `.` if satisfy stripRightCondition: {@link doesNotEndWithKnownAbbreviation}) */
+export declare const STRIP_DOT_IF_NOT_END_WITH_ABBREVIATION: StringStripOptions;
 /** always strip leading and trailing `.` from a `string` */
 export declare const UNCONDITIONAL_STRIP_DOT_OPTIONS: StringStripOptions;
 /**
