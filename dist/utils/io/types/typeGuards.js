@@ -5,7 +5,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isRowSourceMetaData = isRowSourceMetaData;
 exports.isRowDictionary = isRowDictionary;
-exports.isNodeStucture = isNodeStucture;
+exports.isNodeStructure = isNodeStructure;
 exports.isNodeLeaves = isNodeLeaves;
 exports.isWriteJsonOptions = isWriteJsonOptions;
 exports.isFileData = isFileData;
@@ -36,12 +36,12 @@ function isRowDictionary(value) {
             // is Record<string, any>
             && typeof value[key] === 'object' && !Array.isArray(value[key])));
 }
-function isNodeStucture(value) {
+function isNodeStructure(value) {
     return (value && typeof value === 'object'
         && !Array.isArray(value)
         && Object.keys(value).length > 0
         && Object.entries(value).every(([key, value]) => typeof key === 'string'
-            && (isNodeStucture(value) || isNodeLeaves(value))));
+            && (isNodeStructure(value) || isNodeLeaves(value))));
 }
 function isNodeLeaves(value) {
     return ((Array.isArray(value) && value.every(v => typeof v === 'number'))

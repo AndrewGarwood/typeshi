@@ -17,7 +17,7 @@ export declare function isRowSourceMetaData(value: any): value is RowSourceMetaD
  * @returns
  */
 export declare function isRowDictionary(value: any): value is RowDictionary;
-export declare function isNodeStucture(value: any): value is NodeStructure;
+export declare function isNodeStructure(value: any): value is NodeStructure;
 export declare function isNodeLeaves(value: any): value is NodeLeaves | number[] | RowDictionary;
 export declare function isWriteJsonOptions(value: any): value is WriteJsonOptions;
 /**

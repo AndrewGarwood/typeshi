@@ -45,13 +45,13 @@ export function isRowDictionary(value: any): value is RowDictionary {
 }
 
 
-export function isNodeStucture(value: any): value is NodeStructure {
+export function isNodeStructure(value: any): value is NodeStructure {
     return (value && typeof value === 'object'
         && !Array.isArray(value)
         && Object.keys(value).length > 0
         && Object.entries(value).every(([key, value]) => 
             typeof key === 'string' 
-            && (isNodeStucture(value) || isNodeLeaves(value))
+            && (isNodeStructure(value) || isNodeLeaves(value))
         )
     );
 }
