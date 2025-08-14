@@ -45,7 +45,7 @@ const fs = __importStar(require("node:fs"));
 /** = `process.cwd()` */
 exports.NODE_HOME_DIR = process.cwd();
 /** = {@link NODE_HOME_DIR}`/src` = `process.cwd()/src`*/
-exports.SRC_DIR = node_path_1.default.join(exports.NODE_HOME_DIR, 'src');
+exports.SRC_DIR = node_path_1.default.join(exports.NODE_HOME_DIR, 'node_modules', 'typeshi', 'dist');
 /** = `typeshi/src/data` */
 exports.DATA_DIR = node_path_1.default.join(exports.SRC_DIR, 'data');
 /**

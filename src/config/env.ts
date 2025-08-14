@@ -7,7 +7,7 @@ import * as fs from "node:fs";
 /** = `process.cwd()` */
 export const NODE_HOME_DIR = process.cwd() as string;
 /** = {@link NODE_HOME_DIR}`/src` = `process.cwd()/src`*/
-export const SRC_DIR = path.join(NODE_HOME_DIR, 'src') as string;
+export const SRC_DIR = path.join(NODE_HOME_DIR, 'node_modules', 'typeshi', 'dist') as string;
 /** = `typeshi/src/data` */
 export const DATA_DIR = path.join(SRC_DIR, 'data') as string;
 
