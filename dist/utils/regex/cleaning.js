@@ -110,7 +110,7 @@ function applyPadOptions(s, padOptions = { padLength: 24, padChar: ' ', padLeft:
         return '';
     const { padLength, padChar, padLeft, padRight } = padOptions;
     if (typeof padLength !== 'number' || padLength < 0) {
-        config_1.mainLogger.warn('handlePadOptions() Invalid padLength. Expected a positive integer, but received:', padLength);
+        config_1.typeshiLogger.warn('handlePadOptions() Invalid padLength. Expected a positive integer, but received:', padLength);
         return s;
     }
     if (s.length >= padLength) {

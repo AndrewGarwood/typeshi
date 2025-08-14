@@ -80,14 +80,14 @@ function stringArgument(source, arg2, value) {
                 `Expected: object with single string key`,
                 `Received: ${typeof arg2} = ${JSON.stringify(arg2)}`
             ].join(setupLog_1.INDENT_LOG_LINE);
-            setupLog_1.mainLogger.error(msg);
+            setupLog_1.typeshiLogger.error(msg);
             throw new Error(msg);
         }
         label = keys[0];
         value = arg2[label];
     }
     if (!(0, typeValidation_1.isNonEmptyString)(value)) {
-        setupLog_1.mainLogger.error([`${(0, exports.bracketed)(source)} Invalid argument: '${label}'`,
+        setupLog_1.typeshiLogger.error([`${(0, exports.bracketed)(source)} Invalid argument: '${label}'`,
             `Expected '${label}' to be: non-empty string`,
             `Received '${label}' value: ${typeof value} = ${value}`
         ].join(setupLog_1.INDENT_LOG_LINE));
@@ -134,7 +134,7 @@ function existingFileArgument(source, extension, arg3, value) {
             `Expected '${label}' to be: existing file with extension '${extension}'`,
             `Received '${label}' value: ${typeof value} = ${value}`
         ].join(setupLog_1.INDENT_LOG_LINE);
-        setupLog_1.mainLogger.error(msg);
+        setupLog_1.typeshiLogger.error(msg);
         throw new Error(msg);
     }
 }
@@ -153,7 +153,7 @@ function existingDirectoryArgument(source, arg2, value) {
             `Expected '${label}' to be: existing directory`,
             `Received '${label}' value: ${typeof value} = ${value}`
         ].join(setupLog_1.INDENT_LOG_LINE);
-        setupLog_1.mainLogger.error(msg);
+        setupLog_1.typeshiLogger.error(msg);
         throw new Error(msg);
     }
 }
@@ -173,7 +173,7 @@ function numericStringArgument(source, arg2, value) {
             `Expected '${label}' to be: number or string (numeric string)`,
             `Received '${label}' value: ${typeof value} = ${value}`
         ].join(setupLog_1.INDENT_LOG_LINE);
-        setupLog_1.mainLogger.error(msg);
+        setupLog_1.typeshiLogger.error(msg);
         throw new Error(msg);
     }
 }
@@ -209,7 +209,7 @@ function numberArgument(source, arg2, arg3, requireInteger = false) {
             `Expected '${label}' to be: number`,
             `Received '${label}' value: ${typeof value} = ${value}`
         ].join(setupLog_1.INDENT_LOG_LINE);
-        setupLog_1.mainLogger.error(msg);
+        setupLog_1.typeshiLogger.error(msg);
         throw new Error(msg);
     }
     if (requireInteger && !Number.isInteger(value)) {
@@ -217,7 +217,7 @@ function numberArgument(source, arg2, arg3, requireInteger = false) {
             `Expected '${label}' to be: integer`,
             `Received '${label}' value: ${typeof value} = ${value}`
         ].join(setupLog_1.INDENT_LOG_LINE);
-        setupLog_1.mainLogger.error(msg);
+        setupLog_1.typeshiLogger.error(msg);
         throw new Error(msg);
     }
 }
@@ -271,7 +271,7 @@ function functionArgument(source, arg2, value) {
                 `Expected: object with single key-value pair`,
                 `Received: '${JSON.stringify(arg2)}'`,
             ].join(setupLog_1.INDENT_LOG_LINE);
-            setupLog_1.mainLogger.error(msg);
+            setupLog_1.typeshiLogger.error(msg);
             throw new Error(msg);
         }
         label = keys[0];
@@ -282,7 +282,7 @@ function functionArgument(source, arg2, value) {
             `Expected '${label}' to be: function`,
             `Received '${label}' value: ${typeof value} = ${value}`
         ].join(setupLog_1.INDENT_LOG_LINE);
-        setupLog_1.mainLogger.error(msg);
+        setupLog_1.typeshiLogger.error(msg);
         throw new Error(msg);
     }
 }
@@ -321,7 +321,7 @@ elementTypeGuard, allowEmpty) {
                 `Received: object with ${keys.length} key(s)`,
                 `arg2: ${JSON.stringify(arg2)}`
             ].join(setupLog_1.INDENT_LOG_LINE);
-            setupLog_1.mainLogger.error(msg);
+            setupLog_1.typeshiLogger.error(msg);
             throw new Error(msg);
         }
         let variableLabel = Object.keys(arg2)
@@ -331,7 +331,7 @@ elementTypeGuard, allowEmpty) {
                 `Expected: object of size 2 with exactly 1 key whose value is a typeGuard function`,
                 `Received: Object.values(arg2) = ${JSON.stringify(Object.values(arg2))}`
             ].join(setupLog_1.INDENT_LOG_LINE);
-            setupLog_1.mainLogger.error(msg);
+            setupLog_1.typeshiLogger.error(msg);
             throw new Error(msg);
         }
         label = variableLabel;
@@ -350,7 +350,7 @@ elementTypeGuard, allowEmpty) {
             `Expected: label (string) | labeledArgs ({ [label: string]: any | ((value: any) => boolean) })`,
             `Received: ${typeof arg2} = ${arg2}`
         ].join(setupLog_1.INDENT_LOG_LINE);
-        setupLog_1.mainLogger.error(msg);
+        setupLog_1.typeshiLogger.error(msg);
         throw new Error(msg);
     }
     if (!Array.isArray(value)) {
@@ -358,7 +358,7 @@ elementTypeGuard, allowEmpty) {
             `Expected '${label}' to be: Array` + (elementType ? `<${elementType}>` : ''),
             `Received '${label}' value: ${typeof value} = ${value}`
         ].join(setupLog_1.INDENT_LOG_LINE);
-        setupLog_1.mainLogger.error(msg);
+        setupLog_1.typeshiLogger.error(msg);
         throw new Error(msg);
     }
     if (!allowEmpty && (0, typeValidation_1.isEmptyArray)(value)) {
@@ -366,7 +366,7 @@ elementTypeGuard, allowEmpty) {
             `Expected '${label}' to be: non-empty Array` + (elementType ? `<${elementType}>` : ''),
             `Received '${label}' value: empty array`
         ].join(setupLog_1.INDENT_LOG_LINE);
-        setupLog_1.mainLogger.error(msg);
+        setupLog_1.typeshiLogger.error(msg);
         throw new Error(msg);
     }
     else if (allowEmpty && (0, typeValidation_1.isEmptyArray)(value)) {
@@ -382,7 +382,7 @@ elementTypeGuard, allowEmpty) {
                     `Received '${label}' value: Array with invalid element at index ${i}`,
                     `array[i]: ${typeof value[i]} = ${JSON.stringify(value[i])}`
                 ].join(setupLog_1.INDENT_LOG_LINE);
-                setupLog_1.mainLogger.error(msg);
+                setupLog_1.typeshiLogger.error(msg);
                 throw new Error(msg);
             }
         }
@@ -441,7 +441,7 @@ allowEmpty) {
                 `Expected: object with labeledObject entry and optional labledTypeGuard entry`,
                 `Received: Object.values(arg2) = ${JSON.stringify(Object.values(arg2))}`
             ].join(setupLog_1.INDENT_LOG_LINE);
-            setupLog_1.mainLogger.error(msg);
+            setupLog_1.typeshiLogger.error(msg);
             throw new Error(msg);
         }
         label = variableLabel;
@@ -458,7 +458,7 @@ allowEmpty) {
             `Expected: label (string) | labeledArgs (ObjectArgumentOptions | { [label: string]: any | ((value: any) => boolean) })`,
             `Received: ${typeof arg2} = ${arg2}`
         ].join(setupLog_1.INDENT_LOG_LINE);
-        setupLog_1.mainLogger.error(msg);
+        setupLog_1.typeshiLogger.error(msg);
         throw new Error(msg);
     }
     objectTypeName = objectTypeName || 'object Record<string, any>';
@@ -467,7 +467,7 @@ allowEmpty) {
             `Expected '${label}' to be: object of type '${objectTypeName}'`,
             `Received '${label}' value: ${typeof value} = ${value}`
         ].join(setupLog_1.INDENT_LOG_LINE);
-        setupLog_1.mainLogger.error(msg);
+        setupLog_1.typeshiLogger.error(msg);
         throw new Error(msg);
     }
     if (value === null || value === undefined) {
@@ -475,7 +475,7 @@ allowEmpty) {
             `Expected '${label}' to be: object of type '${objectTypeName}'`,
             `Received '${label}' value: ${value}`
         ].join(setupLog_1.INDENT_LOG_LINE);
-        setupLog_1.mainLogger.error(msg);
+        setupLog_1.typeshiLogger.error(msg);
         throw new Error(msg);
     }
     if (Array.isArray(value)) {
@@ -483,7 +483,7 @@ allowEmpty) {
             `Expected '${label}' to be: object of type '${objectTypeName}'`,
             `Received '${label}' value: array of length ${value.length}`
         ].join(setupLog_1.INDENT_LOG_LINE);
-        setupLog_1.mainLogger.error(msg);
+        setupLog_1.typeshiLogger.error(msg);
         throw new Error(msg);
     }
     if (allowEmpty && Object.keys(value).length === 0) {
@@ -495,7 +495,7 @@ allowEmpty) {
                 `(typeGuard used = '${objectTypeGuard.name}')`,
             `Received: ${typeof value} = ${JSON.stringify(value, null, 4)}`
         ].join(setupLog_1.INDENT_LOG_LINE);
-        setupLog_1.mainLogger.error(msg);
+        setupLog_1.typeshiLogger.error(msg);
         throw new Error(msg);
     }
     // reached end -> value is a valid object
@@ -556,7 +556,7 @@ arg2, value, enumLabel, enumObject) {
                 `EnumArgumentOptions does not contain a value comparable to values of an EnumObject`,
                 `Expected arg2 to have single entry of format [valueLabel: string]: (string | number)`
             ].join(setupLog_1.INDENT_LOG_LINE);
-            setupLog_1.mainLogger.error(msg);
+            setupLog_1.typeshiLogger.error(msg);
             throw new Error(msg);
         }
         valueToCheck = arg2[label];
@@ -568,7 +568,7 @@ arg2, value, enumLabel, enumObject) {
                 `EnumArgumentOptions does not contain an entry with a value that is an EnumObject`,
                 `Expected arg2 to have single entry of format [enumLabel: string]: EnumObject`
             ].join(setupLog_1.INDENT_LOG_LINE);
-            setupLog_1.mainLogger.error(msg);
+            setupLog_1.typeshiLogger.error(msg);
             throw new Error(msg);
         }
         enumObject = arg2[enumLabel];
@@ -578,14 +578,14 @@ arg2, value, enumLabel, enumObject) {
             `Expected 'arg2' to be either label (string) | labeledArgs (EnumArgumentOptions)`,
             `Received ${typeof arg2} = ${arg2}`
         ].join(setupLog_1.INDENT_LOG_LINE);
-        setupLog_1.mainLogger.error(msg);
+        setupLog_1.typeshiLogger.error(msg);
         throw new Error(msg);
     }
     if (!isEnumObject(enumObject)) {
         let msg = [`${source} -> ${vSource}.verbose: Invalid EnumObject for '${enumLabel}'`,
             `Expected non-empty object Record<string, number> | Record<string, string>`,
         ].join(setupLog_1.INDENT_LOG_LINE);
-        setupLog_1.mainLogger.error(msg);
+        setupLog_1.typeshiLogger.error(msg);
         throw new Error(msg);
     }
     const enumKeys = Object.keys(enumObject);
@@ -633,7 +633,7 @@ arg2, value, enumLabel, enumObject) {
                 ? 'key (string) or value (string)' : 'key (string) or value (number)'}`,
             `Received '${label}' value: ${valueToCheck} (${typeof valueToCheck})`,
         ].join(setupLog_1.INDENT_LOG_LINE);
-        setupLog_1.mainLogger.error(msg);
+        setupLog_1.typeshiLogger.error(msg);
         throw new Error(msg);
     }
     return matchedValue;
@@ -665,7 +665,7 @@ function existingPathArgument(source, arg2, value, extension) {
                 `Expected: object with a single key`,
                 `Received: ${keys.length}`
             ].join(setupLog_1.INDENT_LOG_LINE);
-            setupLog_1.mainLogger.error(msg);
+            setupLog_1.typeshiLogger.error(msg);
             throw new Error(msg);
         }
         label = keys[0];
@@ -679,7 +679,7 @@ function existingPathArgument(source, arg2, value, extension) {
                 + ((0, typeValidation_1.isNonEmptyString)(extension) ? ` with extension '${extension}'` : ``),
             `Received '${label}' value: ${typeof value} = '${value}'`
         ].join(setupLog_1.INDENT_LOG_LINE);
-        setupLog_1.mainLogger.error(msg);
+        setupLog_1.typeshiLogger.error(msg);
         throw new Error(msg);
     }
 }

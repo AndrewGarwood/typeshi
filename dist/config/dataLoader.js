@@ -82,7 +82,7 @@ const DEFAULT_DOMAINS_TO_LOAD = [
 async function initializeData(...domains) {
     const source = `[typeshi.dataLoader.initializeData()]`;
     if (dataInitialized) {
-        setupLog_1.mainLogger.info(`${source} Data already initialized, skipping...`);
+        setupLog_1.typeshiLogger.info(`${source} Data already initialized, skipping...`);
         return;
     }
     const DATA_LOADER_CONFIG_FILE = node_path_1.default.join(env_1.DATA_DIR, `dataLoader_config.json`);
@@ -101,17 +101,17 @@ async function initializeData(...domains) {
                     regexConstants = await loadRegexConstants(regexPath);
                     break;
                 default:
-                    setupLog_1.mainLogger.warn(`${source} Unrecognized data domain: '${d}'. Skipping...`);
+                    setupLog_1.typeshiLogger.warn(`${source} Unrecognized data domain: '${d}'. Skipping...`);
                     continue;
             }
         }
         dataInitialized = true;
         setupLog_1.INFO_LOGS.push(setupLog_1.NEW_LINE + `${source} ✓ All data initialized successfully`);
-        setupLog_1.mainLogger.info(...setupLog_1.INFO_LOGS);
+        setupLog_1.typeshiLogger.info(...setupLog_1.INFO_LOGS);
         setupLog_1.INFO_LOGS.length = 0;
     }
     catch (error) {
-        setupLog_1.mainLogger.error(`${source} ✗ Failed to initialize data:`, error);
+        setupLog_1.typeshiLogger.error(`${source} ✗ Failed to initialize data:`, error);
         (0, env_1.STOP_RUNNING)(1, `Data initialization failed`);
     }
 }

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DEBUG_LOGS = exports.INFO_LOGS = exports.SUPPRESSED_LOGS = exports.mainLogger = exports.NEW_LINE = exports.INDENT_LOG_LINE = void 0;
+exports.DEBUG_LOGS = exports.INFO_LOGS = exports.SUPPRESSED_LOGS = exports.typeshiLogger = exports.NEW_LINE = exports.INDENT_LOG_LINE = void 0;
 exports.formatLogObj = formatLogObj;
 /**
  * @file src/config/setupLog.ts
@@ -107,7 +107,7 @@ const MAIN_LOGGER_SETTINGS = {
  * });
  *
  * */
-exports.mainLogger = new tslog_1.Logger(MAIN_LOGGER_SETTINGS);
+exports.typeshiLogger = new tslog_1.Logger(MAIN_LOGGER_SETTINGS);
 /**
  * compress metadata into `logObj['-1']` then return stringified `logObj`
  * @param logObj {@link ILogObj}

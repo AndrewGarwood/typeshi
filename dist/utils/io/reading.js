@@ -153,17 +153,17 @@ function isValidCsvSync(filePath, requiredHeaders, options = DEFAULT_CSV_VALIDAT
             lines.push(currentLine);
         }
         if (lines.length < 1) {
-            config_1.mainLogger.error(`[ERROR isValidCsv()]: file has no valid lines: ${filePath}`);
+            config_1.typeshiLogger.error(`[ERROR isValidCsv()]: file has no valid lines: ${filePath}`);
             return false;
         }
         const headerRow = parseCsvLine(lines[0], delimiter);
         if (headerRow.length < 1) {
-            config_1.mainLogger.error(`[ERROR isValidCsv()]: no header found in file: ${filePath}`);
+            config_1.typeshiLogger.error(`[ERROR isValidCsv()]: no header found in file: ${filePath}`);
             return false;
         }
         // Check for empty headers
         if (headerRow.some(header => header === '')) {
-            config_1.mainLogger.warn(`[isValidCsv()]: Found empty header(s) in file: ${filePath}`);
+            config_1.typeshiLogger.warn(`[isValidCsv()]: Found empty header(s) in file: ${filePath}`);
             if (!allowInconsistentColumns) {
                 return false;
             }
@@ -172,7 +172,7 @@ function isValidCsvSync(filePath, requiredHeaders, options = DEFAULT_CSV_VALIDAT
         if ((0, typeValidation_1.isNonEmptyArray)(requiredHeaders)) {
             const hasRequiredHeaders = requiredHeaders.every(header => {
                 if (!(0, typeValidation_1.isNonEmptyString)(header)) {
-                    config_1.mainLogger.warn([
+                    config_1.typeshiLogger.warn([
                         `[reading.isValidCsv]: Invalid parameter: 'requiredHeaders'`,
                         `requiredHeaders must be of type: Array<string>`,
                         `found array element of type: '${typeof header}' (skipping)`
@@ -182,7 +182,7 @@ function isValidCsvSync(filePath, requiredHeaders, options = DEFAULT_CSV_VALIDAT
                 return headerRow.includes(header);
             });
             if (!hasRequiredHeaders) {
-                config_1.mainLogger.warn([
+                config_1.typeshiLogger.warn([
                     `[isValidCsv()]: Required headers missing from headerRow`,
                     `filePath: '${filePath}'`,
                     `requiredHeaders: ${JSON.stringify(requiredHeaders)}`,
@@ -208,7 +208,7 @@ function isValidCsvSync(filePath, requiredHeaders, options = DEFAULT_CSV_VALIDAT
             }
             // Check column count consistency
             if (rowValues.length !== expectedColumnCount && !allowInconsistentColumns) {
-                config_1.mainLogger.warn([
+                config_1.typeshiLogger.warn([
                     `[isValidCsv()]: Invalid row found: header.length !== rowValues.length`,
                     `   header.length: ${expectedColumnCount}`,
                     `rowValues.length: ${rowValues.length}`,
@@ -225,7 +225,7 @@ function isValidCsvSync(filePath, requiredHeaders, options = DEFAULT_CSV_VALIDAT
         return true;
     }
     catch (error) {
-        config_1.mainLogger.error([
+        config_1.typeshiLogger.error([
             `[isValidCsv()]: Error reading or parsing CSV file: ${filePath}`,
             `Error: ${error instanceof Error ? error.message : String(error)}`
         ].join(config_1.INDENT_LOG_LINE));
@@ -558,7 +558,7 @@ function readJsonFileAsObject(filePath) {
         return jsonData;
     }
     catch (err) {
-        config_1.mainLogger.error('[readJsonFileAsObject()] Error reading or parsing the JSON file:', config_1.INDENT_LOG_LINE + `Given filePath: '${filePath}'`);
+        config_1.typeshiLogger.error('[readJsonFileAsObject()] Error reading or parsing the JSON file:', config_1.INDENT_LOG_LINE + `Given filePath: '${filePath}'`);
         throw new Error(JSON.stringify(err));
     }
 }
@@ -613,11 +613,11 @@ async function concatenateFiles(arg1, sheetName = 'Sheet1', requiredHeaders = []
             `files: FileData[] | filePaths: string[] | filePath: string | dirPath: string`,
             `Received: ${typeof arg1}`
         ].join(config_1.INDENT_LOG_LINE);
-        config_1.mainLogger.error(message);
+        config_1.typeshiLogger.error(message);
         throw new Error(message);
     }
     if (!(0, typeValidation_1.isNonEmptyArray)(files)) { // i.e. isEmptyArray.... shouldn't get here
-        config_1.mainLogger.error(`${source} how did this happen, we're smarter than this`);
+        config_1.typeshiLogger.error(`${source} how did this happen, we're smarter than this`);
         return [];
     }
     else if (files.length === 1) {
@@ -641,7 +641,7 @@ async function concatenateFiles(arg1, sheetName = 'Sheet1', requiredHeaders = []
             haveDefinedRequiredHeaders = true;
         }
         if (!(0, typeValidation_1.isNonEmptyArray)(requiredHeaders)) {
-            config_1.mainLogger.warn(`${source} No requiredHeaders defined,`, `skipping file: '${(0, types_1.isFileData)(fileRepresentative)
+            config_1.typeshiLogger.warn(`${source} No requiredHeaders defined,`, `skipping file: '${(0, types_1.isFileData)(fileRepresentative)
                 ? fileRepresentative.fileName : fileRepresentative}'`);
             continue;
         }
@@ -658,7 +658,7 @@ async function concatenateFiles(arg1, sheetName = 'Sheet1', requiredHeaders = []
                         `requiredHeaders: ${JSON.stringify(requiredHeaders)}`,
                         ` missingHeaders: ${JSON.stringify(missingHeaders)}`
                     ].join(config_1.INDENT_LOG_LINE);
-                    config_1.mainLogger.error(message);
+                    config_1.typeshiLogger.error(message);
                     throw new Error(message);
                 }
                 for (const header of missingHeaders) {
@@ -737,7 +737,7 @@ async function getExcelRows(arg1, sheetName = 'Sheet1') {
         return jsonData;
     }
     catch (error) {
-        config_1.mainLogger.error([
+        config_1.typeshiLogger.error([
             `${source} Error reading or parsing the Excel file.`,
             `Received arg1 = ${JSON.stringify(arg1)}, sheetName: '${sheetName}'`,
         ].join(config_1.INDENT_LOG_LINE), JSON.stringify(error, null, 4));
@@ -800,7 +800,7 @@ async function getCsvRows(arg1) {
             resolve(rows);
         })
             .on('error', (error) => {
-            config_1.mainLogger.error(`${source} Error reading CSV file:`, config_1.INDENT_LOG_LINE + `filePath: '${filePath}'`, config_1.NEW_LINE + `Error: ${JSON.stringify(error, null, 4)}`);
+            config_1.typeshiLogger.error(`${source} Error reading CSV file:`, config_1.INDENT_LOG_LINE + `filePath: '${filePath}'`, config_1.NEW_LINE + `Error: ${JSON.stringify(error, null, 4)}`);
             reject(error);
         });
     });
@@ -817,17 +817,17 @@ async function getOneToOneDictionary(arg1, keyColumn, valueColumn) {
     const dict = {};
     for (const row of rows) {
         if (!(0, typeValidation_1.hasKeys)(row, [keyColumn, valueColumn])) {
-            config_1.mainLogger.error(`[getOneToOneDictionary()] Row missing keys: '${keyColumn}' or '${valueColumn}'`);
+            config_1.typeshiLogger.error(`[getOneToOneDictionary()] Row missing keys: '${keyColumn}' or '${valueColumn}'`);
             throw new Error(`[getOneToOneDictionary()] Row missing keys: '${keyColumn}' or '${valueColumn}'`);
         }
         const key = String(row[keyColumn]).trim();
         const value = String(row[valueColumn]).trim();
         if (!key || !value) {
-            config_1.mainLogger.warn(`[getOneToOneDictionary()] Row missing key or value.`, config_1.INDENT_LOG_LINE + `keyColumn: '${keyColumn}', valueColumn: '${valueColumn}'`);
+            config_1.typeshiLogger.warn(`[getOneToOneDictionary()] Row missing key or value.`, config_1.INDENT_LOG_LINE + `keyColumn: '${keyColumn}', valueColumn: '${valueColumn}'`);
             continue;
         }
         if (dict[key]) {
-            config_1.mainLogger.warn(`[getOneToOneDictionary()] Duplicate key found: '${key}'`, config_1.INDENT_LOG_LINE + `overwriting value '${dict[key]}' with '${value}'`);
+            config_1.typeshiLogger.warn(`[getOneToOneDictionary()] Duplicate key found: '${key}'`, config_1.INDENT_LOG_LINE + `overwriting value '${dict[key]}' with '${value}'`);
         }
         dict[key] = value;
     }
@@ -990,7 +990,7 @@ function parseExcelForOneToMany(filePath, sheetName, keyColumn, valueColumn, opt
         return dict;
     }
     catch (err) {
-        config_1.mainLogger.error('Error reading or parsing the Excel file:', err, config_1.INDENT_LOG_LINE + 'Given File Path:', '"' + filePath + '"');
+        config_1.typeshiLogger.error('Error reading or parsing the Excel file:', err, config_1.INDENT_LOG_LINE + 'Given File Path:', '"' + filePath + '"');
         return {};
     }
 }
@@ -1037,7 +1037,7 @@ function parseCsvForOneToMany(filePath, keyColumn, valueColumn, delimiter = type
         return dict;
     }
     catch (err) {
-        config_1.mainLogger.error('Error reading or parsing the CSV file:', err, config_1.INDENT_LOG_LINE + 'Given File Path:', '"' + filePath + '"');
+        config_1.typeshiLogger.error('Error reading or parsing the CSV file:', err, config_1.INDENT_LOG_LINE + 'Given File Path:', '"' + filePath + '"');
         return {};
     }
 }

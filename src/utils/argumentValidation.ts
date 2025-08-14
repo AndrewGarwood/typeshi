@@ -10,7 +10,7 @@ import {
     isNumericString
 } from "./typeValidation";
 import { 
-    mainLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL 
+    typeshiLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL 
 } from "../config/setupLog";
 import { RegExpFlagsEnum, stringEndsWithAnyOf } from "./regex";
 import * as fs from "fs";

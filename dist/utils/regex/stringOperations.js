@@ -50,7 +50,7 @@ function stringEndsWithAnyOf(s, suffixes, ...flags) {
             : new RegExp(suffixes.source + '\\s*$', flagString));
     }
     if (!regex) {
-        config_1.mainLogger.error('endsWithAnyOf() Invalid suffixes type. returning false.', 'Expected string, array of strings, or RegExp but received:', typeof suffixes, suffixes);
+        config_1.typeshiLogger.error('endsWithAnyOf() Invalid suffixes type. returning false.', 'Expected string, array of strings, or RegExp but received:', typeof suffixes, suffixes);
         return false; // Invalid suffixes type
     }
     return regex.test(s);
@@ -86,7 +86,7 @@ function stringStartsWithAnyOf(str, prefixes, ...flags) {
             : new RegExp('^\\s*' + prefixes.source, flagString));
     }
     if (!regex) {
-        config_1.mainLogger.warn('startsWithAnyOf() Invalid prefixes type. returning false.', config_1.INDENT_LOG_LINE + 'Expected string, array of strings, or RegExp, but received:', typeof prefixes, config_1.INDENT_LOG_LINE + 'prefixes', prefixes);
+        config_1.typeshiLogger.warn('startsWithAnyOf() Invalid prefixes type. returning false.', config_1.INDENT_LOG_LINE + 'Expected string, array of strings, or RegExp, but received:', typeof prefixes, config_1.INDENT_LOG_LINE + 'prefixes', prefixes);
         return false; // Invalid prefixes type
     }
     return regex.test(str);
@@ -120,7 +120,7 @@ function stringContainsAnyOf(str, substrings, ...flags) {
         regex = new RegExp(substrings, flagString);
     }
     if (!regex) {
-        config_1.mainLogger.warn('containsAnyOf() Invalid substrings type. returning false.', config_1.INDENT_LOG_LINE + `Expected string, array of strings, or RegExp, but received: ${typeof substrings}, ${substrings}`);
+        config_1.typeshiLogger.warn('containsAnyOf() Invalid substrings type. returning false.', config_1.INDENT_LOG_LINE + `Expected string, array of strings, or RegExp, but received: ${typeof substrings}, ${substrings}`);
         return false; // Invalid substrings type
     }
     return regex.test(str);

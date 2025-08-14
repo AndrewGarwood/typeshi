@@ -33,15 +33,15 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.writeObjectToJson = writeObjectToJson;
+exports.writeObjectToJsonSync = writeObjectToJsonSync;
 exports.indentedStringify = indentedStringify;
 exports.getFileNameTimestamp = getFileNameTimestamp;
-exports.writeListsToCsv = writeListsToCsv;
+exports.writeListsToCsvSync = writeListsToCsvSync;
 exports.trimFileSync = trimFileSync;
 exports.trimFile = trimFile;
 exports.clearFileSync = clearFileSync;
 exports.clearFile = clearFile;
-exports.writeRowsToCsv = writeRowsToCsv;
+exports.writeRowsToCsvSync = writeRowsToCsvSync;
 /**
  * @file src/utils/io/writing.ts
  */
@@ -53,11 +53,11 @@ const types_1 = require("./types");
 const typeValidation_1 = require("../typeValidation");
 const validate = __importStar(require("../argumentValidation"));
 const fs_1 = require("fs");
-function writeObjectToJson(
+function writeObjectToJsonSync(
 /** {@link WriteJsonOptions} `| Record<string, any> | string`, */
 arg1, filePath, indent = 4, enableOverwrite = true) {
     if (!arg1) {
-        setupLog_1.mainLogger.error('[writing.writeObjectToJson()] No data to write to JSON file');
+        setupLog_1.typeshiLogger.error('[writing.writeObjectToJson()] No data to write to JSON file');
         return;
     }
     let data;
@@ -72,7 +72,7 @@ arg1, filePath, indent = 4, enableOverwrite = true) {
     }
     else {
         if (!(0, typeValidation_1.isNonEmptyString)(filePath)) {
-            setupLog_1.mainLogger.error('[writing.writeObjectToJson()] filePath is required when not using WriteJsonOptions object');
+            setupLog_1.typeshiLogger.error('[writing.writeObjectToJson()] filePath is required when not using WriteJsonOptions object');
             return;
         }
         data = arg1;
@@ -84,7 +84,7 @@ arg1, filePath, indent = 4, enableOverwrite = true) {
             objectData = JSON.parse(data);
         }
         catch (error) {
-            setupLog_1.mainLogger.error('[writing.writeObjectToJson()] Error parsing string to JSON', error);
+            setupLog_1.typeshiLogger.error('[writing.writeObjectToJson()] Error parsing string to JSON', error);
             return;
         }
     }
@@ -103,7 +103,7 @@ arg1, filePath, indent = 4, enableOverwrite = true) {
         // mlog.info(`[writing.writeObjectToJson()] file saved to '${outputPath}'`)
     }
     catch (error) {
-        setupLog_1.mainLogger.error('[writing.writeObjectToJson()] Error writing to JSON file', error);
+        setupLog_1.typeshiLogger.error('[writing.writeObjectToJson()] Error writing to JSON file', error);
         throw error;
     }
 }
@@ -145,7 +145,7 @@ function getFileNameTimestamp() {
  * @param delimiter `string` - optional, default=`'\t'`
  * @param columnDelimiter `string` - optional, default=`''`
  */
-function writeListsToCsv(listData, outputPath, delimiter = types_1.DelimiterCharacterEnum.TAB, columnDelimiter = '') {
+function writeListsToCsvSync(listData, outputPath, delimiter = types_1.DelimiterCharacterEnum.TAB, columnDelimiter = '') {
     const listNames = Object.keys(listData);
     const listValues = Object.values(listData);
     // Get the maximum length of the lists
@@ -160,10 +160,10 @@ function writeListsToCsv(listData, outputPath, delimiter = types_1.DelimiterChar
     }
     fs.writeFile(outputPath, csvContent, (err) => {
         if (err) {
-            setupLog_1.mainLogger.error('Error writing to CSV file', err);
+            setupLog_1.typeshiLogger.error('Error writing to CSV file', err);
             return;
         }
-        setupLog_1.mainLogger.info(`CSV file has been saved to ${outputPath}`);
+        setupLog_1.typeshiLogger.info(`CSV file has been saved to ${outputPath}`);
     });
 }
 /**
@@ -178,7 +178,7 @@ function trimFileSync(maxMB = 5, ...filePaths) {
     for (const filePath of filePaths) {
         if (!filePath || !fs.existsSync(filePath)
             || !filePath.toLowerCase().endsWith('.txt')) {
-            setupLog_1.mainLogger.error(`File does not exist or is not text: ${filePath}`);
+            setupLog_1.typeshiLogger.error(`File does not exist or is not text: ${filePath}`);
             continue;
         }
         try {
@@ -191,10 +191,10 @@ function trimFileSync(maxMB = 5, ...filePaths) {
             fs.ftruncateSync(fd, 0);
             fs.writeSync(fd, buffer, 0, MAX_BYTES, 0);
             fs.closeSync(fd);
-            setupLog_1.mainLogger.info(`Trimmed file to last ${maxMB}MB: ${filePath}`);
+            setupLog_1.typeshiLogger.info(`Trimmed file to last ${maxMB}MB: ${filePath}`);
         }
         catch (e) {
-            setupLog_1.mainLogger.error('Error trimming file to last 10MB', e);
+            setupLog_1.typeshiLogger.error('Error trimming file to last 10MB', e);
             throw e;
         }
     }
@@ -206,7 +206,7 @@ async function trimFile(maxMB = 5, ...filePaths) {
     for (const filePath of filePaths) {
         if (!filePath || !fs.existsSync(filePath)
             || !filePath.toLowerCase().endsWith('.txt')) {
-            setupLog_1.mainLogger.error(`File does not exist or is not text: ${filePath}`);
+            setupLog_1.typeshiLogger.error(`File does not exist or is not text: ${filePath}`);
             continue;
         }
         try {
@@ -219,10 +219,10 @@ async function trimFile(maxMB = 5, ...filePaths) {
             fs.ftruncateSync(fd, 0);
             fs.writeSync(fd, buffer, 0, MAX_BYTES, 0);
             fs.closeSync(fd);
-            setupLog_1.mainLogger.info(`Trimmed file to last ${maxMB}MB: ${filePath}`);
+            setupLog_1.typeshiLogger.info(`Trimmed file to last ${maxMB}MB: ${filePath}`);
         }
         catch (e) {
-            setupLog_1.mainLogger.error('Error trimming file to last 10MB', e);
+            setupLog_1.typeshiLogger.error('Error trimming file to last 10MB', e);
             throw e;
         }
     }
@@ -235,7 +235,7 @@ async function trimFile(maxMB = 5, ...filePaths) {
 function clearFileSync(...filePaths) {
     for (const filePath of filePaths) {
         if (!filePath || !(0, fs_1.existsSync)(filePath)) {
-            setupLog_1.mainLogger.warn(`clearFileSync() Log file does not exist: ${filePath}`);
+            setupLog_1.typeshiLogger.warn(`clearFileSync() Log file does not exist: ${filePath}`);
             continue;
         }
         try {
@@ -249,12 +249,12 @@ function clearFileSync(...filePaths) {
                         (0, fs_1.writeFileSync)(filePath, '', { encoding: 'utf-8', flag: 'w' });
                     }
                     catch (retryError) {
-                        setupLog_1.mainLogger.warn(`clearFileSync() Failed to clear file after retry: ${filePath}`, retryError);
+                        setupLog_1.typeshiLogger.warn(`clearFileSync() Failed to clear file after retry: ${filePath}`, retryError);
                     }
                 }, 50);
             }
             else {
-                setupLog_1.mainLogger.warn(`clearFileSync() Failed to clear file: ${filePath}`, error);
+                setupLog_1.typeshiLogger.warn(`clearFileSync() Failed to clear file: ${filePath}`, error);
             }
         }
     }
@@ -266,7 +266,7 @@ function clearFileSync(...filePaths) {
 async function clearFile(...filePaths) {
     const promises = filePaths.map(async (filePath) => {
         if (!filePath || !(0, fs_1.existsSync)(filePath)) {
-            setupLog_1.mainLogger.warn(`clearFile() Log file does not exist: ${filePath}`);
+            setupLog_1.typeshiLogger.warn(`clearFile() Log file does not exist: ${filePath}`);
             return;
         }
         return new Promise((resolve, reject) => {
@@ -280,7 +280,7 @@ async function clearFile(...filePaths) {
                         setTimeout(() => tryWrite(attempt + 1), 50 * attempt);
                     }
                     else {
-                        setupLog_1.mainLogger.warn(`clearFile() Failed to clear file: ${filePath}`, error);
+                        setupLog_1.typeshiLogger.warn(`clearFile() Failed to clear file: ${filePath}`, error);
                         resolve(); // Don't reject, just warn and continue
                     }
                 }
@@ -299,18 +299,18 @@ async function clearFile(...filePaths) {
  * @param outputPath `string` - path to the output CSV file.
  * @returns **`void`**
  */
-function writeRowsToCsv(rows, outputPath) {
+function writeRowsToCsvSync(rows, outputPath) {
     const source = `[writing.writeRowsToCsv()]`;
     validate.arrayArgument(source, { rows });
     validate.stringArgument(source, { outputPath });
     const delimiter = (0, reading_1.getDelimiterFromFilePath)(outputPath);
     const headers = Object.keys(rows[0] || {});
     if ((0, typeValidation_1.isEmptyArray)(headers)) {
-        setupLog_1.mainLogger.error(`${source} No headers found in rows, nothing to write.`, setupLog_1.INDENT_LOG_LINE + `Intended outputPath: '${outputPath}'`);
+        setupLog_1.typeshiLogger.error(`${source} No headers found in rows, nothing to write.`, setupLog_1.INDENT_LOG_LINE + `Intended outputPath: '${outputPath}'`);
         return;
     }
     if (rows.some(row => !(0, typeValidation_1.hasKeys)(row, headers))) {
-        setupLog_1.mainLogger.error([`${source} Some rows do not have all headers!`,
+        setupLog_1.typeshiLogger.error([`${source} Some rows do not have all headers!`,
             `headers: ${JSON.stringify(headers)}`,
             `Intended outputPath: '${outputPath}'`
         ].join(setupLog_1.INDENT_LOG_LINE));
@@ -319,10 +319,10 @@ function writeRowsToCsv(rows, outputPath) {
     const csvContent = [headers.join(delimiter)].concat(rows.map(row => headers.map(header => row[header] || '').join(delimiter))).join('\n');
     try {
         fs.writeFileSync(outputPath, csvContent, { encoding: 'utf-8' });
-        setupLog_1.mainLogger.info(`${source} file has been saved to '${outputPath}'`);
+        setupLog_1.typeshiLogger.info(`${source} file has been saved to '${outputPath}'`);
     }
     catch (e) {
-        setupLog_1.mainLogger.error('[writeRowsToCsv()] Error writing to CSV file', e);
+        setupLog_1.typeshiLogger.error('[writeRowsToCsv()] Error writing to CSV file', e);
         throw e;
     }
 }

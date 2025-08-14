@@ -1,7 +1,7 @@
 /**
  * @file src/utils/regex/stringOperations.ts
  */
-import { mainLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL} from "../../config";
+import { typeshiLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL} from "../../config";
 import { CleanStringOptions, StringCaseOptions, StringReplaceOptions } from ".";
 import { RegExpFlagsEnum, StringReplaceParams } from "./types/StringOptions";
 import { clean } from "./cleaning";

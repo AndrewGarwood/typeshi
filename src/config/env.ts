@@ -40,13 +40,13 @@ export const DELAY = async (ms: number, ...msg: any[]): Promise<void> => {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-const envSummary: {
-    pathLabel: string,
-    pathValue: string,
-    exists: boolean
-}[] = [];
-console.log(` > [@typeshi.env.ts] Loading env variables...`)
-for (let [pName, p] of Object.entries({NODE_HOME_DIR, SRC_DIR, DATA_DIR})) {
-    envSummary.push({pathLabel: pName, pathValue: p, exists: fs.existsSync(p)})
-}
-console.table(envSummary);
+// const envSummary: {
+//     pathLabel: string,
+//     pathValue: string,
+//     exists: boolean
+// }[] = [];
+// console.log(` > [@typeshi.env.ts] Loading env variables...`)
+// for (let [pName, p] of Object.entries({NODE_HOME_DIR, SRC_DIR, DATA_DIR})) {
+//     envSummary.push({pathLabel: pName, pathValue: p, exists: fs.existsSync(p)})
+// }
+// console.table(envSummary);

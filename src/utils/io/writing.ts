@@ -3,10 +3,10 @@
  */
 import * as fs from "fs";
 import { DELAY } from "../../config/env";
-import { mainLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL } from "../../config/setupLog";
+import { typeshiLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL } from "../../config/setupLog";
 import { coerceFileExtension, getDelimiterFromFilePath } from "./reading";
 import { DelimiterCharacterEnum, isWriteJsonOptions, WriteJsonOptions } from "./types";
-import { hasKeys, isEmptyArray, isNonEmptyString, TypeOfEnum, } from "../typeValidation";
+import { hasKeys, isEmptyArray, isNonEmptyString, } from "../typeValidation";
 import * as validate from "../argumentValidation";
 import { existsSync, writeFileSync } from "fs";
 
@@ -20,7 +20,7 @@ import { existsSync, writeFileSync } from "fs";
  * @param options.enableOverwrite `boolean` - `optional`, default=`true` If `enableOverwrite` is `true`, the file will be overwritten. If `false`, the `data` will be appended to the file.
  * @returns {void}
  */
-export function writeObjectToJson(options: WriteJsonOptions): void
+export function writeObjectToJsonSync(options: WriteJsonOptions): void
 
 /**
  * Output JSON data to a file with `fs.writeFileSync` or `fs.appendFileSync`.
@@ -31,14 +31,15 @@ export function writeObjectToJson(options: WriteJsonOptions): void
  * @param enableOverwrite `boolean` - `optional`, default=`true` If `enableOverwrite` is `true`, the file will be overwritten. If `false`, the `data` will be appended to the file.
  * @returns {void}
  */
-export function writeObjectToJson(
+export function writeObjectToJsonSync(
     data: Record<string, any> | string, 
     filePath: string,
     indent?: number,
     enableOverwrite?: boolean
 ): void
 
-export function writeObjectToJson(
+
+export function writeObjectToJsonSync(
     /** {@link WriteJsonOptions} `| Record<string, any> | string`, */
     arg1: WriteJsonOptions | Record<string, any> | string, 
     filePath?: string,
@@ -143,7 +144,7 @@ export function getFileNameTimestamp(): string {
  * @param delimiter `string` - optional, default=`'\t'`
  * @param columnDelimiter `string` - optional, default=`''`
  */
-export function writeListsToCsv(
+export function writeListsToCsvSync(
     listData: Record<string, Array<string>>,
     outputPath: string,
     delimiter: string = DelimiterCharacterEnum.TAB,
@@ -301,7 +302,7 @@ export async function clearFile(...filePaths: string[]): Promise<void> {
  * @param outputPath `string` - path to the output CSV file.
  * @returns **`void`**
  */
-export function writeRowsToCsv(
+export function writeRowsToCsvSync(
     rows: Record<string, any>[],
     outputPath: string,
 ): void {

@@ -11,7 +11,7 @@ import { RegExpFlagsEnum, StringCaseOptions, stringEndsWithAnyOf,
 } from "../regex";
 import { FileData, ParseOneToManyOptions,} from "./types/Io";
 import { 
-    mainLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL, SUPPRESSED_LOGS as SUP 
+    typeshiLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL, SUPPRESSED_LOGS as SUP 
 } from "../../config";
 import { DelimiterCharacterEnum, DelimitedFileTypeEnum, isFileData } from "./types";
 import { 

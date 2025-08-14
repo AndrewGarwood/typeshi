@@ -25,7 +25,7 @@ export declare const NEW_LINE: string;
  * });
  *
  * */
-export declare const mainLogger: Logger<ILogObj>;
+export declare const typeshiLogger: Logger<ILogObj>;
 /**
  * compress metadata into `logObj['-1']` then return stringified `logObj`
  * @param logObj {@link ILogObj}

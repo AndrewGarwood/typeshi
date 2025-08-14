@@ -114,7 +114,7 @@ const MAIN_LOGGER_SETTINGS: ISettingsParam<ILogObj> = {
  * });
  * 
  * */
-export const mainLogger = new Logger<ILogObj>(MAIN_LOGGER_SETTINGS);
+export const typeshiLogger = new Logger<ILogObj>(MAIN_LOGGER_SETTINGS);
 
 /**
  * compress metadata into `logObj['-1']` then return stringified `logObj`

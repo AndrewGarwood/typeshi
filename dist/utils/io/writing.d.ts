@@ -9,7 +9,7 @@ import { WriteJsonOptions } from "./types";
  * @param options.enableOverwrite `boolean` - `optional`, default=`true` If `enableOverwrite` is `true`, the file will be overwritten. If `false`, the `data` will be appended to the file.
  * @returns {void}
  */
-export declare function writeObjectToJson(options: WriteJsonOptions): void;
+export declare function writeObjectToJsonSync(options: WriteJsonOptions): void;
 /**
  * Output JSON data to a file with `fs.writeFileSync` or `fs.appendFileSync`.
  * @param data `Record<string, any> | string` - JSON data to write to file
@@ -19,7 +19,7 @@ export declare function writeObjectToJson(options: WriteJsonOptions): void;
  * @param enableOverwrite `boolean` - `optional`, default=`true` If `enableOverwrite` is `true`, the file will be overwritten. If `false`, the `data` will be appended to the file.
  * @returns {void}
  */
-export declare function writeObjectToJson(data: Record<string, any> | string, filePath: string, indent?: number, enableOverwrite?: boolean): void;
+export declare function writeObjectToJsonSync(data: Record<string, any> | string, filePath: string, indent?: number, enableOverwrite?: boolean): void;
 /**
  * @param data `Record<string, any> | string` - JSON data to stringify
  * @param indent `number` `optional`, default=`0` - number of additional indents to add to each line
@@ -37,7 +37,7 @@ export declare function getFileNameTimestamp(): string;
  * @param delimiter `string` - optional, default=`'\t'`
  * @param columnDelimiter `string` - optional, default=`''`
  */
-export declare function writeListsToCsv(listData: Record<string, Array<string>>, outputPath: string, delimiter?: string, columnDelimiter?: string): void;
+export declare function writeListsToCsvSync(listData: Record<string, Array<string>>, outputPath: string, delimiter?: string, columnDelimiter?: string): void;
 /**
  * @TODO consider if should allow other file extensions
  * @param maxMB - Maximum size in MB to keep in the file, default is `5` -> 5MB.
@@ -63,4 +63,4 @@ export declare function clearFile(...filePaths: string[]): Promise<void>;
  * @param outputPath `string` - path to the output CSV file.
  * @returns **`void`**
  */
-export declare function writeRowsToCsv(rows: Record<string, any>[], outputPath: string): void;
+export declare function writeRowsToCsvSync(rows: Record<string, any>[], outputPath: string): void;

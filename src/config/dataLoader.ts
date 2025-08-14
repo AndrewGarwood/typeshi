@@ -2,7 +2,7 @@
  * @file src/config/dataLoader.ts
  */
 import { STOP_RUNNING, DATA_DIR } from "./env";
-import { mainLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL, INFO_LOGS as INFO } from "./setupLog";
+import { typeshiLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL, INFO_LOGS as INFO } from "./setupLog";
 import { readJsonFileAsObject as read, validatePath } from "../utils/io/reading";
 import { isNonEmptyArray, hasKeys, isNonEmptyString, } from "../utils/typeValidation";
 import path from "node:path";

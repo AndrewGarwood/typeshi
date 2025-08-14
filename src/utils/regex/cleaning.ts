@@ -1,7 +1,7 @@
 /**
  * @file src/utils/regex/cleaning.ts
  */
-import { mainLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL } from "../../config";
+import { typeshiLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL } from "../../config";
 import { isNonEmptyArray } from "../typeValidation";
 import { 
     CleanStringOptions, isCleanStringOptions, StringCaseOptions, 

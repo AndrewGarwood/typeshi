@@ -91,7 +91,7 @@ function formatDebugLogFile(inputFilePath, outputFilePath) {
         // mlog.info(`[formatDebugLogFile()] Formatted log file saved to '${outputFilePath}'`);
     }
     catch (error) {
-        setupLog_1.mainLogger.error('[formatDebugLogFile()] Error formatting log file:', error);
+        setupLog_1.typeshiLogger.error('[formatDebugLogFile()] Error formatting log file:', error);
         throw error;
     }
 }
@@ -203,14 +203,14 @@ function unescapeString(s) {
 function formatAllDebugLogs(logDirectory) {
     let logDir = logDirectory;
     if (!fs.existsSync(logDir)) {
-        setupLog_1.mainLogger.warn(`[formatAllDebugLogs()] Log directory does not exist: ${logDir}`);
+        setupLog_1.typeshiLogger.warn(`[formatAllDebugLogs()] Log directory does not exist: ${logDir}`);
         return;
     }
     try {
         const files = fs.readdirSync(logDir);
         const txtFiles = files.filter(file => file.endsWith('.txt') && !file.includes('.FORMATTED.'));
         if (txtFiles.length === 0) {
-            setupLog_1.mainLogger.warn(`[formatAllDebugLogs()] No .txt log files found in ${logDir}`);
+            setupLog_1.typeshiLogger.warn(`[formatAllDebugLogs()] No .txt log files found in ${logDir}`);
             return;
         }
         for (const txtFile of txtFiles) {
@@ -220,12 +220,12 @@ function formatAllDebugLogs(logDirectory) {
                 // mlog.info(`[formatAllDebugLogs()] Formatted: ${txtFile}`);
             }
             catch (error) {
-                setupLog_1.mainLogger.error(`[formatAllDebugLogs()] Failed to format ${txtFile}:`, error);
+                setupLog_1.typeshiLogger.error(`[formatAllDebugLogs()] Failed to format ${txtFile}:`, error);
             }
         }
     }
     catch (error) {
-        setupLog_1.mainLogger.error('[formatAllDebugLogs()] Error reading log directory:', error);
+        setupLog_1.typeshiLogger.error('[formatAllDebugLogs()] Error reading log directory:', error);
         throw error;
     }
 }
