@@ -16,6 +16,8 @@ exports.areEquivalentObjects = areEquivalentObjects;
 exports.isNumericString = isNumericString;
 exports.isNonEmptyString = isNonEmptyString;
 exports.isPrimitiveValue = isPrimitiveValue;
+exports.isInteger = isInteger;
+exports.isObject = isObject;
 const index_1 = require("./regex/index");
 /**
  * @param value `any` the value to check
@@ -80,12 +82,10 @@ function isEmptyArray(value) {
  * - **`true`** if `value` is an array with `length > 0` and each of its elements is an `integer`
  * - **`false`** `otherwise`
  */
-function isIntegerArray(value) {
+function isIntegerArray(value, requireNonNegative = false) {
     return (value
         && isNonEmptyArray(value)
-        && value.every(arrElement => typeof arrElement === 'number'
-            && Number.isInteger(arrElement)
-            && arrElement >= 0));
+        && value.every(arrElement => isInteger(arrElement, requireNonNegative)));
 }
 /**
  * @param value `any`
@@ -217,6 +217,15 @@ function isPrimitiveValue(value) {
         return true; // string, number, and boolean are primitive types
     }
     return false;
+}
+function isInteger(value, requireNonNegative = false) {
+    return (typeof value === 'number'
+        && Number.isInteger(value)
+        && (requireNonNegative ? value >= 0 : true));
+}
+function isObject(value, allowEmpty = true) {
+    return (value && typeof value === 'object'
+        && (allowEmpty || Object.keys(value).length > 0));
 }
 /**
  * @TODO deprecate and remove this

@@ -52,6 +52,10 @@ exports.existingPathArgument = existingPathArgument;
  * @description moved the content of parameter type checks at the start of
  * functions to here. use these when you want your function to throw a fit when
  * it receives bad input.
+ * @TODO add boolean value configurable by a setter function that specifies if errors should be thrown or only logged
+ * - maybe add a configurable value that the validation functions should return if the validation test fails
+ * - change the validation functions such that they return the validated value, if possible?
+ * - or maybe have them return boolean type predicates ?
  */
 const typeValidation_1 = require("./typeValidation");
 const setupLog_1 = require("../config/setupLog");

@@ -42,7 +42,7 @@ export declare function isEmptyArray(value: any): value is Array<any> & {
  * - **`true`** if `value` is an array with `length > 0` and each of its elements is an `integer`
  * - **`false`** `otherwise`
  */
-export declare function isIntegerArray(value: any): value is Array<number> & {
+export declare function isIntegerArray(value: any, requireNonNegative?: boolean): value is Array<number> & {
     length: number;
 };
 /**
@@ -99,6 +99,8 @@ export declare function isNonEmptyString(value: any): value is string & {
     length: number;
 };
 export declare function isPrimitiveValue(value: any): value is string | number | boolean | null | undefined;
+export declare function isInteger(value: any, requireNonNegative?: boolean): value is number;
+export declare function isObject(value: any, allowEmpty?: boolean): value is object | Record<string, any>;
 /**
  * @TODO deprecate and remove this
  * @enum {string} **`TypeOfEnum`**

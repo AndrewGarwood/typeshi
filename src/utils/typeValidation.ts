@@ -74,16 +74,15 @@ export function isEmptyArray(value: any): value is Array<any> & { length: 0 } {
  * - **`false`** `otherwise`
  */
 export function isIntegerArray(
-    value: any
+    value: any, 
+    requireNonNegative: boolean = false
 ): value is Array<number> & { length: number } {
     return (value 
         && isNonEmptyArray(value) 
-        && value.every(arrElement => 
-            typeof arrElement === 'number'
-            && Number.isInteger(arrElement)
-            && arrElement >= 0
+        && value.every(arrElement => isInteger(arrElement, requireNonNegative)
     ))
 }
+
 
 /**
  * @param value `any`
@@ -237,6 +236,19 @@ export function isPrimitiveValue(
         return true; // string, number, and boolean are primitive types
     }
     return false;
+}
+
+export function isInteger(value: any, requireNonNegative: boolean = false): value is number {
+    return (typeof value === 'number' 
+        && Number.isInteger(value)
+        && (requireNonNegative ? value >= 0 : true)
+    );
+}
+
+export function isObject(value: any, allowEmpty: boolean = true): value is object | Record<string, any> {
+    return (value && typeof value === 'object'
+        && (allowEmpty || Object.keys(value).length > 0)
+    )
 }
 
 /**
