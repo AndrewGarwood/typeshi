@@ -88,14 +88,15 @@ function isIntegerArray(value, requireNonNegative = false) {
         && value.every(arrElement => isInteger(arrElement, requireNonNegative)));
 }
 /**
+ * @consideration add param to allow for empty strings?
  * @param value `any`
  * @returns **`isStringArray`** `boolean` = `value is Array<string> & { length: number }`
- * - **`true`** if `value` is an array with `length > 0` and each of its elements is a `string`
+ * - **`true`** if `value` is an array with `length > 0` and each of its elements is a **non-empty** `string`
  * - **`false`** `otherwise`
  */
 function isStringArray(value) {
     return (isNonEmptyArray(value)
-        && value.every(arrElement => typeof arrElement === 'string'));
+        && value.every(el => isNonEmptyString(el)));
 }
 /**
  * @TODO add param that indicates whether all values must be nontrivial or not
@@ -232,6 +233,7 @@ function isInteger(value, requireNonNegative = false) {
 }
 /**
  * - determines if `value` is a **non-array object**
+ * - kind of redundant with {@link hasNonTrivialKeys}
  * @param value `any`
  * @param allowEmpty `boolean` `default = true`
  * - `if` `true` then `value` is allowed to be an empty non-array object

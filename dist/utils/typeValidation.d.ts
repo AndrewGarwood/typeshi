@@ -46,9 +46,10 @@ export declare function isIntegerArray(value: any, requireNonNegative?: boolean)
     length: number;
 };
 /**
+ * @consideration add param to allow for empty strings?
  * @param value `any`
  * @returns **`isStringArray`** `boolean` = `value is Array<string> & { length: number }`
- * - **`true`** if `value` is an array with `length > 0` and each of its elements is a `string`
+ * - **`true`** if `value` is an array with `length > 0` and each of its elements is a **non-empty** `string`
  * - **`false`** `otherwise`
  */
 export declare function isStringArray(value: any): value is Array<string> & {
@@ -109,6 +110,7 @@ export declare function isPrimitiveValue(value: any): value is string | number |
 export declare function isInteger(value: any, requireNonNegative?: boolean): value is number;
 /**
  * - determines if `value` is a **non-array object**
+ * - kind of redundant with {@link hasNonTrivialKeys}
  * @param value `any`
  * @param allowEmpty `boolean` `default = true`
  * - `if` `true` then `value` is allowed to be an empty non-array object
