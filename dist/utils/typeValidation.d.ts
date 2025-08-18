@@ -99,8 +99,23 @@ export declare function isNonEmptyString(value: any): value is string & {
     length: number;
 };
 export declare function isPrimitiveValue(value: any): value is string | number | boolean | null | undefined;
+/**
+ * @param value `any`
+ * @param requireNonNegative `boolean`
+ * - `if` `true` then require that `value` be an integer `>= 0`
+ * - `if` `false` then the sign of the number doesn't matter
+ * @returns **`isInteger`** `boolean`
+ */
 export declare function isInteger(value: any, requireNonNegative?: boolean): value is number;
-export declare function isObject(value: any, allowEmpty?: boolean): value is object | Record<string, any>;
+/**
+ * - determines if `value` is a **non-array object**
+ * @param value `any`
+ * @param allowEmpty `boolean` `default = true`
+ * - `if` `true` then `value` is allowed to be an empty non-array object
+ * - `if` `false` then `value` must have at least 1 key
+ * @returns **`isObject`** `boolean`
+ */
+export declare function isObject(value: any, allowEmpty?: boolean): Record<string, any>;
 /**
  * @TODO deprecate and remove this
  * @enum {string} **`TypeOfEnum`**

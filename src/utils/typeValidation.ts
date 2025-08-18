@@ -238,6 +238,13 @@ export function isPrimitiveValue(
     return false;
 }
 
+/**
+ * @param value `any` 
+ * @param requireNonNegative `boolean`
+ * - `if` `true` then require that `value` be an integer `>= 0`
+ * - `if` `false` then the sign of the number doesn't matter
+ * @returns **`isInteger`** `boolean`
+ */
 export function isInteger(value: any, requireNonNegative: boolean = false): value is number {
     return (typeof value === 'number' 
         && Number.isInteger(value)
@@ -245,10 +252,19 @@ export function isInteger(value: any, requireNonNegative: boolean = false): valu
     );
 }
 
-export function isObject(value: any, allowEmpty: boolean = true): value is object | Record<string, any> {
+/**
+ * - determines if `value` is a **non-array object**
+ * @param value `any` 
+ * @param allowEmpty `boolean` `default = true`
+ * - `if` `true` then `value` is allowed to be an empty non-array object
+ * - `if` `false` then `value` must have at least 1 key
+ * @returns **`isObject`** `boolean`
+ */
+export function isObject(value: any, allowEmpty: boolean = true): Record<string, any> {
     return (value && typeof value === 'object'
+        && !Array.isArray(value)
         && (allowEmpty || Object.keys(value).length > 0)
-    )
+    );
 }
 
 /**

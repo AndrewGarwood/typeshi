@@ -218,13 +218,29 @@ function isPrimitiveValue(value) {
     }
     return false;
 }
+/**
+ * @param value `any`
+ * @param requireNonNegative `boolean`
+ * - `if` `true` then require that `value` be an integer `>= 0`
+ * - `if` `false` then the sign of the number doesn't matter
+ * @returns **`isInteger`** `boolean`
+ */
 function isInteger(value, requireNonNegative = false) {
     return (typeof value === 'number'
         && Number.isInteger(value)
         && (requireNonNegative ? value >= 0 : true));
 }
+/**
+ * - determines if `value` is a **non-array object**
+ * @param value `any`
+ * @param allowEmpty `boolean` `default = true`
+ * - `if` `true` then `value` is allowed to be an empty non-array object
+ * - `if` `false` then `value` must have at least 1 key
+ * @returns **`isObject`** `boolean`
+ */
 function isObject(value, allowEmpty = true) {
     return (value && typeof value === 'object'
+        && !Array.isArray(value)
         && (allowEmpty || Object.keys(value).length > 0));
 }
 /**
