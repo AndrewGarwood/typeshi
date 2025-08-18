@@ -147,13 +147,12 @@ function hasKeys(obj, keys, requireAll = true, restrictKeys = false) {
     for (const key of keys) {
         if (key in obj) {
             numKeysFound++;
-            if (!requireAll) {
-                return true; // If requireAll is false, we can return early if any key is found
+            if (!requireAll && !restrictKeys) {
+                return true;
             }
         }
-        else if (requireAll) {
+        else if (requireAll) { // and a key is not found
             return false;
-            // If requireAll is true and a key is not found, return false
         }
     }
     if (restrictKeys) {
