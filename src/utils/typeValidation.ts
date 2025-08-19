@@ -247,17 +247,22 @@ export function isInteger(value: any, requireNonNegative: boolean = false): valu
 }
 
 /**
- * - determines if `value` is a **non-array object** 
- * - kind of redundant with {@link hasNonTrivialKeys}
  * @param value `any` 
  * @param allowEmpty `boolean` `default = true`
- * - `if` `true` then `value` is allowed to be an empty non-array object
+ * - `if` `true` then `value` is allowed to be an empty object
  * - `if` `false` then `value` must have at least 1 key
- * @returns **`isObject`** `boolean`
+ * @param allowArray `boolean` `default = false`
+ * - `if` `true` then `value` is allowed to be an array
+ * - `if` `false` then `value` must not be an array
+ * @returns **`isObject`** `boolean` `value is Record<string, any>`
  */
-export function isObject(value: any, allowEmpty: boolean = true): Record<string, any> {
+export function isObject(
+    value: any, 
+    allowEmpty: boolean = true,
+    allowArray: boolean = false
+): value is Record<string, any> {
     return (value && typeof value === 'object'
-        && !Array.isArray(value)
+        && (allowArray || !Array.isArray(value))
         && (allowEmpty || Object.keys(value).length > 0)
     );
 }

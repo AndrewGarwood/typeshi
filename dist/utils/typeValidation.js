@@ -228,17 +228,18 @@ function isInteger(value, requireNonNegative = false) {
         && (requireNonNegative ? value >= 0 : true));
 }
 /**
- * - determines if `value` is a **non-array object**
- * - kind of redundant with {@link hasNonTrivialKeys}
  * @param value `any`
  * @param allowEmpty `boolean` `default = true`
- * - `if` `true` then `value` is allowed to be an empty non-array object
+ * - `if` `true` then `value` is allowed to be an empty object
  * - `if` `false` then `value` must have at least 1 key
- * @returns **`isObject`** `boolean`
+ * @param allowArray `boolean` `default = false`
+ * - `if` `true` then `value` is allowed to be an array
+ * - `if` `false` then `value` must not be an array
+ * @returns **`isObject`** `boolean` `value is Record<string, any>`
  */
-function isObject(value, allowEmpty = true) {
+function isObject(value, allowEmpty = true, allowArray = false) {
     return (value && typeof value === 'object'
-        && !Array.isArray(value)
+        && (allowArray || !Array.isArray(value))
         && (allowEmpty || Object.keys(value).length > 0));
 }
 /**

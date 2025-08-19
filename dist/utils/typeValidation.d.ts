@@ -109,15 +109,16 @@ export declare function isPrimitiveValue(value: any): value is string | number |
  */
 export declare function isInteger(value: any, requireNonNegative?: boolean): value is number;
 /**
- * - determines if `value` is a **non-array object**
- * - kind of redundant with {@link hasNonTrivialKeys}
  * @param value `any`
  * @param allowEmpty `boolean` `default = true`
- * - `if` `true` then `value` is allowed to be an empty non-array object
+ * - `if` `true` then `value` is allowed to be an empty object
  * - `if` `false` then `value` must have at least 1 key
- * @returns **`isObject`** `boolean`
+ * @param allowArray `boolean` `default = false`
+ * - `if` `true` then `value` is allowed to be an array
+ * - `if` `false` then `value` must not be an array
+ * @returns **`isObject`** `boolean` `value is Record<string, any>`
  */
-export declare function isObject(value: any, allowEmpty?: boolean): Record<string, any>;
+export declare function isObject(value: any, allowEmpty?: boolean, allowArray?: boolean): value is Record<string, any>;
 /**
  * @TODO deprecate and remove this
  * @enum {string} **`TypeOfEnum`**
