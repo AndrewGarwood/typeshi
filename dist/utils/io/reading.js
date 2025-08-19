@@ -836,14 +836,13 @@ async function getOneToOneDictionary(arg1, keyColumn, valueColumn) {
 /*
 */
 /**
- * @TODO add CleanStringOptions param to apply to column values
  * @param arg1 `string | Record<string, any>[]` - the `filePath` to a CSV file or an array of rows.
  * @param columnName `string` - the column name whose values will be returned.
  * @param allowDuplicates `boolean` - `optional` if `true`, allows duplicate values in the returned array, otherwise only unique values are returned.
  * - Defaults to `false`.
  * @returns **`values`** `Promise<Array<string>>` - sorted array of values (as strings) from the specified column.
  */
-async function getColumnValues(arg1, columnName, allowDuplicates = false, cleaner) {
+async function getColumnValues(arg1, columnName, cleaner, allowDuplicates = false) {
     const source = `[reading.getColumnValues()]`;
     validate.stringArgument(source, { columnName });
     validate.booleanArgument(source, { allowDuplicates });
