@@ -719,10 +719,10 @@ export async function concatenateFiles(
                     throw new Error(message);
                 }
                 for (const header of missingHeaders) {
-                    row[header] = '';
+                    (row as Record<string, any>)[header] = '';
                 }
             }
-            concatenatedRows.push(row);
+            concatenatedRows.push(row as Record<string, any>);
         }
     }
     return concatenatedRows;

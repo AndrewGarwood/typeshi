@@ -100,32 +100,27 @@ export function isStringArray(
 }
 
 /**
- * @TODO add param that indicates whether all values must be nontrivial or not
- * @description Check if an `object` has at least 1 key with value that is non-empty (not `undefined`, `null`, or empty string). 
  * @note **passing in an array will return `false`.**
- * @param obj - The object to check.
- * @returns **`true`** if the object has any non-empty keys, **`false`** otherwise.
+ * @note a value is considered trivial if {@link isNullLike}`(value)` returns `true` and vice versa
+ * @param obj `any` The object to check.
+ * @param requireAll `boolean` - flag indicating whether all values must be nontrivial or not
+ * @returns **`hasNonTrivialKeys`** `boolean`
+ * - **`true`** `if` the `obj` has non-empty keys, 
+ * - **`false`** `otherwise`
  */
 export function hasNonTrivialKeys(
-    obj: any
-): obj is Record<string, any> 
-| { [key: string]: any } 
-// | { [key: string]: FieldValue } 
-{
-    if (typeof obj !== 'object' || !obj || Array.isArray(obj)) {
-        return false;
-    }
-    const hasKeyWithNonTrivialValue = Object.values(obj).some(value => {
-        return value !== undefined && value !== null &&
-            (value !== '' || isNonEmptyArray(value) 
-            || (isNonEmptyArray(Object.entries(value)))
-        );
-    });
-    return hasKeyWithNonTrivialValue;
+    obj: any,
+    requireAll: boolean = false
+): obj is Record<string, any> {
+    if (!isObject(obj)) { return false }
+    return (requireAll 
+        ? Object.values(obj).every(v=>!isNullLike(v)) 
+        : Object.values(obj).some(v=>!isNullLike(v))
+    );
 }
 /**
  * @TODO add overload on param `keys` where keys = `{ required: string[], optional: string[] }`
- * @note maybe redundant with the syntax `key in obj` ? but able to check more than one
+ * @note uses `key in obj` for each element of param `keys`
  * @param obj `T extends Object` the object to check
  * @param keys `Array<keyof T> | string[] | string` the list of keys that obj must have
  * @param requireAll `boolean` defaults to `true` 
@@ -143,17 +138,16 @@ export function hasKeys<T extends object>(
     keys: Array<keyof T> | string[] | string, 
     requireAll: boolean = true,
     restrictKeys: boolean = false
-): boolean {
+): boolean { // obj is object & Record<keyof T | string, any>
     if (!obj || typeof obj !== 'object') {
         return false;
     }
-    if (typeof keys === 'string') {
+    if (keys === null || keys === undefined) {
+        throw new Error('[hasKeys()] no keys provided: param `keys` must be defined');
+    }
+    if (!isNonEmptyArray(keys)) {
         keys = [keys] as Array<keyof T>; // Convert string (assumed to be single key) to array of keys
     }
-    if (!keys || isEmptyArray(keys)) {
-        throw new Error('[hasKeys()] no keys provided: param `keys` must be an array with at least one key');
-    }
-    if (keys.length === 0) return false;
     let numKeysFound = 0;
     for (const key of keys) {
         if (key in obj) {
