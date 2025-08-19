@@ -153,7 +153,7 @@ export declare function getOneToOneDictionary(arg1: string | Record<string, any>
  * - Defaults to `false`.
  * @returns **`values`** `Promise<Array<string>>` - sorted array of values (as strings) from the specified column.
  */
-export declare function getColumnValues(arg1: string | FileData | Record<string, any>[], columnName: string, allowDuplicates?: boolean): Promise<Array<string>>;
+export declare function getColumnValues(arg1: string | FileData | Record<string, any>[], columnName: string, allowDuplicates?: boolean, cleaner?: (s: string) => string | Promise<string>): Promise<Array<string>>;
 /**
  * @param arg1 `string | Record<string, any>[]` - the `filePath` to a CSV file or an array of rows.
  * @param columnName `string` - the column name whose values will be returned.

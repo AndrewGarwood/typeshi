@@ -843,15 +843,20 @@ async function getOneToOneDictionary(arg1, keyColumn, valueColumn) {
  * - Defaults to `false`.
  * @returns **`values`** `Promise<Array<string>>` - sorted array of values (as strings) from the specified column.
  */
-async function getColumnValues(arg1, columnName, allowDuplicates = false) {
-    validate.stringArgument(`reading.getColumnValues`, { columnName });
-    validate.booleanArgument(`reading.getColumnValues`, { allowDuplicates });
+async function getColumnValues(arg1, columnName, allowDuplicates = false, cleaner) {
+    const source = `[reading.getColumnValues()]`;
+    validate.stringArgument(source, { columnName });
+    validate.booleanArgument(source, { allowDuplicates });
+    if (cleaner)
+        validate.functionArgument(source, { cleaner });
     let rows = await handleFileArgument(arg1, getColumnValues.name, [columnName]);
     const values = [];
     for (const row of rows) {
         if (!(0, typeValidation_1.isNonEmptyString)(String(row[columnName])))
             continue;
-        const value = String(row[columnName]).trim();
+        const value = (cleaner
+            ? await cleaner(String(row[columnName]))
+            : String(row[columnName])).trim();
         if (allowDuplicates || !values.includes(value)) {
             values.push(value);
         }

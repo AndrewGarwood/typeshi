@@ -927,17 +927,23 @@ export async function getOneToOneDictionary(
 export async function getColumnValues(
     arg1: string | FileData | Record<string, any>[],
     columnName: string,
-    allowDuplicates: boolean = false
+    allowDuplicates: boolean = false,
+    cleaner?: (s: string) => string | Promise<string>
 ): Promise<Array<string>> {
-    validate.stringArgument(`reading.getColumnValues`, {columnName});
-    validate.booleanArgument(`reading.getColumnValues`, {allowDuplicates});
+    const source = `[reading.getColumnValues()]`;
+    validate.stringArgument(source, {columnName});
+    validate.booleanArgument(source, {allowDuplicates});
+    if (cleaner) validate.functionArgument(source, {cleaner})
     let rows: Record<string, any>[] = await handleFileArgument(
         arg1, getColumnValues.name, [columnName]
     );
     const values: Array<string> = [];
     for (const row of rows) {
         if (!isNonEmptyString(String(row[columnName]))) continue;
-        const value = String(row[columnName]).trim();
+        const value = (cleaner 
+            ? await cleaner(String(row[columnName])) 
+            : String(row[columnName])
+        ).trim();
         if (allowDuplicates || !values.includes(value)) {
             values.push(value);
         }
@@ -955,7 +961,7 @@ export async function getIndexedColumnValues(
     columnName: string,
     cleaner?: (s: string) => string | Promise<string>
 ): Promise<Record<string, number[]>> {
-    const source = `[reading.getIndexedColumnValues()]`
+    const source = `[reading.getIndexedColumnValues()]`;
     validate.stringArgument(source, {columnName});
     if (cleaner) validate.functionArgument(source, {cleaner})
     let rows: Record<string, any>[] = await handleFileArgument(
