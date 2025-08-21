@@ -15,7 +15,8 @@ const node_path_1 = __importDefault(require("node:path"));
  * `extractFileNameFromPath`
  * essentially a wrapper for path.basename() for short-hand convenience
  * @param filePath `string` e.g. pass in the node module variable  `__filename`
- * @param removeExtension `boolean`
+ * @param removeExtension `boolean` `optional, default = true` - flag indicating
+ * whether or not to remove the file extension from the fileName
  * @returns **`fileName`** `string`
  */
 function extractFileName(filePath, removeExtension = true) {
