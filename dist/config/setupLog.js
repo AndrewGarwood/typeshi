@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DEBUG_LOGS = exports.INFO_LOGS = exports.SUPPRESSED_LOGS = exports.typeshiLogger = exports.NEW_LINE = exports.INDENT_LOG_LINE = void 0;
+exports.DEBUG_LOGS = exports.INFO_LOGS = exports.SUPPRESSED_LOGS = exports.typeshiSimpleLogger = exports.typeshiLogger = exports.NEW_LINE = exports.INDENT_LOG_LINE = void 0;
 exports.formatLogObj = formatLogObj;
 /**
  * @file src/config/setupLog.ts
@@ -81,7 +81,7 @@ const PRETTY_LOG_STYLES = {
     nameWithDelimiterPrefix: ["whiteBright", "bold", "bgBlackBright"],
     nameWithDelimiterSuffix: ["whiteBright", "bold", "bgBlack"],
     errorName: ["red", "bold"],
-    errorMessage: ["red", "bgBlackBright"],
+    errorMessage: "redBright",
 };
 const MAIN_LOGGER_SETTINGS = {
     type: "pretty",
@@ -108,6 +108,20 @@ const MAIN_LOGGER_SETTINGS = {
  *
  * */
 exports.typeshiLogger = new tslog_1.Logger(MAIN_LOGGER_SETTINGS);
+const SIMPLE_LOG_TEMPLATE = ` > `;
+/** `type: "pretty"`, `template` = `" > {{logObjMeta}}"` */
+const SIMPLE_LOGGER_SETTINGS = {
+    type: "pretty",
+    name: "typeshi_simple",
+    minLevel: 0,
+    prettyLogTemplate: SIMPLE_LOG_TEMPLATE,
+    prettyErrorTemplate: ERROR_TEMPLATE,
+    prettyErrorStackTemplate: ERROR_STACK_TEMPLATE,
+    stylePrettyLogs: true,
+    prettyLogTimeZone: "local",
+    prettyLogStyles: PRETTY_LOG_STYLES,
+};
+exports.typeshiSimpleLogger = new tslog_1.Logger(SIMPLE_LOGGER_SETTINGS);
 /**
  * compress metadata into `logObj['-1']` then return stringified `logObj`
  * @param logObj {@link ILogObj}

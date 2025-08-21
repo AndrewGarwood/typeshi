@@ -60,33 +60,33 @@ const ERROR_TEMPLATE = `${errorInfoTemplate}`; //`${timestampTemplate} ${logName
 const ERROR_STACK_TEMPLATE = `${fileInfoTemplate}:{{method}} {{stack}}`;
 
 const PRETTY_LOG_STYLES: IPrettyLogStyles = {
-        yyyy: "green",
-        mm: "green",
-        dd: "green",
-        hh: "greenBright",
-        MM: "greenBright",
-        ss: "greenBright",
-        ms: "greenBright",
-        dateIsoStr: ["redBright", "italic"], //dateIsoStr is = Shortcut for {{yyyy}}.{{mm}}.{{dd}} {{hh}}:{{MM}}:{{ss}}:{{ms}}
-        logLevelName:  {
-            "*": ["bold", "black", "bgWhiteBright", "dim"],
-            SILLY: ["bold", "white"],
-            TRACE: ["bold", "whiteBright"],
-            DEBUG: ["bold", "green"],
-            INFO: ["bold", "cyan"],
-            WARN: ["bold", "yellow"],
-            ERROR: ["bold", "red"],
-            FATAL: ["bold", "redBright"],
-        },
-        fileName: "cyan",
-        filePath: "blue",
-        fileLine: ["cyanBright", "bold"],
-        filePathWithLine: ["blueBright", "italic"],
-        name: "blue",
-        nameWithDelimiterPrefix: ["whiteBright", "bold", "bgBlackBright"],
-        nameWithDelimiterSuffix: ["whiteBright", "bold", "bgBlack"],
-        errorName: ["red", "bold"],
-        errorMessage: ["red", "bgBlackBright"],
+    yyyy: "green",
+    mm: "green",
+    dd: "green",
+    hh: "greenBright",
+    MM: "greenBright",
+    ss: "greenBright",
+    ms: "greenBright",
+    dateIsoStr: ["redBright", "italic"], //dateIsoStr is = Shortcut for {{yyyy}}.{{mm}}.{{dd}} {{hh}}:{{MM}}:{{ss}}:{{ms}}
+    logLevelName:  {
+        "*": ["bold", "black", "bgWhiteBright", "dim"],
+        SILLY: ["bold", "white"],
+        TRACE: ["bold", "whiteBright"],
+        DEBUG: ["bold", "green"],
+        INFO: ["bold", "cyan"],
+        WARN: ["bold", "yellow"],
+        ERROR: ["bold", "red"],
+        FATAL: ["bold", "redBright"],
+    },
+    fileName: "cyan",
+    filePath: "blue",
+    fileLine: ["cyanBright", "bold"],
+    filePathWithLine: ["blueBright", "italic"],
+    name: "blue",
+    nameWithDelimiterPrefix: ["whiteBright", "bold", "bgBlackBright"],
+    nameWithDelimiterSuffix: ["whiteBright", "bold", "bgBlack"],
+    errorName: ["red", "bold"],
+    errorMessage: "redBright",
 };   
 
 const MAIN_LOGGER_SETTINGS: ISettingsParam<ILogObj> = {
@@ -116,6 +116,20 @@ const MAIN_LOGGER_SETTINGS: ISettingsParam<ILogObj> = {
  * */
 export const typeshiLogger = new Logger<ILogObj>(MAIN_LOGGER_SETTINGS);
 
+const SIMPLE_LOG_TEMPLATE = ` > `
+/** `type: "pretty"`, `template` = `" > {{logObjMeta}}"` */
+const SIMPLE_LOGGER_SETTINGS: ISettingsParam<ILogObj> = {
+    type: "pretty",
+    name: "typeshi_simple",
+    minLevel: 0,
+    prettyLogTemplate: SIMPLE_LOG_TEMPLATE,
+    prettyErrorTemplate: ERROR_TEMPLATE,
+    prettyErrorStackTemplate: ERROR_STACK_TEMPLATE,
+    stylePrettyLogs: true,
+    prettyLogTimeZone: "local",
+    prettyLogStyles: PRETTY_LOG_STYLES,
+}
+export const typeshiSimpleLogger = new Logger<ILogObj>(SIMPLE_LOGGER_SETTINGS);
 /**
  * compress metadata into `logObj['-1']` then return stringified `logObj`
  * @param logObj {@link ILogObj}

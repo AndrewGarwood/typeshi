@@ -2,6 +2,28 @@
  * @file src/utils/regex/misc.ts
  */
 
+import { isNonEmptyString } from "../typeValidation";
+import path from "node:path";
+
+/**
+ * `extractFileNameFromPath` 
+ * essentially a wrapper for path.basename() for short-hand convenience
+ * @param filePath `string` e.g. pass in the node module variable  `__filename`
+ * @param removeExtension `boolean`
+ * @returns **`fileName`** `string`
+ */
+export function extractFileName(
+    filePath: string, 
+    removeExtension: boolean = true
+): string {
+    if (!isNonEmptyString(filePath)) { return 'undefined' }
+    let fileName = path.basename(filePath)
+    if (removeExtension) {
+        fileName = fileName.replace(/(?<=.+)\.[a-z]{1,}$/i, '');
+    }
+    return fileName;
+}
+
 /**
  * = `= /^[^/\\:*?"<>|]+(\.[^/\\:*?"<>|]+)$/`
  */

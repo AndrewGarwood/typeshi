@@ -2,9 +2,32 @@
 /**
  * @file src/utils/regex/misc.ts
  */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.KOREA_ADDRESS_LATIN_TEXT_PATTERN = exports.DATE_STRING_PATTERN = exports.FILE_NAME_WITH_EXTENSION_PATTERN = void 0;
+exports.extractFileName = extractFileName;
 exports.extractLeaf = extractLeaf;
+const typeValidation_1 = require("../typeValidation");
+const node_path_1 = __importDefault(require("node:path"));
+/**
+ * `extractFileNameFromPath`
+ * essentially a wrapper for path.basename() for short-hand convenience
+ * @param filePath `string` e.g. pass in the node module variable  `__filename`
+ * @param removeExtension `boolean`
+ * @returns **`fileName`** `string`
+ */
+function extractFileName(filePath, removeExtension = true) {
+    if (!(0, typeValidation_1.isNonEmptyString)(filePath)) {
+        return 'undefined';
+    }
+    let fileName = node_path_1.default.basename(filePath);
+    if (removeExtension) {
+        fileName = fileName.replace(/(?<=.+)\.[a-z]{1,}$/i, '');
+    }
+    return fileName;
+}
 /**
  * = `= /^[^/\\:*?"<>|]+(\.[^/\\:*?"<>|]+)$/`
  */

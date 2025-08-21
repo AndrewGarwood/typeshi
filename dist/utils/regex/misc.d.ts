@@ -2,6 +2,14 @@
  * @file src/utils/regex/misc.ts
  */
 /**
+ * `extractFileNameFromPath`
+ * essentially a wrapper for path.basename() for short-hand convenience
+ * @param filePath `string` e.g. pass in the node module variable  `__filename`
+ * @param removeExtension `boolean`
+ * @returns **`fileName`** `string`
+ */
+export declare function extractFileName(filePath: string, removeExtension?: boolean): string;
+/**
  * = `= /^[^/\\:*?"<>|]+(\.[^/\\:*?"<>|]+)$/`
  */
 export declare const FILE_NAME_WITH_EXTENSION_PATTERN: RegExp;
