@@ -11,7 +11,8 @@
 import { 
     isNonEmptyString, isNonEmptyArray, isNullLike, hasKeys, isEmptyArray, 
     TypeOfEnum, 
-    isNumericString
+    isNumericString,
+    isObject
 } from "./typeValidation";
 import { 
     typeshiLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL 
@@ -41,7 +42,7 @@ export function stringArgument(
 ): void {
     const vSource = `[argumentValidation.stringArgument()]`
     let label: string = '';
-    if (arg2 && typeof arg2 === 'object') {
+    if (isObject(arg2)) {
         const keys = Object.keys(arg2);
         if (keys.length !== 1) {
             let msg = [`${vSource} Invalid 'arg2' as labeledString`,
@@ -89,13 +90,20 @@ export function multipleExistingFileArguments(
     }
 }
 
-function isDirectory(pathString: string): boolean {
-    return fs.existsSync(pathString) && fs.statSync(pathString).isDirectory();
+function isDirectory(value: any): boolean {
+    return (isNonEmptyString(value) 
+        && fs.existsSync(value) 
+        && fs.statSync(value).isDirectory()
+    );
 }
 
-function isFile(pathString: string): boolean {
-    return fs.existsSync(pathString) && fs.statSync(pathString).isFile();
+function isFile(value: string): boolean {
+    return (isNonEmptyString(value) 
+        && fs.existsSync(value) 
+        && fs.statSync(value).isFile()
+    );
 }
+
 export function existingFileArgument(
     source: string,
     extension: string | string[],
@@ -103,7 +111,7 @@ export function existingFileArgument(
     value?: any,
 ): void {
     let label: string = '';
-    if (arg3 && typeof arg3 === 'object') {
+    if (isObject(arg3)) {
         const keys = Object.keys(arg3);
         if (keys.length !== 1) {
             throw new Error(`[argumentValidation.existingFileArgument()] Invalid argument: '${JSON.stringify(arg3)}' - expected a single key`);
@@ -116,7 +124,7 @@ export function existingFileArgument(
         || !isFile(value)) {
         const msg = [`${bracketed(source)} Invalid argument: '${label}'`,
             `Expected '${label}' to be: existing file with extension '${extension}'`,
-            `Received '${label}' value: ${typeof value} = ${value}`
+            `Received '${label}' value: ${typeof value} = '${value}'`
         ].join(TAB);
         mlog.error(msg);
         throw new Error(msg);
@@ -129,7 +137,7 @@ export function existingDirectoryArgument(
     value?: any,
 ): void {
     let label: string = '';
-    if (arg2 && typeof arg2 === 'object') {
+    if (isObject(arg2)) {
         const keys = Object.keys(arg2);
         if (keys.length !== 1) {
             throw new Error(`[argumentValidation.existingDirectoryArgument()] Invalid argument: '${JSON.stringify(arg2)}' - expected a single key`);
@@ -140,7 +148,7 @@ export function existingDirectoryArgument(
     if (!isNonEmptyString(value) || !isDirectory(value)) {
         const msg = [`${bracketed(source)} Invalid argument: '${label}'`,
             `Expected '${label}' to be: existing directory`,
-            `Received '${label}' value: ${typeof value} = ${value}`
+            `Received '${label}' value: ${typeof value} = '${value}'`
         ].join(TAB);
         mlog.error(msg);
         throw new Error(msg);
@@ -154,7 +162,7 @@ export function numericStringArgument(
     value?: any
 ): void {
     let label: string = '';
-    if (arg2 && typeof arg2 === 'object') {
+    if (isObject(arg2)) {
         const keys = Object.keys(arg2);
         if (keys.length !== 1) {
             throw new Error(`[argumentValidation.numericStringArgument()] Invalid argument: '${JSON.stringify(arg2)}' - expected a single key`);
@@ -207,7 +215,7 @@ export function numberArgument(
 ): void {
     let label: string = '';
     let value: any = arg3;
-    if (typeof arg2 === 'object') {
+    if (isObject(arg2)) {
         const keys = Object.keys(arg2);
         if (keys.length !== 1) {
             throw new Error(`[argumentValidation.numberArgument()] Invalid argument: '${JSON.stringify(arg2)}' - expected a single key`);
@@ -254,7 +262,7 @@ export function booleanArgument(
     value?: any
 ): void {
     let label: string = '';
-    if (typeof arg2 === 'object') {
+    if (isObject(arg2)) {
         const keys = Object.keys(arg2);
         if (keys.length !== 1) {
             throw new Error(`[argumentValidation.booleanArgument()] Invalid argument: '${JSON.stringify(arg2)}' - expected a single key`);
@@ -288,7 +296,7 @@ export function functionArgument(
     value?: any
 ): void {
     let label: string = '';
-    if (typeof arg2 === 'object') {
+    if (isObject(arg2)) {
         const keys = Object.keys(arg2);
         if (keys.length !== 1) {
             let msg = [`[argumentValidation.functionArgument()] Invalid arg2 as labeledFunction`,
@@ -393,7 +401,7 @@ export function arrayArgument(
         label = arg2;
         value = arg3;
         allowEmpty = allowEmpty ?? false;
-    } else if (arg2 && typeof arg2 === 'object') {
+    } else if (isObject(arg2)) {
         let keys = Object.keys(arg2);
         if (keys.length === 0 || keys.length > 2 || keys.some(k => !isNonEmptyString(k))) {
             let msg = [`${source} -> ${vSource} Invalid parameter: arg2 as labeledArgs`,
@@ -816,7 +824,7 @@ export function existingPathArgument(
 ): void {
     const vSource = `[argumentValidation.existingPathArgument()]`
     let label: string = '';
-    if (typeof arg2 === 'object') {
+    if (isObject(arg2)) {
         const keys = Object.keys(arg2);
         if (keys.length !== 1) {
             let msg = [`${source} -> ${vSource} Invalid argument: '${JSON.stringify(arg2)}'`,

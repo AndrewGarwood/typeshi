@@ -1,0 +1,130 @@
+
+/**
+ * @TODO implement overload that uses CleanStringOptions
+ * @param filePath `string`
+ * @param sheetName `string`
+ * @param keyColumn `string`
+ * @param valueColumn `string`
+ * @param options - {@link ParseOneToManyOptions}
+ * = `{ keyStripOptions`?: {@link StringStripOptions}, `valueStripOptions`?: {@link StringStripOptions}, keyCaseOptions`?: {@link StringCaseOptions}, `valueCaseOptions`?: {@link StringCaseOptions}, `keyPadOptions`?: {@link StringPadOptions}, `valuePadOptions`?: {@link StringPadOptions} `}`
+ * - {@link StringStripOptions} = `{ char`: `string`, `escape`?: `boolean`, `stripLeftCondition`?: `(s: string, ...args: any[]) => boolean`, `leftArgs`?: `any[]`, `stripRightCondition`?: `(s: string, ...args: any[]) => boolean`, `rightArgs`?: `any[] }`
+ * - {@link StringCaseOptions} = `{ toUpper`?: `boolean`, `toLower`?: `boolean`, `toTitle`?: `boolean }`
+ * - {@link StringPadOptions} = `{ padLength`: `number`, `padChar`?: `string`, `padLeft`?: `boolean`, `padRight`?: `boolean }`
+ * @returns **`dict`** `Record<string, Array<string>>` — key-value pairs where key is from `keyColumn` and value is an array of values from `valueColumn`
+ */
+export function parseExcelForOneToMany(
+    filePath: string, 
+    sheetName: string, 
+    keyColumn: string, 
+    valueColumn: string,
+    options: ParseOneToManyOptions = {},
+): Record<string, Array<string>> {
+    filePath = coerceFileExtension(filePath, 'xlsx');
+    validate.multipleStringArguments(`reading.parseExcelForOneToMany`, {filePath, sheetName, keyColumn, valueColumn});
+    try {
+        const { 
+            keyStripOptions, valueStripOptions, 
+            keyCaseOptions, valueCaseOptions, 
+            keyPadOptions, valuePadOptions 
+        } = options;
+        const workbook = Excel.readFile(filePath);
+        const sheet = workbook.Sheets[sheetName];
+        const jsonData: Record<string, any>[] = Excel.utils.sheet_to_json(sheet);
+        const dict: Record<string, Array<string>> = {};
+        jsonData.forEach(row => {
+            let key: string = clean(
+                String(row[keyColumn]), 
+                keyStripOptions, 
+                keyCaseOptions, 
+                keyPadOptions
+            ).trim().replace(/\.$/, '');
+            let val: string = clean(
+                String(row[valueColumn]),
+                valueStripOptions, 
+                valueCaseOptions, 
+                valuePadOptions
+            ).trim().replace(/\.$/, '');
+            if (!dict[key]) {
+                dict[key] = [];
+            }
+            if (!dict[key].includes(val)) {
+                dict[key].push(val);
+            }
+        });
+        return dict;
+    } catch (err) {
+        mlog.error('Error reading or parsing the Excel file:', err, 
+            TAB+'Given File Path:', '"' + filePath + '"');
+        return {} as Record<string, Array<string>>;
+    }
+}
+
+/**
+ * @param filePath `string`
+ * @param keyColumn `string`
+ * @param valueColumn `string`
+ * @param delimiter {@link DelimiterCharacters} | `string`
+ * @param options {@link ParseOneToManyOptions}
+ * = `{ keyCaseOptions`?: {@link StringCaseOptions}, `valueCaseOptions`?: {@link StringCaseOptions}, `keyPadOptions`?: {@link StringPadOptions}, `valuePadOptions`?: {@link StringPadOptions} `}`
+ * - {@link StringCaseOptions} = `{ toUpper`?: `boolean`, `toLower`?: `boolean`, `toTitle`?: `boolean }`
+ * - {@link StringPadOptions} = `{ padLength`: `number`, `padChar`?: `string`, `padLeft`?: `boolean`, `padRight`?: `boolean }`
+ * @returns `Record<string, Array<string>>` - key-value pairs where key is from `keyColumn` and value is an array of values from `valueColumn`
+ */
+export function parseCsvForOneToMany(
+    filePath: string,
+    keyColumn: string,
+    valueColumn: string,
+    delimiter: DelimiterCharacterEnum | string = DelimiterCharacterEnum.COMMA,
+    options: ParseOneToManyOptions = {},
+): Record<string, Array<string>> {
+    filePath = coerceFileExtension(filePath, 
+        (delimiter === DelimiterCharacterEnum.TAB) ? 'tsv' : 'csv'
+    );
+    const source = `[reading.parseCsvForOneToMany()]`
+    validate.existingFileArgument(source, ['.tsv', '.csv'], {filePath})
+    validate.multipleStringArguments(source, {keyColumn, valueColumn});
+    try {
+        const { 
+            keyStripOptions, valueStripOptions, 
+            keyCaseOptions, valueCaseOptions, 
+            keyPadOptions, valuePadOptions 
+        } = options;
+        const data = fs.readFileSync(filePath, 'utf8');
+        const lines = data.split('\n');
+        const dict: Record<string, Array<string>> = {};
+        const header = lines[0].split(delimiter).map(col => col.trim());
+        const keyIndex = header.indexOf(keyColumn);
+        const valueIndex = header.indexOf(valueColumn);
+        if (keyIndex === -1 || valueIndex === -1) {
+            throw new Error(`Key or value column not found in CSV file.`);
+        }
+        for (let i = 1; i < lines.length; i++) {
+            const line = lines[i].split(delimiter).map(col => col.trim());
+            if (line.length > 1) {
+                let key = clean(
+                    line[keyIndex],
+                    keyStripOptions, 
+                    keyCaseOptions, 
+                    keyPadOptions
+                );
+                let val = clean(
+                    line[valueIndex],
+                    valueStripOptions,
+                    valueCaseOptions, 
+                    valuePadOptions
+                );
+                if (!dict[key]) {
+                    dict[key] = [];
+                }
+                if (!dict[key].includes(val)) {
+                    dict[key].push(val);
+                }
+            }
+        }
+        return dict;
+    } catch (err) {
+        mlog.error('Error reading or parsing the CSV file:', err, 
+            TAB+'Given File Path:', '"' + filePath + '"');
+        return {} as Record<string, Array<string>>;
+    }
+}

@@ -2,6 +2,15 @@
  * @file src/utils/typeValidation.ts
  */
 /**
+ * - alias for {@link isNullLike}
+ * ... maybe should just change name of isNullLike but that might break things...
+ * @param value `any` the value to check
+ * @returns **`isNullLike`** `boolean` = `value is '' | (Array<any> & { length: 0 }) | null | undefined | Record<string, never>`
+ * - **`true`** `if` the `value` is null, undefined, empty object (no keys), empty array, or empty string
+ * - **`false`** `otherwise`
+ */
+export declare const isEmpty: typeof isNullLike;
+/**
  * @param value `any` the value to check
  * @returns **`isNullLike`** `boolean` = `value is '' | (Array<any> & { length: 0 }) | null | undefined | Record<string, never>`
  * - **`true`** `if` the `value` is null, undefined, empty object (no keys), empty array, or empty string
@@ -89,6 +98,12 @@ export declare function hasKeys<T extends object>(obj: T, keys: Array<keyof T> |
  * - `false` `otherwise`.
  */
 export declare function areEquivalentObjects(objA: Record<string, any>, objB: Record<string, any>): boolean;
+/**
+ * @TODO maybe should do like charArray.every(char=>isInteger)
+ * - and maybe add `requireInteger` param so know whether or not to accept decimal stuff
+ * @param value
+ * @returns **`isNumericString`** `boolean`
+ */
 export declare function isNumericString(value: any): boolean;
 /**
  * @param value `any`

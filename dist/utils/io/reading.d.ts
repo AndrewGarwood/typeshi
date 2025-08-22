@@ -1,7 +1,8 @@
+import { CleanStringOptions } from "../regex";
 import { FileData, ParseOneToManyOptions } from "./types/Io";
 import { DelimiterCharacterEnum } from "./types";
-export declare function isDirectory(pathString: string): boolean;
-export declare function isFile(pathString: string): boolean;
+export declare function isDirectory(value: any): boolean;
+export declare function isFile(value: string): boolean;
 export interface CsvValidationOptions {
     allowEmptyRows?: boolean;
     allowInconsistentColumns?: boolean;
@@ -144,9 +145,9 @@ export declare function getCsvRows(arg1: FileData | string): Promise<Record<stri
  * @param valueColumn `string` - the column name whose contents will be used as values in the dictionary.
  * @returns **`dict`** `Record<string, string>`
  */
-export declare function getOneToOneDictionary(arg1: string | Record<string, any>[], keyColumn: string, valueColumn: string): Promise<Record<string, string>>;
+export declare function getOneToOneDictionary(arg1: string | Record<string, any>[] | FileData, keyColumn: string, valueColumn: string): Promise<Record<string, string>>;
 /**
- * @param arg1 `string | Record<string, any>[]` - the `filePath` to a CSV file or an array of rows.
+ * @param arg1 `string | FileData | Record<string, any>[]` - the `filePath` to a CSV file or an array of rows.
  * @param columnName `string` - the column name whose values will be returned.
  * @param allowDuplicates `boolean` - `optional` if `true`, allows duplicate values in the returned array, otherwise only unique values are returned.
  * - Defaults to `false`.
@@ -154,20 +155,18 @@ export declare function getOneToOneDictionary(arg1: string | Record<string, any>
  */
 export declare function getColumnValues(arg1: string | FileData | Record<string, any>[], columnName: string, cleaner?: (s: string) => string | Promise<string>, allowDuplicates?: boolean): Promise<Array<string>>;
 /**
- * @param arg1 `string | Record<string, any>[]` - the `filePath` to a CSV file or an array of rows.
+ * @param arg1 `string | FileData | Record<string, any>[]` - the `filePath` to a CSV file or an array of rows.
  * @param columnName `string` - the column name whose values will be returned.
  * @returns **`indexedColumnValues`** `Promise<Record<string, number[]>>`
  */
 export declare function getIndexedColumnValues(arg1: string | FileData | Record<string, any>[], columnName: string, cleaner?: (s: string) => string | Promise<string>): Promise<Record<string, number[]>>;
 /**
- * formerly `handleFilePathOrRowsArgument`
- * - {@link getRows}`(filePath: string)`
  * @param arg1 `string | FileData | Record<string, any>[]`
  * @param invocationSource `string`
  * @param requiredHeaders `string[]` `optional`
  * @returns **`rows`** `Promise<Record<string, any>[]>`
  */
-export declare function handleFileArgument(arg1: string | FileData | Record<string, any>[], invocationSource: string, requiredHeaders?: string[]): Promise<Record<string, any>[]>;
+export declare function handleFileArgument(arg1: string | FileData | Record<string, any>[], invocationSource: string, requiredHeaders?: string[], sheetName?: string): Promise<Record<string, any>[]>;
 /**
  * @param dir `string` path to target directory
  * @param targetExtensions `string[] optional` - array of file extensions to filter files by.
@@ -177,7 +176,17 @@ export declare function handleFileArgument(arg1: string | FileData | Record<stri
  */
 export declare function getDirectoryFiles(dir: string, ...targetExtensions: string[]): string[];
 /**
- * @TODO implement overload that uses CleanStringOptions
+ * @param dataSource `string | FileData | Record<string, any>[]`
+ * @param keyColumn `string`
+ * @param valueColumn `string`
+ * @param keyOptions {@link CleanStringOptions} `(optional)`
+ * @param valueOptions {@link CleanStringOptions}`(optional)`
+ * @param sheetName `string`
+ * @returns **`dict`** `Promise<Record<string, string[]>>`
+ */
+export declare function getOneToManyDictionary(dataSource: string | FileData | Record<string, any>[], keyColumn: string, valueColumn: string, keyOptions?: CleanStringOptions, valueOptions?: CleanStringOptions, sheetName?: string): Promise<Record<string, string[]>>;
+/**
+ * @deprecated -> use {@link getOneToOneDictionary}
  * @param filePath `string`
  * @param sheetName `string`
  * @param keyColumn `string`
@@ -191,6 +200,7 @@ export declare function getDirectoryFiles(dir: string, ...targetExtensions: stri
  */
 export declare function parseExcelForOneToMany(filePath: string, sheetName: string, keyColumn: string, valueColumn: string, options?: ParseOneToManyOptions): Record<string, Array<string>>;
 /**
+ * @deprecated -> use {@link getOneToOneDictionary}
  * @param filePath `string`
  * @param keyColumn `string`
  * @param valueColumn `string`

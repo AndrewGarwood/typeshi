@@ -55,6 +55,7 @@ exports.getColumnValues = getColumnValues;
 exports.getIndexedColumnValues = getIndexedColumnValues;
 exports.handleFileArgument = handleFileArgument;
 exports.getDirectoryFiles = getDirectoryFiles;
+exports.getOneToManyDictionary = getOneToManyDictionary;
 exports.parseExcelForOneToMany = parseExcelForOneToMany;
 exports.parseCsvForOneToMany = parseCsvForOneToMany;
 /**
@@ -70,11 +71,16 @@ const config_1 = require("../../config");
 const types_1 = require("./types");
 const typeValidation_1 = require("../typeValidation");
 const validate = __importStar(require("../argumentValidation"));
-function isDirectory(pathString) {
-    return fs_1.default.existsSync(pathString) && fs_1.default.statSync(pathString).isDirectory();
+const F = (0, regex_1.extractFileName)(__filename);
+function isDirectory(value) {
+    return ((0, typeValidation_1.isNonEmptyString)(value)
+        && fs_1.default.existsSync(value)
+        && fs_1.default.statSync(value).isDirectory());
 }
-function isFile(pathString) {
-    return fs_1.default.existsSync(pathString) && fs_1.default.statSync(pathString).isFile();
+function isFile(value) {
+    return ((0, typeValidation_1.isNonEmptyString)(value)
+        && fs_1.default.existsSync(value)
+        && fs_1.default.statSync(value).isFile());
 }
 const DEFAULT_CSV_VALIDATION_RULES = {
     allowEmptyRows: true,
@@ -833,10 +839,8 @@ async function getOneToOneDictionary(arg1, keyColumn, valueColumn) {
     }
     return dict;
 }
-/*
-*/
 /**
- * @param arg1 `string | Record<string, any>[]` - the `filePath` to a CSV file or an array of rows.
+ * @param arg1 `string | FileData | Record<string, any>[]` - the `filePath` to a CSV file or an array of rows.
  * @param columnName `string` - the column name whose values will be returned.
  * @param allowDuplicates `boolean` - `optional` if `true`, allows duplicate values in the returned array, otherwise only unique values are returned.
  * - Defaults to `false`.
@@ -863,7 +867,7 @@ async function getColumnValues(arg1, columnName, cleaner, allowDuplicates = fals
     return values.sort();
 }
 /**
- * @param arg1 `string | Record<string, any>[]` - the `filePath` to a CSV file or an array of rows.
+ * @param arg1 `string | FileData | Record<string, any>[]` - the `filePath` to a CSV file or an array of rows.
  * @param columnName `string` - the column name whose values will be returned.
  * @returns **`indexedColumnValues`** `Promise<Record<string, number[]>>`
  */
@@ -889,14 +893,12 @@ async function getIndexedColumnValues(arg1, columnName, cleaner) {
     return valueDict;
 }
 /**
- * formerly `handleFilePathOrRowsArgument`
- * - {@link getRows}`(filePath: string)`
  * @param arg1 `string | FileData | Record<string, any>[]`
  * @param invocationSource `string`
  * @param requiredHeaders `string[]` `optional`
  * @returns **`rows`** `Promise<Record<string, any>[]>`
  */
-async function handleFileArgument(arg1, invocationSource, requiredHeaders = []) {
+async function handleFileArgument(arg1, invocationSource, requiredHeaders = [], sheetName) {
     const source = `[reading.handleFileArgument()]`;
     validate.stringArgument(source, { invocationSource });
     validate.arrayArgument(source, { requiredHeaders, isNonEmptyString: typeValidation_1.isNonEmptyString }, true);
@@ -905,23 +907,21 @@ async function handleFileArgument(arg1, invocationSource, requiredHeaders = []) 
     if ((0, typeValidation_1.isNonEmptyString)(arg1) && !isValidCsvSync(arg1, requiredHeaders)) {
         throw new Error([
             `${source} Invalid CSV filePath provided: '${arg1}'`,
-            `        Source:   ${invocationSource}`,
+            `invocationSource: ${invocationSource}`,
             `requiredHeaders ? ${(0, typeValidation_1.isNonEmptyArray)(requiredHeaders)
                 ? JSON.stringify(requiredHeaders)
                 : 'none'}`
         ].join(config_1.INDENT_LOG_LINE));
     }
-    if ((0, typeValidation_1.isNonEmptyString)(arg1)) { // arg1 is file path string
-        rows = await getRows(arg1);
-    }
-    else if ((0, types_1.isFileData)(arg1)) { // arg1 is FileData { fileName: string; fileContent: string; }
-        rows = await getRows(arg1);
+    if (((0, typeValidation_1.isNonEmptyString)(arg1) && isFile(arg1)) // arg1 is file path string
+        || (0, types_1.isFileData)(arg1)) { // arg1 is FileData { fileName: string; fileContent: string; }
+        rows = await getRows(arg1, sheetName);
     }
     else if ((0, typeValidation_1.isNonEmptyArray)(arg1)) { // arg1 is already array of rows
-        if (arg1.some(v => typeof v !== 'object')) {
+        if (arg1.some(v => !(0, typeValidation_1.isObject)(v))) {
             throw new Error([
                 `${source} Error: Invalid 'arg1' (Record<string, any>[]) param:`,
-                `There exists an element in the param array that is not an object.`,
+                `There exists an element in the row array that is not an object.`,
                 `Source: ${invocationSource}`,
             ].join(config_1.INDENT_LOG_LINE));
         }
@@ -960,7 +960,38 @@ function getDirectoryFiles(dir, ...targetExtensions) {
     return targetFiles;
 }
 /**
- * @TODO implement overload that uses CleanStringOptions
+ * @param dataSource `string | FileData | Record<string, any>[]`
+ * @param keyColumn `string`
+ * @param valueColumn `string`
+ * @param keyOptions {@link CleanStringOptions} `(optional)`
+ * @param valueOptions {@link CleanStringOptions}`(optional)`
+ * @param sheetName `string`
+ * @returns **`dict`** `Promise<Record<string, string[]>>`
+ */
+async function getOneToManyDictionary(dataSource, keyColumn, valueColumn, keyOptions, valueOptions, sheetName) {
+    const source = `[${F}.${getOneToManyDictionary.name}()]`;
+    validate.multipleStringArguments(source, { keyColumn, valueColumn });
+    if (keyOptions)
+        validate.objectArgument(source, { keyOptions, isCleanStringOptions: regex_1.isCleanStringOptions });
+    if (valueOptions)
+        validate.objectArgument(source, { valueOptions, isCleanStringOptions: regex_1.isCleanStringOptions });
+    const rows = await handleFileArgument(dataSource, source, [keyColumn, valueColumn], sheetName);
+    const dict = {};
+    for (let i = 0; i < rows.length; i++) {
+        let row = rows[i];
+        let key = (0, regex_1.clean)(row[keyColumn], keyOptions).trim().replace(/\.$/, '');
+        if (!dict[key]) {
+            dict[key] = [];
+        }
+        let value = (0, regex_1.clean)(row[valueColumn], valueOptions).trim().replace(/\.$/, '');
+        if (!dict[key].includes(value)) {
+            dict[key].push(value);
+        }
+    }
+    return dict;
+}
+/**
+ * @deprecated -> use {@link getOneToOneDictionary}
  * @param filePath `string`
  * @param sheetName `string`
  * @param keyColumn `string`
@@ -999,6 +1030,7 @@ function parseExcelForOneToMany(filePath, sheetName, keyColumn, valueColumn, opt
     }
 }
 /**
+ * @deprecated -> use {@link getOneToOneDictionary}
  * @param filePath `string`
  * @param keyColumn `string`
  * @param valueColumn `string`

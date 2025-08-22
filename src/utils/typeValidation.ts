@@ -4,6 +4,16 @@
 
 import { equivalentAlphanumericStrings } from "./regex/index";
 
+
+/**
+ * - alias for {@link isNullLike}
+ * ... maybe should just change name of isNullLike but that might break things...
+ * @param value `any` the value to check
+ * @returns **`isNullLike`** `boolean` = `value is '' | (Array<any> & { length: 0 }) | null | undefined | Record<string, never>`
+ * - **`true`** `if` the `value` is null, undefined, empty object (no keys), empty array, or empty string
+ * - **`false`** `otherwise`
+ */
+export const isEmpty = isNullLike;
 /**
  * @param value `any` the value to check
  * @returns **`isNullLike`** `boolean` = `value is '' | (Array<any> & { length: 0 }) | null | undefined | Record<string, never>`
@@ -202,8 +212,14 @@ export function areEquivalentObjects(
     });
 }
 
+/**
+ * @TODO maybe should do like charArray.every(char=>isInteger)
+ * - and maybe add `requireInteger` param so know whether or not to accept decimal stuff
+ * @param value 
+ * @returns **`isNumericString`** `boolean`
+ */
 export function isNumericString(value: any): boolean {
-    if (typeof value !== 'string') return false;
+    if (!isNonEmptyString(value)) return false;
     return !isNaN(Number(value.trim()));
 }
 

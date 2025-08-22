@@ -3,7 +3,7 @@
  * @file src/utils/typeValidation.ts
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TypeOfEnum = void 0;
+exports.TypeOfEnum = exports.isEmpty = void 0;
 exports.isNullLike = isNullLike;
 exports.anyNull = anyNull;
 exports.isNonEmptyArray = isNonEmptyArray;
@@ -19,6 +19,15 @@ exports.isPrimitiveValue = isPrimitiveValue;
 exports.isInteger = isInteger;
 exports.isObject = isObject;
 const index_1 = require("./regex/index");
+/**
+ * - alias for {@link isNullLike}
+ * ... maybe should just change name of isNullLike but that might break things...
+ * @param value `any` the value to check
+ * @returns **`isNullLike`** `boolean` = `value is '' | (Array<any> & { length: 0 }) | null | undefined | Record<string, never>`
+ * - **`true`** `if` the `value` is null, undefined, empty object (no keys), empty array, or empty string
+ * - **`false`** `otherwise`
+ */
+exports.isEmpty = isNullLike;
 /**
  * @param value `any` the value to check
  * @returns **`isNullLike`** `boolean` = `value is '' | (Array<any> & { length: 0 }) | null | undefined | Record<string, never>`
@@ -192,8 +201,14 @@ function areEquivalentObjects(objA, objB) {
         return (0, index_1.equivalentAlphanumericStrings)(valA, valB);
     });
 }
+/**
+ * @TODO maybe should do like charArray.every(char=>isInteger)
+ * - and maybe add `requireInteger` param so know whether or not to accept decimal stuff
+ * @param value
+ * @returns **`isNumericString`** `boolean`
+ */
 function isNumericString(value) {
-    if (typeof value !== 'string')
+    if (!isNonEmptyString(value))
         return false;
     return !isNaN(Number(value.trim()));
 }
