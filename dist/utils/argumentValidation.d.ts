@@ -123,6 +123,9 @@ type ObjectArgumentOptions = {
 };
 /**
  * - `verbose` overload
+ * @note **`allows value to be an array if and only if:`**
+ * - `labeledArgs` has a key-value pair where value is objectTypeGuard
+ * and either `value.name.includes('Array')` or `key.includes('Array')` e.g. `isStringArray`
  * @param source `string` indicating what called `objectArgument`
  * @param label `string` the argument/parameter name
  * @param value `any` the value passed into the `source`
@@ -135,7 +138,14 @@ type ObjectArgumentOptions = {
 export declare function objectArgument(source: string, label: string, value: any, objectTypeName?: string, objectTypeGuard?: (value: any) => boolean, allowEmpty?: boolean): void;
 /**
  * - `concise` overload
+ * @note **`allows value to be an array if and only if:`**
+ * - `labeledArgs` has a key-value pair where value is objectTypeGuard
+ * and either `value.name.includes('Array')` or `key.includes('Array')` e.g. `isStringArray`
  * @param source `string` indicating what called `objectArgument`
+ * @param labeledArgs {@link ObjectArgumentOptions} object containing at most two key-value pairs
+ * 1. `label: value`
+ * 2. `typeGuardFunctionLabel: typeGuardFunction` `(optional)`
+ * @param allowEmpty `boolean` optional, if `true`, allows `value` to be an empty object `{} or undefined`
  * */
 export declare function objectArgument(source: string, 
 /** maxLength = 2 */

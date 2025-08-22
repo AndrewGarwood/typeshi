@@ -410,7 +410,9 @@ function isObjectArgumentOptions(value) {
         && (isLabeledValue || isLabeledValueWithTypeGuard));
 }
 /**
- * @note **does not allow for arrays**
+ * @note **`allows value to be an array if and only if:`**
+ * - `labeledArgs` has a key-value pair where value is objectTypeGuard
+ * and either `value.name.includes('Array')` or `key.includes('Array')` e.g. `isStringArray`
  * **`msg`**: `[source()] Invalid argument: '${label}'`
  * -  `Expected '${label}' to be: non-empty 'object'`
  * -  `Received '${label}' value: ${typeof value} = ${value}`
@@ -434,6 +436,7 @@ allowEmpty) {
     source = (0, exports.bracketed)(source);
     const vSource = `[argumentValidation.objectArgument()]`;
     let label = '';
+    let functionLabel = '';
     let value = undefined;
     if (typeof arg2 === 'string') {
         label = arg2;
@@ -442,7 +445,7 @@ allowEmpty) {
     }
     else if (isObjectArgumentOptions(arg2)) {
         let keys = Object.keys(arg2);
-        let functionLabel = keys.find(k => typeof arg2[k] === 'function');
+        functionLabel = keys.find(k => typeof arg2[k] === 'function');
         let variableLabel = keys.find(k => typeof arg2[k] !== 'function');
         if (!variableLabel) {
             let msg = [`${source} -> ${vSource} Invalid parameter: arg2 as labeledArgs`,
@@ -486,7 +489,11 @@ allowEmpty) {
         setupLog_1.typeshiLogger.error(msg);
         throw new Error(msg);
     }
-    if (Array.isArray(value)) {
+    if (Array.isArray(value)
+        && !(objectTypeGuard
+            && (objectTypeGuard.name.includes('Array')
+                || ((0, typeValidation_1.isNonEmptyString)(functionLabel)
+                    && functionLabel.includes('Array'))))) {
         let msg = [`${source} Invalid Object Argument: '${label}' is an Array`,
             `Expected '${label}' to be: object of type '${objectTypeName}'`,
             `Received '${label}' value: array of length ${value.length}`
@@ -510,14 +517,14 @@ allowEmpty) {
     return;
 }
 function isEnumObject(value) {
-    return Boolean(value
-        && typeof value === 'object' && Object.keys(value).length > 0
+    return ((0, typeValidation_1.isObject)(value)
+        && Object.keys(value).length > 0
         && (Object.values(value).every(v => typeof v === 'string')
             ||
                 Object.values(value).every(v => typeof v === 'number')));
 }
 function isEnumArgumentOptions(value) {
-    if (!value || typeof value !== 'object') {
+    if (!(0, typeValidation_1.isObject)(value)) {
         return false;
     }
     const keys = Object.keys(value);

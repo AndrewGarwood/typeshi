@@ -501,6 +501,9 @@ function isObjectArgumentOptions(value: any): value is ObjectArgumentOptions {
 
 /**
  * - `verbose` overload
+ * @note **`allows value to be an array if and only if:`**
+ * - `labeledArgs` has a key-value pair where value is objectTypeGuard 
+ * and either `value.name.includes('Array')` or `key.includes('Array')` e.g. `isStringArray`
  * @param source `string` indicating what called `objectArgument`
  * @param label `string` the argument/parameter name
  * @param value `any` the value passed into the `source` 
@@ -521,7 +524,14 @@ export function objectArgument(
 
 /**
  * - `concise` overload
+ * @note **`allows value to be an array if and only if:`**
+ * - `labeledArgs` has a key-value pair where value is objectTypeGuard 
+ * and either `value.name.includes('Array')` or `key.includes('Array')` e.g. `isStringArray`
  * @param source `string` indicating what called `objectArgument`
+ * @param labeledArgs {@link ObjectArgumentOptions} object containing at most two key-value pairs
+ * 1. `label: value`
+ * 2. `typeGuardFunctionLabel: typeGuardFunction` `(optional)` 
+ * @param allowEmpty `boolean` optional, if `true`, allows `value` to be an empty object `{} or undefined`
  * */
 export function objectArgument(
     source: string,
@@ -529,8 +539,11 @@ export function objectArgument(
     labeledArgs: ObjectArgumentOptions | { [label: string]: any | ((value: any) => boolean) },
     allowEmpty?: boolean
 ): void
+
 /**
- * @note **does not allow for arrays**
+ * @note **`allows value to be an array if and only if:`**
+ * - `labeledArgs` has a key-value pair where value is objectTypeGuard 
+ * and either `value.name.includes('Array')` or `key.includes('Array')` e.g. `isStringArray`
  * **`msg`**: `[source()] Invalid argument: '${label}'`
  * -  `Expected '${label}' to be: non-empty 'object'`
  * -  `Received '${label}' value: ${typeof value} = ${value}`
@@ -556,6 +569,7 @@ export function objectArgument(
     source = bracketed(source);
     const vSource = `[argumentValidation.objectArgument()]`;
     let label: string = '';
+    let functionLabel: string | undefined = '';
     let value: any = undefined;
     if (typeof arg2 === 'string') {
         label = arg2;
@@ -563,7 +577,7 @@ export function objectArgument(
         allowEmpty = allowEmpty ?? false;
     } else if (isObjectArgumentOptions(arg2)) {
         let keys = Object.keys(arg2);
-        let functionLabel = keys.find(k => typeof arg2[k] === 'function');
+        functionLabel = keys.find(k => typeof arg2[k] === 'function');
         let variableLabel = keys.find(k => typeof arg2[k] !== 'function');
         if (!variableLabel) {
             let msg = [`${source} -> ${vSource} Invalid parameter: arg2 as labeledArgs`,
@@ -606,7 +620,11 @@ export function objectArgument(
         mlog.error(msg);
         throw new Error(msg);
     } 
-    if (Array.isArray(value)) {
+    if (Array.isArray(value) 
+        && !(objectTypeGuard 
+            && (objectTypeGuard.name.includes('Array')
+                || (isNonEmptyString(functionLabel) 
+                && functionLabel.includes('Array'))))) {
         let msg = [`${source} Invalid Object Argument: '${label}' is an Array`,
             `Expected '${label}' to be: object of type '${objectTypeName}'`,
             `Received '${label}' value: array of length ${value.length}`
@@ -639,8 +657,8 @@ type EnumArgumentOptions = {
 }
 
 function isEnumObject(value: any): value is EnumObject {
-    return Boolean(value
-        && typeof value === 'object' && Object.keys(value).length > 0
+    return (isObject(value) 
+        && Object.keys(value).length > 0
         && (Object.values(value).every(v => typeof v === 'string')
             || 
             Object.values(value).every(v => typeof v === 'number')
@@ -648,7 +666,7 @@ function isEnumObject(value: any): value is EnumObject {
     )
 }
 function isEnumArgumentOptions(value: any): value is EnumArgumentOptions {
-    if (!value || typeof value !== 'object') {
+    if (!isObject(value)) {
         return false;
     }
     const keys = Object.keys(value);
