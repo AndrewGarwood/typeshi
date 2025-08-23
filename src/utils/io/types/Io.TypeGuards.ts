@@ -10,7 +10,6 @@ import { hasKeys, isIntegerArray, isNonEmptyString } from "../../typeValidation"
 
 
 /**
- * 
  * @param value `any`
  * @returns **`isRowSourceMetaData`** `boolean`
  * - **`true`** `if` `value` is an object such that 

@@ -45,8 +45,10 @@ exports.formatAllDebugLogs = formatAllDebugLogs;
 const fs = __importStar(require("fs"));
 const setupLog_1 = require("../../config/setupLog");
 const typeValidation_1 = require("../typeValidation");
+const regex_1 = require("../regex");
 const validate = __importStar(require("../argumentValidation"));
 const node_path_1 = __importDefault(require("node:path"));
+const F = (0, regex_1.extractFileName)(__filename);
 /**
  * Auto-formats debug logs at the end of application execution.
  * Call this function when your main application is finishing.
@@ -55,18 +57,24 @@ const node_path_1 = __importDefault(require("node:path"));
  * @returns `void`
  */
 function autoFormatLogsOnExit(filePaths) {
+    const source = `[${F}.${autoFormatLogsOnExit.name}()]`;
+    if (!(0, typeValidation_1.isStringArray)(filePaths)) {
+        setupLog_1.typeshiLogger.warn([`${source} Invalid param 'filePaths'`,
+            `Expected: string[] (array of filePaths)`,
+            `Received: ${typeof filePaths} = '${JSON.stringify(filePaths)}'`
+        ].join(setupLog_1.INDENT_LOG_LINE));
+        return;
+    }
     try {
-        if ((0, typeValidation_1.isNonEmptyArray)(filePaths)) {
-            for (const filePath of filePaths) {
-                if (fs.existsSync(filePath)) {
-                    formatDebugLogFile(filePath);
-                }
+        for (const filePath of filePaths) {
+            if (fs.existsSync(filePath)) {
+                formatDebugLogFile(filePath);
             }
         }
     }
     catch (error) {
         // Don't throw errors during exit formatting to avoid disrupting the main flow
-        console.error('[autoFormatLogsOnExit()] Error during log formatting:', error);
+        setupLog_1.typeshiLogger.error(`${source} Error formatting logs: `, error);
     }
 }
 /**

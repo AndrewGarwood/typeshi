@@ -7,6 +7,7 @@
  * - maybe add a configurable value that the validation functions should return if the validation test fails
  * - change the validation functions such that they return the validated value, if possible?
  * - or maybe have them return boolean type predicates ?
+ * - -> maybe have to make a class
  */
 import { TypeOfEnum } from "./typeValidation";
 /**
@@ -15,11 +16,11 @@ import { TypeOfEnum } from "./typeValidation";
  * @param arg2 `string | { [label: string]: any }` the argument/parameter name
  * @param value `string` the value passed into the `source`
  * for the argument corresponding to `label`
- * @throws {Error} if `value` is not a non-empty string
+ * @throws **`Error`** if `value` is not a non-empty string
  *
  * **`msg`**: `[source()] Invalid argument: '${label}'`
  * -  `Expected '${label}' to be: non-empty string`
- * -  `Received '${label}' value: ${typeof value} = ${value}`
+ * -  `Received '${label}' value: ${typeof value} = '${value}'`
  */
 export declare function stringArgument(source: string, arg2: string | {
     [label: string]: any;
@@ -49,11 +50,11 @@ export declare function numberArgument(source: string, label: string, value: any
  * @param value `any` the value passed into the `source`
  * for the argument corresponding to `label`
  *
- * @throws {Error} `if` `value` is not a `boolean`
+ * @throws **`Error`** `if` `value` is not a `boolean`
  *
  * **`msg`**: `[source()] Invalid argument: '${label}'`
  * -  `Expected '${label}' to be: boolean`
- * -  `Received '${label}' value: ${typeof value} = ${value}`
+ * -  `Received '${label}' value: ${typeof value} = '${value}'`
  */
 export declare function booleanArgument(source: string, arg2: string | {
     [label: string]: any;
@@ -64,49 +65,48 @@ export declare function booleanArgument(source: string, arg2: string | {
  * @param value `any` the value passed into the `source`
  * for the argument corresponding to `label`
  *
- * @throws {Error} `if` `value` is not a function
+ * @throws **`Error`** `if` `value` is not a function
  *
  * **`msg`**: `[source()] Invalid argument: '${label}'`
  * -  `Expected '${label}' to be: function`
- * -  `Received '${label}' value: ${typeof value} = ${value}`
+ * -  `Received '${label}' value: ${typeof value} = '${value}'`
  */
 export declare function functionArgument(source: string, arg2: string | {
     [label: string]: any;
 }, value?: any): void;
 /**
+ * @note `if` `elementTypeGuard`'s name or its label includes 'Array' then only check `elementTypeGuard(value)`
+ * instead of checking `value.every(el => elementTypeGuard(el))`
  * @param source `string` indicating what called `validateArrayArgument`
  * @param label `string` the argument/parameter name
  * @param value `any` the value passed into the `source`
  * for the argument corresponding to `label`
- * @param elementType `TypeOfEnum | string` optional, the expected type of each element in the array
+ * @param elementType `TypeOfEnum | string` `(optional)`, the expected type of each element in the array
  * - `if` provided, must be one of the values in {@link TypeOfEnum} or a string representing the type
- * @param elementTypeGuard `(value: any) => boolean` optional, a type guard function that checks if each element in the array is of a specific type
+ * @param elementTypeGuard `(value: any) => boolean` `(optional)`, a type guard function that checks if each element in the array is of a specific type
  * - `if` provided, must be a function that takes a value and returns a boolean indicating if the value is of the expected type
  * - `if` both `elementType` and `elementTypeGuard` are provided, both must be satisfied
  * - `if` neither is provided, `validateArrayArgument` will only check if `value` is a non-empty array
- * @param allowEmpty `boolean` optional, if `true`, allows `value` to be an empty array
+ * @param allowEmpty `boolean` `(optional)`, if `true`, allows `value` to be an empty array
  * - `default` is `false`, meaning an empty array will throw an error
- * @throws {Error} `if` `value` is not a non-empty array or does not pass the type checks
+ * @throws **`Error`** `if` `value` is not a non-empty array or does not pass the type checks
  *
  * **`msg`**: `[source()] Invalid argument: '${label}'`
  * -  `Expected '${label}' to be: non-empty array`
- * -  `Received '${label}' value: ${typeof value} = ${value}`
+ * -  `Received '${label}' value: ${typeof value} = '${value}'`
  */
 export declare function arrayArgument(source: string, label: string, value: any, elementType?: TypeOfEnum | string, elementTypeGuard?: (value: any) => boolean, allowEmpty?: boolean): void;
 /**
- * - {@link isNonEmptyArray}`(value: any): value is any[] & { length: number; }`
- * @param source `string` indicating what called `validateArrayArgument`
- * @param arg2 `string | { [label: string]: any }` the argument/parameter name or a single object dict mapping label to value
- * @param arg3 `any | TypeOfEnum | string` the value passed into the `source` or the element type
- * @param arg4 `TypeOfEnum | string | (value: any) => boolean` optional, element type or type guard function
- * @param arg5 `(value: any) => boolean | boolean` optional, type guard function or allowEmpty boolean
- * @param arg6 `boolean` optional, if `true`, allows `value` to be an empty array
- * - `default` is `false`, meaning an empty array will throw an error
- * @throws {Error} `if` `value` is not a non-empty array or does not pass the type checks
+ * @note `if` `elementTypeGuard`'s name or its label includes 'Array' then only check `elementTypeGuard(value)`
+ * instead of checking `value.every(el => elementTypeGuard(el))`
+ * @param source `string` indicating what called `validate.arrayArgument`
+ * @param labeledArgs ` [label: string]: any | ((value: any) => boolean) }`
+ * @param allowEmpty `boolean` optional, if `true`, allows `value` to be an empty array
+ * @throws **`Error`** `if` `value` is not a non-empty array or does not pass the type checks
  *
  * **`msg`**: `[source()] Invalid argument: '${label}'`
  * -  `Expected '${label}' to be: non-empty array`
- * -  `Received '${label}' value: ${typeof value} = ${value}`
+ * -  `Received '${label}' value: ${typeof value} = '${value}'`
  *
  * `if` `elementTypeGuard` is provided:
  * -  `Expected '${label}' to be: non-empty array of ${elementType}`
@@ -162,14 +162,14 @@ export declare function enumArgument(source: string, label: string, value: any, 
 export declare function enumArgument(source: string, labeledArgs: EnumArgumentOptions | {
     [label: string]: string | EnumObject;
 }): string | number;
+/** use existingFileArgument() or existingDirectoryArgument() */
+export declare function existingPathArgument(source: string, arg2: string | {
+    [label: string]: any;
+}, value?: any, extension?: string): void;
 /**
  * @description surrounds `s` with brackets if it doesn't already have them
  * @param s `string`
  * @returns **`bracketedString`** `string`
  */
 export declare const bracketed: (s: string) => string;
-/** use existingFileArgument() or existingDirectoryArgument() */
-export declare function existingPathArgument(source: string, arg2: string | {
-    [label: string]: any;
-}, value?: any, extension?: string): void;
 export {};

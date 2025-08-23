@@ -19,4 +19,4 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 __exportStar(require("./Io"), exports);
 __exportStar(require("./Csv"), exports);
-__exportStar(require("./typeGuards"), exports);
+__exportStar(require("./Io.TypeGuards"), exports);

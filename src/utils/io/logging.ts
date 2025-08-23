@@ -3,10 +3,11 @@
  */
 import * as fs from "fs";
 import { typeshiLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL } from "../../config/setupLog";
-import { isNonEmptyArray, isNonEmptyString, } from "../typeValidation";
+import { isNonEmptyArray, isNonEmptyString, isStringArray, } from "../typeValidation";
+import { extractFileName } from "../regex";
 import * as validate from "../argumentValidation";
 import path from "node:path";
-
+const F = extractFileName(__filename);
 /**
  * Auto-formats debug logs at the end of application execution.
  * Call this function when your main application is finishing.
@@ -17,17 +18,23 @@ import path from "node:path";
 export function autoFormatLogsOnExit(
     filePaths?: string[]
 ): void {
+    const source = `[${F}.${autoFormatLogsOnExit.name}()]`
+    if (!isStringArray(filePaths)) {
+        mlog.warn([`${source} Invalid param 'filePaths'`,
+            `Expected: string[] (array of filePaths)`,
+            `Received: ${typeof filePaths} = '${JSON.stringify(filePaths)}'`
+        ].join(TAB));
+        return;
+    }
     try {
-        if (isNonEmptyArray(filePaths)) {
-            for (const filePath of filePaths) {
-                if (fs.existsSync(filePath)) {
-                    formatDebugLogFile(filePath);
-                }
+        for (const filePath of filePaths) {
+            if (fs.existsSync(filePath)) {
+                formatDebugLogFile(filePath);
             }
         }
     } catch (error) {
         // Don't throw errors during exit formatting to avoid disrupting the main flow
-        console.error('[autoFormatLogsOnExit()] Error during log formatting:', error);
+        mlog.error(`${source} Error formatting logs: `, error);
     }
 }
 

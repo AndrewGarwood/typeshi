@@ -3,4 +3,4 @@
  */
 export * from "./Io";
 export * from "./Csv";
-export * from "./typeGuards";
+export * from "./Io.TypeGuards";

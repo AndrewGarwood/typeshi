@@ -29,10 +29,8 @@ export enum DataDomainEnum {
     REGEX = 'REGEX'
 }
 
-
 /* ---------------------- LOAD REGEX CONFIG -------------------------- */
 let regexConstants: RegexConstants | null = null;
-
 
 /* ------------------------- MAIN FUNCTION ----------------------------- */
 const DEFAULT_DOMAINS_TO_LOAD = [
