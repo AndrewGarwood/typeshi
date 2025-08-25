@@ -36,6 +36,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getSourceString = getSourceString;
 exports.autoFormatLogsOnExit = autoFormatLogsOnExit;
 exports.formatDebugLogFile = formatDebugLogFile;
 exports.formatAllDebugLogs = formatAllDebugLogs;
@@ -49,6 +50,25 @@ const regex_1 = require("../regex");
 const validate = __importStar(require("../argumentValidation"));
 const node_path_1 = __importDefault(require("node:path"));
 const F = (0, regex_1.extractFileName)(__filename);
+/**
+ * @param fileName `string`
+ * @param func `Function` - to get Function.name
+ * @param funcInfo `any` `(optional)` - context or params of func (converted to string)
+ * @param startLine `number` `(optional)`
+ * @param endLine `number` `(optional)`
+ * @returns **`sourceString`** `string` to use in log statements or argumentValidation calls
+ */
+function getSourceString(fileName, func, funcInfo, startLine, endLine) {
+    let lineNumberText = ((0, typeValidation_1.isInteger)(startLine)
+        ? `:${startLine}`
+        : '');
+    lineNumberText = ((0, typeValidation_1.isNonEmptyString)(lineNumberText)
+        && (0, typeValidation_1.isInteger)(endLine)
+        ? lineNumberText + `-${endLine}`
+        : '');
+    let funcName = typeof func === 'string' ? func : func.name;
+    return `[${fileName}.${funcName}(${funcInfo ?? ''})${lineNumberText}]`;
+}
 /**
  * Auto-formats debug logs at the end of application execution.
  * Call this function when your main application is finishing.

@@ -1,4 +1,13 @@
 /**
+ * @param fileName `string`
+ * @param func `Function` - to get Function.name
+ * @param funcInfo `any` `(optional)` - context or params of func (converted to string)
+ * @param startLine `number` `(optional)`
+ * @param endLine `number` `(optional)`
+ * @returns **`sourceString`** `string` to use in log statements or argumentValidation calls
+ */
+export declare function getSourceString(fileName: string, func: string | Function, funcInfo?: any, startLine?: number, endLine?: number): string;
+/**
  * Auto-formats debug logs at the end of application execution.
  * Call this function when your main application is finishing.
  * @param filePaths `string[]` - optional, specific file paths to format.

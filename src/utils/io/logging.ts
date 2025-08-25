@@ -3,11 +3,36 @@
  */
 import * as fs from "fs";
 import { typeshiLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL } from "../../config/setupLog";
-import { isNonEmptyArray, isNonEmptyString, isStringArray, } from "../typeValidation";
+import { isInteger, isIntegerArray, isNonEmptyArray, isNonEmptyString, isStringArray, } from "../typeValidation";
 import { extractFileName } from "../regex";
 import * as validate from "../argumentValidation";
 import path from "node:path";
 const F = extractFileName(__filename);
+
+/**
+ * @param fileName `string` 
+ * @param func `Function` - to get Function.name
+ * @param funcInfo `any` `(optional)` - context or params of func (converted to string)
+ * @param startLine `number` `(optional)`
+ * @param endLine `number` `(optional)`
+ * @returns **`sourceString`** `string` to use in log statements or argumentValidation calls
+ */
+export function getSourceString(
+    fileName: string, func: string | Function, funcInfo?: any, startLine?: number, endLine?: number
+): string {
+    let lineNumberText = (isInteger(startLine) 
+        ? `:${startLine}` 
+        : ''
+    );
+    lineNumberText = (isNonEmptyString(lineNumberText) 
+        && isInteger(endLine) 
+        ? lineNumberText + `-${endLine}`
+        : ''
+    ); 
+    let funcName = typeof func === 'string' ? func : func.name
+    return `[${fileName}.${funcName}(${funcInfo ?? ''})${lineNumberText}]`;
+}
+
 /**
  * Auto-formats debug logs at the end of application execution.
  * Call this function when your main application is finishing.
