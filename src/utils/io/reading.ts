@@ -8,9 +8,10 @@ import csv from "csv-parser";
 import Excel from "xlsx";
 import { RegExpFlagsEnum, StringCaseOptions, stringEndsWithAnyOf, 
     StringPadOptions, StringReplaceOptions, StringStripOptions, clean, 
-    CleanStringOptions, extractFileName,
+    CleanStringOptions,
     isCleanStringOptions
 } from "../regex";
+import { extractFileName } from "../regex/misc";
 import { FileData, ParseOneToManyOptions,} from "./types/Io";
 import { 
     typeshiLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL, SUPPRESSED_LOGS as SUP 

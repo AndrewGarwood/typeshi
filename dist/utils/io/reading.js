@@ -67,11 +67,12 @@ const stream_1 = require("stream");
 const csv_parser_1 = __importDefault(require("csv-parser"));
 const xlsx_1 = __importDefault(require("xlsx"));
 const regex_1 = require("../regex");
+const misc_1 = require("../regex/misc");
 const config_1 = require("../../config");
 const types_1 = require("./types");
 const typeValidation_1 = require("../typeValidation");
 const validate = __importStar(require("../argumentValidation"));
-const F = (0, regex_1.extractFileName)(__filename);
+const F = (0, misc_1.extractFileName)(__filename);
 function isDirectory(value) {
     return ((0, typeValidation_1.isNonEmptyString)(value)
         && fs_1.default.existsSync(value)
