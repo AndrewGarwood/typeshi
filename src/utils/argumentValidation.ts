@@ -18,7 +18,8 @@ import {
 import { 
     typeshiLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL 
 } from "../config/setupLog";
-import { RegExpFlagsEnum, stringEndsWithAnyOf, extractFileName } from "./regex";
+import { RegExpFlagsEnum, stringEndsWithAnyOf } from "./regex";
+import { extractFileName } from "./regex/misc"
 import * as fs from "fs";
 const F = extractFileName(__filename);
 

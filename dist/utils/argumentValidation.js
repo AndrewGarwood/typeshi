@@ -61,8 +61,9 @@ exports.existingPathArgument = existingPathArgument;
 const typeValidation_1 = require("./typeValidation");
 const setupLog_1 = require("../config/setupLog");
 const regex_1 = require("./regex");
+const misc_1 = require("./regex/misc");
 const fs = __importStar(require("fs"));
-const F = (0, regex_1.extractFileName)(__filename);
+const F = (0, misc_1.extractFileName)(__filename);
 const typeGuardNamePattern = /(?<=^is).*$/i;
 /**
  * - {@link isNonEmptyString}`(value: any): value is string & { length: number; }`
