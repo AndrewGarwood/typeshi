@@ -1009,13 +1009,15 @@ export async function handleFileArgument(
     validate.arrayArgument(source, {requiredHeaders, isNonEmptyString}, true);
     let rows: Record<string, any>[] = [];
     // Handle file path validation only for string inputs
-    if (isNonEmptyString(arg1) && !isValidCsvSync(arg1, requiredHeaders)) {
+    if (isNonEmptyString(arg1) 
+        && stringEndsWithAnyOf(arg1, /(\.tsv|\.csv)/i) 
+        && !isValidCsvSync(arg1, requiredHeaders)) {
         throw new Error([
             `${source} Invalid CSV filePath provided: '${arg1}'`,
             `invocationSource: ${invocationSource}`,
             `requiredHeaders ? ${isNonEmptyArray(requiredHeaders) 
                 ? JSON.stringify(requiredHeaders) 
-                : 'none'}`
+                : 'none provided'}`
         ].join(TAB));
     } 
     

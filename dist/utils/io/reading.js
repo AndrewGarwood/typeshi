@@ -905,13 +905,15 @@ async function handleFileArgument(arg1, invocationSource, requiredHeaders = [], 
     validate.arrayArgument(source, { requiredHeaders, isNonEmptyString: typeValidation_1.isNonEmptyString }, true);
     let rows = [];
     // Handle file path validation only for string inputs
-    if ((0, typeValidation_1.isNonEmptyString)(arg1) && !isValidCsvSync(arg1, requiredHeaders)) {
+    if ((0, typeValidation_1.isNonEmptyString)(arg1)
+        && (0, regex_1.stringEndsWithAnyOf)(arg1, /(\.tsv|\.csv)/i)
+        && !isValidCsvSync(arg1, requiredHeaders)) {
         throw new Error([
             `${source} Invalid CSV filePath provided: '${arg1}'`,
             `invocationSource: ${invocationSource}`,
             `requiredHeaders ? ${(0, typeValidation_1.isNonEmptyArray)(requiredHeaders)
                 ? JSON.stringify(requiredHeaders)
-                : 'none'}`
+                : 'none provided'}`
         ].join(config_1.INDENT_LOG_LINE));
     }
     if (((0, typeValidation_1.isNonEmptyString)(arg1) && isFile(arg1)) // arg1 is file path string
