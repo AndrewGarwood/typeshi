@@ -132,7 +132,9 @@ function existingFileArgument(source, extension, arg3, value) {
         || !(0, regex_1.stringEndsWithAnyOf)(value, extension, regex_1.RegExpFlagsEnum.IGNORE_CASE)
         || !isFile(value)) {
         let msg = [`${source} Invalid argument: '${label}'`,
-            `Expected '${label}' to be: existing file with extension '${extension}'`,
+            `Expected '${label}' to be: existing file with ` + ((0, typeValidation_1.isStringArray)(extension)
+                ? `one of the following extensions: ${JSON.stringify(extension)}`
+                : `extension: '${extension}'`),
             `Received '${label}' value: ${typeof value} = '${value}'`
         ].join(setupLog_1.INDENT_LOG_LINE);
         setupLog_1.typeshiLogger.error(msg);

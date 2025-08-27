@@ -35,10 +35,10 @@ function stringEndsWithAnyOf(s, suffixes, ...flags) {
     }
     let flagString = ((0, typeValidation_1.isNonEmptyArray)(flags)
         ? flags.join('')
-        : suffixes instanceof RegExp && suffixes.flags
+        : suffixes instanceof RegExp && (0, typeValidation_1.isNonEmptyString)(suffixes.flags)
             ? suffixes.flags
             : undefined);
-    if (Array.isArray(suffixes)) {
+    if ((0, typeValidation_1.isStringArray)(suffixes)) {
         /** Escape special regex characters in suffixes and join them with '|' (OR) */
         const escapedSuffixes = suffixes.map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
         const pattern = `(${escapedSuffixes.join('|')})\\s*$`;

@@ -6,7 +6,7 @@ import { CleanStringOptions, StringCaseOptions, StringReplaceOptions } from ".";
 import { RegExpFlagsEnum, StringReplaceParams } from "./types/StringOptions";
 import { clean } from "./cleaning";
 import { distance as levenshteinDistance } from "fastest-levenshtein";
-import { isNonEmptyArray } from "../typeValidation";
+import { isNonEmptyArray, isNonEmptyString, isStringArray } from "../typeValidation";
 
 
 
@@ -38,11 +38,11 @@ export function stringEndsWithAnyOf(
     }
     let flagString = (isNonEmptyArray(flags) 
         ? flags.join('') 
-        : suffixes instanceof RegExp && suffixes.flags
+        : suffixes instanceof RegExp && isNonEmptyString(suffixes.flags)
         ? suffixes.flags 
         : undefined 
     );
-    if (Array.isArray(suffixes)) {   
+    if (isStringArray(suffixes)) {   
         /** Escape special regex characters in suffixes and join them with '|' (OR) */
         const escapedSuffixes = suffixes.map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
         const pattern = `(${escapedSuffixes.join('|')})\\s*$`;

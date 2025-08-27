@@ -13,7 +13,8 @@ import {
     isNonEmptyString, isNonEmptyArray, isNullLike, hasKeys, isEmptyArray, 
     TypeOfEnum, 
     isNumericString,
-    isObject
+    isObject,
+    isStringArray
 } from "./typeValidation";
 import { 
     typeshiLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL 
@@ -111,7 +112,10 @@ export function existingFileArgument(
         || !stringEndsWithAnyOf(value, extension, RegExpFlagsEnum.IGNORE_CASE)
         || !isFile(value)) {
         let msg = [`${source} Invalid argument: '${label}'`,
-            `Expected '${label}' to be: existing file with extension '${extension}'`,
+            `Expected '${label}' to be: existing file with `+(
+                isStringArray(extension) 
+                ? `one of the following extensions: ${JSON.stringify(extension)}`
+                : `extension: '${extension}'`),
             `Received '${label}' value: ${typeof value} = '${value}'`
         ].join(TAB);
         mlog.error(msg);
@@ -901,14 +905,14 @@ export const bracketed = (s: string): string => {
     return s;
 }
 
-function isDirectory(value: any): boolean {
+function isDirectory(value: any): value is string {
     return (isNonEmptyString(value) 
         && fs.existsSync(value) 
         && fs.statSync(value).isDirectory()
     );
 }
 
-function isFile(value: string): boolean {
+function isFile(value: string): value is string {
     return (isNonEmptyString(value) 
         && fs.existsSync(value) 
         && fs.statSync(value).isFile()
