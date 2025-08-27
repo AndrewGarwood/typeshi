@@ -26,14 +26,15 @@ import * as validate from "../argumentValidation";
 
 const F = extractFileName(__filename);
 
-export function isDirectory(value: any): boolean {
+/** for testing if `pathString (value)` points to an existing directory */
+export function isDirectory(value: any): value is string {
     return (isNonEmptyString(value) 
         && fs.existsSync(value) 
         && fs.statSync(value).isDirectory()
     );
 }
-
-export function isFile(value: string): boolean {
+/** for testing if `pathString (value)` points to an existing file */
+export function isFile(value: string): value is string {
     return (isNonEmptyString(value) 
         && fs.existsSync(value) 
         && fs.statSync(value).isFile()

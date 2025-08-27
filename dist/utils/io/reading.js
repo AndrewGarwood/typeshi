@@ -73,11 +73,13 @@ const types_1 = require("./types");
 const typeValidation_1 = require("../typeValidation");
 const validate = __importStar(require("../argumentValidation"));
 const F = (0, misc_1.extractFileName)(__filename);
+/** for testing if `pathString (value)` points to an existing directory */
 function isDirectory(value) {
     return ((0, typeValidation_1.isNonEmptyString)(value)
         && fs_1.default.existsSync(value)
         && fs_1.default.statSync(value).isDirectory());
 }
+/** for testing if `pathString (value)` points to an existing file */
 function isFile(value) {
     return ((0, typeValidation_1.isNonEmptyString)(value)
         && fs_1.default.existsSync(value)

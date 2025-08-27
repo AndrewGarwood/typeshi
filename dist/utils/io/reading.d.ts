@@ -1,8 +1,10 @@
 import { CleanStringOptions } from "../regex";
 import { FileData, ParseOneToManyOptions } from "./types/Io";
 import { DelimiterCharacterEnum } from "./types";
-export declare function isDirectory(value: any): boolean;
-export declare function isFile(value: string): boolean;
+/** for testing if `pathString (value)` points to an existing directory */
+export declare function isDirectory(value: any): value is string;
+/** for testing if `pathString (value)` points to an existing file */
+export declare function isFile(value: string): value is string;
 export interface CsvValidationOptions {
     allowEmptyRows?: boolean;
     allowInconsistentColumns?: boolean;
