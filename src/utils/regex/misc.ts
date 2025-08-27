@@ -20,7 +20,7 @@ export function extractFileName(
     if (!isNonEmptyString(filePath)) { return 'undefined' }
     let fileName = path.basename(filePath)
     if (removeExtension) {
-        fileName = fileName.replace(/(?<=.+)\.[a-z]{1,}$/i, '');
+        fileName = fileName.replace(/(?<=.+)\.[a-z0-9]{1,}$/i, '');
     }
     return fileName;
 }

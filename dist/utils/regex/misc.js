@@ -25,7 +25,7 @@ function extractFileName(filePath, removeExtension = true) {
     }
     let fileName = node_path_1.default.basename(filePath);
     if (removeExtension) {
-        fileName = fileName.replace(/(?<=.+)\.[a-z]{1,}$/i, '');
+        fileName = fileName.replace(/(?<=.+)\.[a-z0-9]{1,}$/i, '');
     }
     return fileName;
 }
