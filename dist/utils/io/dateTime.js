@@ -4,12 +4,12 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DEFAULT_TIMEZONE = exports.DEFAULT_LOCALE = exports.ISO_PATTERN = exports.TimeUnitEnum = exports.DateFormatEnum = void 0;
-exports.getCurrentPacificTime = getCurrentPacificTime;
-exports.toPacificTime = toPacificTime;
-exports.getUnixTimestampFromISO = getUnixTimestampFromISO;
 exports.getDateFromUnixTimestamp = getDateFromUnixTimestamp;
 exports.calculateDifferenceOfDateStrings = calculateDifferenceOfDateStrings;
+exports.getUnixTimestampFromISO = getUnixTimestampFromISO;
 exports.parseLocaleStringToDate = parseLocaleStringToDate;
+exports.getCurrentPacificTime = getCurrentPacificTime;
+exports.toPacificTime = toPacificTime;
 /**
  * @enum {string} **`DateFormatEnum`**
  * @property {string} ISO - ISO format (YYYY-MM-DDTHH:mm:ss.sssZ)
@@ -64,50 +64,6 @@ exports.DEFAULT_LOCALE = 'en-US';
  */
 exports.DEFAULT_TIMEZONE = 'America/Los_Angeles';
 /**
- * @description Gets the current date and time in Pacific Time in Locale format
- * @returns {string} The current date and time in Pacific Time in Locale format
- * @example "4/16/2025, 9:00:15 AM"
- */
-function getCurrentPacificTime() {
-    const currentDate = new Date();
-    const pacificTime = currentDate.toLocaleString(exports.DEFAULT_LOCALE, { timeZone: exports.DEFAULT_TIMEZONE });
-    return pacificTime;
-}
-/**
- * @description Converts a date string to Pacific Time
- * @param {string} initialDateString The date string to convert
- * @returns {string} The date string in Pacific Time
- */
-function toPacificTime(initialDateString) {
-    const initialDate = new Date(initialDateString);
-    const pacificTime = initialDate.toLocaleString(exports.DEFAULT_LOCALE, { timeZone: exports.DEFAULT_TIMEZONE });
-    return pacificTime;
-}
-/**
- * @description Converts a date string in ISO format (YYYY-MM-DD) to a Unix timestamp in milliseconds
- * @param dateString `string` to convert
- * @returns **`timestamp`** `date.getTime() | null` The Unix timestamp in milliseconds
- */
-function getUnixTimestampFromISO(dateString) {
-    if (!dateString) {
-        console.error('No date string provided');
-        return null;
-    }
-    if (typeof dateString !== 'string') {
-        console.error('Date string must be a string');
-        return null;
-    }
-    if (dateString.length > 10) {
-        dateString = dateString.substring(0, 10);
-    }
-    if (!exports.ISO_PATTERN.test(dateString)) {
-        console.error('Date string must be in ISO format (YYYY-MM-DD)');
-        return null;
-    }
-    const date = new Date(dateString);
-    return date.getTime();
-}
-/**
  * @description Converts a Unix timestamp to a date string in the specified format
  * @param unixTimestamp `number` - The unix timestamp in milliseconds or seconds to convert
  * @param dateFormat {@link DateFormatEnum} - The format to return the date in
@@ -145,13 +101,13 @@ function getDateFromUnixTimestamp(unixTimestamp, dateFormat) {
     return null;
 }
 /**
- *
- * @param ds1 first date string (required) - must be in {@link DateFormatEnum.ISO} format or {@link DateFormatEnum.LOCALE} format. @TODO test other formats
- * @param ds2 second date string (optional) - defaults to current date and time in Pacific Time
+ * @param ds1 first date `string` `(required)` - must be in {@link DateFormatEnum.ISO} format or {@link DateFormatEnum.LOCALE} format. @TODO test other formats
+ * @param ds2 second date `string` `(optional)` - defaults to current date and time in Pacific Time
  * @param unit {@link TimeUnitEnum} - The unit of time to return the difference in
- * @param absoluteDifference boolean - Whether to return the absolute difference (true) or the signed difference (false)
+ * @param absoluteDifference `boolean` `(optional) default = true`
+ * -  Whether to return the absolute difference (true) or the signed difference (false)
  * @description Calculates the difference between two date strings in the specified unit of time. Subtracts ds1 from ds2.
- * @returns {number|null} The difference between the two date strings in the specified {@link TimeUnitEnum} unit, or null if an error occurs
+ * @returns **`difference`** `number | null` The difference between the two date strings in the specified {@link TimeUnitEnum} unit, or `null` if an error occurs
  */
 function calculateDifferenceOfDateStrings(ds1, ds2 = getCurrentPacificTime(), unit = TimeUnitEnum.MILLISECONDS, absoluteDifference = true) {
     const date1 = new Date(ds1);
@@ -174,6 +130,30 @@ function calculateDifferenceOfDateStrings(ds1, ds2 = getCurrentPacificTime(), un
             console.error('Invalid time unit specified. Use TimeUnitEnum.MILLISECONDS, TimeUnitEnum.SECONDS, TimeUnitEnum.MINUTES, TimeUnitEnum.HOURS, or TimeUnitEnum.DAYS');
             return null;
     }
+}
+/**
+ * @description Converts a date string in ISO format (YYYY-MM-DD) to a Unix timestamp in milliseconds
+ * @param dateString `string` to convert
+ * @returns **`timestamp`** `date.getTime() | null` The Unix timestamp in milliseconds
+ */
+function getUnixTimestampFromISO(dateString) {
+    if (!dateString) {
+        console.error('No date string provided');
+        return null;
+    }
+    if (typeof dateString !== 'string') {
+        console.error('Date string must be a string');
+        return null;
+    }
+    if (dateString.length > 10) {
+        dateString = dateString.substring(0, 10);
+    }
+    if (!exports.ISO_PATTERN.test(dateString)) {
+        console.error('Date string must be in ISO format (YYYY-MM-DD)');
+        return null;
+    }
+    const date = new Date(dateString);
+    return date.getTime();
 }
 /**
  * Parses a locale string into a Date object
@@ -199,4 +179,24 @@ function parseLocaleStringToDate(dateStr) {
     catch (error) {
         throw new Error(`Failed to parse date string: ${dateStr}. Expected format: 'M/D/YYYY, h:mm:ss AM/PM'`);
     }
+}
+/**
+ * @description Gets the current date and time in Pacific Time in Locale format
+ * @returns {string} The current date and time in Pacific Time in Locale format
+ * @example "4/16/2025, 9:00:15 AM"
+ */
+function getCurrentPacificTime() {
+    const currentDate = new Date();
+    const pacificTime = currentDate.toLocaleString(exports.DEFAULT_LOCALE, { timeZone: exports.DEFAULT_TIMEZONE });
+    return pacificTime;
+}
+/**
+ * @description Converts a date string to Pacific Time
+ * @param {string} initialDateString The date string to convert
+ * @returns {string} The date string in Pacific Time
+ */
+function toPacificTime(initialDateString) {
+    const initialDate = new Date(initialDateString);
+    const pacificTime = initialDate.toLocaleString(exports.DEFAULT_LOCALE, { timeZone: exports.DEFAULT_TIMEZONE });
+    return pacificTime;
 }
