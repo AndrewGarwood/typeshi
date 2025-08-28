@@ -264,22 +264,22 @@ export function isInteger(value: any, requireNonNegative: boolean = false): valu
 
 /**
  * @param value `any` 
- * @param allowEmpty `boolean` `default = true`
- * - `if` `true` then `value` is allowed to be an empty object
- * - `if` `false` then `value` must have at least 1 key
- * @param allowArray `boolean` `default = false`
- * - `if` `true` then `value` is allowed to be an array
- * - `if` `false` then `value` must not be an array
+ * @param requireNonEmpty `boolean` `default = true`
+ * - `if` `true` then `value` must have at least 1 key
+ * - `if` `false` then `value` is allowed to be an empty object
+ * @param requireNonArray `boolean` `default = true`
+ * - `if` `true` then `value` must not be an array
+ * - `if` `false` then `value` is allowed to be an array
  * @returns **`isObject`** `boolean` `value is Record<string, any>`
  */
 export function isObject(
     value: any, 
-    allowEmpty: boolean = true,
-    allowArray: boolean = false
+    requireNonEmpty: boolean = true,
+    requireNonArray: boolean = true
 ): value is Record<string, any> {
     return (value && typeof value === 'object'
-        && (allowArray || !Array.isArray(value))
-        && (allowEmpty || Object.keys(value).length > 0)
+        && requireNonArray ? !Array.isArray(value) : true
+        && requireNonEmpty ? Object.keys(value).length > 0 : true
     );
 }
 

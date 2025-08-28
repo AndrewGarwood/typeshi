@@ -125,15 +125,15 @@ export declare function isPrimitiveValue(value: any): value is string | number |
 export declare function isInteger(value: any, requireNonNegative?: boolean): value is number;
 /**
  * @param value `any`
- * @param allowEmpty `boolean` `default = true`
- * - `if` `true` then `value` is allowed to be an empty object
- * - `if` `false` then `value` must have at least 1 key
- * @param allowArray `boolean` `default = false`
- * - `if` `true` then `value` is allowed to be an array
- * - `if` `false` then `value` must not be an array
+ * @param requireNonEmpty `boolean` `default = true`
+ * - `if` `true` then `value` must have at least 1 key
+ * - `if` `false` then `value` is allowed to be an empty object
+ * @param requireNonArray `boolean` `default = true`
+ * - `if` `true` then `value` must not be an array
+ * - `if` `false` then `value` is allowed to be an array
  * @returns **`isObject`** `boolean` `value is Record<string, any>`
  */
-export declare function isObject(value: any, allowEmpty?: boolean, allowArray?: boolean): value is Record<string, any>;
+export declare function isObject(value: any, requireNonEmpty?: boolean, requireNonArray?: boolean): value is Record<string, any>;
 /**
  * @TODO deprecate and remove this
  * @enum {string} **`TypeOfEnum`**

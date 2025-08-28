@@ -244,18 +244,18 @@ function isInteger(value, requireNonNegative = false) {
 }
 /**
  * @param value `any`
- * @param allowEmpty `boolean` `default = true`
- * - `if` `true` then `value` is allowed to be an empty object
- * - `if` `false` then `value` must have at least 1 key
- * @param allowArray `boolean` `default = false`
- * - `if` `true` then `value` is allowed to be an array
- * - `if` `false` then `value` must not be an array
+ * @param requireNonEmpty `boolean` `default = true`
+ * - `if` `true` then `value` must have at least 1 key
+ * - `if` `false` then `value` is allowed to be an empty object
+ * @param requireNonArray `boolean` `default = true`
+ * - `if` `true` then `value` must not be an array
+ * - `if` `false` then `value` is allowed to be an array
  * @returns **`isObject`** `boolean` `value is Record<string, any>`
  */
-function isObject(value, allowEmpty = true, allowArray = false) {
+function isObject(value, requireNonEmpty = true, requireNonArray = true) {
     return (value && typeof value === 'object'
-        && (allowArray || !Array.isArray(value))
-        && (allowEmpty || Object.keys(value).length > 0));
+        && requireNonArray ? !Array.isArray(value) : true
+        && requireNonEmpty ? Object.keys(value).length > 0 : true);
 }
 /**
  * @TODO deprecate and remove this
