@@ -254,8 +254,8 @@ function isInteger(value, requireNonNegative = false) {
  */
 function isObject(value, requireNonEmpty = true, requireNonArray = true) {
     return (value && typeof value === 'object'
-        && requireNonArray ? !Array.isArray(value) : true
-        && requireNonEmpty ? Object.keys(value).length > 0 : true);
+        && (requireNonArray ? !Array.isArray(value) : true)
+        && (requireNonEmpty ? Object.keys(value).length > 0 : true));
 }
 /**
  * @TODO deprecate and remove this

@@ -5,82 +5,6 @@ import { DelimiterCharacterEnum } from "./types";
 export declare function isDirectory(value: any): value is string;
 /** for testing if `pathString (value)` points to an existing file */
 export declare function isFile(value: string): value is string;
-export interface CsvValidationOptions {
-    allowEmptyRows?: boolean;
-    allowInconsistentColumns?: boolean;
-    maxRowsToCheck?: number;
-}
-/**
- * @notimplemented
- * @TODO
- * @param arg1
- * @param requiredHeaders
- * @param options
- * @returns
- */
-export declare function isValidCsv(arg1: string | FileData | Record<string, any>[], requiredHeaders?: string[], options?: CsvValidationOptions): Promise<boolean>;
-/**
- * @problem has trouble handling case where column value contains a single double quote;
- * e.g. when it's used as the inches unit after a number
- *
- * `sync`
- * @param filePath `string` - must be a string to an existing file, otherwise return `false`.
- * @param requiredHeaders `string[]` - `optional` array of headers that must be present in the CSV file.
- * - If provided, the function checks if all required headers are present in the CSV header row
- * @param options `object` - optional configuration
- * - `allowEmptyRows`: `boolean` - if true, allows rows with all empty fields (default: true)
- * - `allowInconsistentColumns`: `boolean` - if true, allows rows with different column counts (default: false)
- * - `maxRowsToCheck`: `number` - maximum number of rows to validate (default: all rows)
- * @returns **`isValidCsv`** `boolean`
- * - **`true`** `if` the CSV file at `filePath` is valid (proper structure and formatting),
- * - **`false`** `otherwise`.
- */
-export declare function isValidCsvSync(filePath: string, requiredHeaders?: string[], options?: CsvValidationOptions): boolean;
-/**
- * Analyzes a CSV file and returns detailed validation information
- * @param filePath `string` - path to the CSV file
- * @param options `object` - validation options
- * @returns **`analysis`** `object` - detailed analysis of the CSV file
- */
-export declare function analyzeCsv(filePath: string, options?: {
-    sampleSize?: number;
-    checkEncoding?: boolean;
-    detectDelimiter?: boolean;
-}): {
-    isValid: boolean;
-    issues: string[];
-    warnings: string[];
-    stats: {
-        totalRows: number;
-        headerCount: number;
-        maxRowLength: number;
-        minRowLength: number;
-        emptyRows: number;
-        encoding: string | null;
-        detectedDelimiter: string | null;
-    };
-    headers: string[];
-};
-/**
- * Attempts to repair common CSV formatting issues
- * @param filePath `string` - path to the CSV file to repair
- * @param outputPath `string` - path where the repaired CSV will be saved
- * @param options `object` - repair options
- * @returns **`repairResult`** `object` - result of the repair operation
- */
-export declare function repairCsv(filePath: string, outputPath: string, options?: {
-    fixQuoting?: boolean;
-    removeEmptyRows?: boolean;
-    standardizeLineEndings?: boolean;
-    fillMissingColumns?: boolean;
-    fillValue?: string;
-}): {
-    success: boolean;
-    repairsMade: string[];
-    errors: string[];
-};
-/** paths to folders or files */
-export declare function validatePath(...paths: string[]): Promise<void>;
 /**
  * Determines the proper delimiter based on file type or extension
  * @param filePath `string` Path to the file
@@ -214,3 +138,79 @@ export declare function parseExcelForOneToMany(filePath: string, sheetName: stri
  * @returns `Record<string, Array<string>>` - key-value pairs where key is from `keyColumn` and value is an array of values from `valueColumn`
  */
 export declare function parseCsvForOneToMany(filePath: string, keyColumn: string, valueColumn: string, delimiter?: DelimiterCharacterEnum | string, options?: ParseOneToManyOptions): Record<string, Array<string>>;
+export interface CsvValidationOptions {
+    allowEmptyRows?: boolean;
+    allowInconsistentColumns?: boolean;
+    maxRowsToCheck?: number;
+}
+/**
+ * @notimplemented
+ * @TODO
+ * @param arg1
+ * @param requiredHeaders
+ * @param options
+ * @returns
+ */
+export declare function isValidCsv(arg1: string | FileData | Record<string, any>[], requiredHeaders?: string[], options?: CsvValidationOptions): Promise<boolean>;
+/**
+ * @problem has trouble handling case where column value contains a single double quote;
+ * e.g. when it's used as the inches unit after a number
+ *
+ * `sync`
+ * @param filePath `string` - must be a string to an existing file, otherwise return `false`.
+ * @param requiredHeaders `string[]` - `optional` array of headers that must be present in the CSV file.
+ * - If provided, the function checks if all required headers are present in the CSV header row
+ * @param options `object` - optional configuration
+ * - `allowEmptyRows`: `boolean` - if true, allows rows with all empty fields (default: true)
+ * - `allowInconsistentColumns`: `boolean` - if true, allows rows with different column counts (default: false)
+ * - `maxRowsToCheck`: `number` - maximum number of rows to validate (default: all rows)
+ * @returns **`isValidCsv`** `boolean`
+ * - **`true`** `if` the CSV file at `filePath` is valid (proper structure and formatting),
+ * - **`false`** `otherwise`.
+ */
+export declare function isValidCsvSync(filePath: string, requiredHeaders?: string[], options?: CsvValidationOptions): boolean;
+/**
+ * Analyzes a CSV file and returns detailed validation information
+ * @param filePath `string` - path to the CSV file
+ * @param options `object` - validation options
+ * @returns **`analysis`** `object` - detailed analysis of the CSV file
+ */
+export declare function analyzeCsv(filePath: string, options?: {
+    sampleSize?: number;
+    checkEncoding?: boolean;
+    detectDelimiter?: boolean;
+}): {
+    isValid: boolean;
+    issues: string[];
+    warnings: string[];
+    stats: {
+        totalRows: number;
+        headerCount: number;
+        maxRowLength: number;
+        minRowLength: number;
+        emptyRows: number;
+        encoding: string | null;
+        detectedDelimiter: string | null;
+    };
+    headers: string[];
+};
+/**
+ * Attempts to repair common CSV formatting issues
+ * @param filePath `string` - path to the CSV file to repair
+ * @param outputPath `string` - path where the repaired CSV will be saved
+ * @param options `object` - repair options
+ * @returns **`repairResult`** `object` - result of the repair operation
+ */
+export declare function repairCsv(filePath: string, outputPath: string, options?: {
+    fixQuoting?: boolean;
+    removeEmptyRows?: boolean;
+    standardizeLineEndings?: boolean;
+    fillMissingColumns?: boolean;
+    fillValue?: string;
+}): {
+    success: boolean;
+    repairsMade: string[];
+    errors: string[];
+};
+/** paths to folders or files */
+export declare function validatePath(...paths: string[]): Promise<void>;
