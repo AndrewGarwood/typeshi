@@ -278,8 +278,8 @@ export function isObject(
     requireNonArray: boolean = true
 ): value is Record<string, any> {
     return (value && typeof value === 'object'
-        && requireNonArray ? !Array.isArray(value) : true
-        && requireNonEmpty ? Object.keys(value).length > 0 : true
+        && (requireNonArray ? !Array.isArray(value) : true)
+        && (requireNonEmpty ? Object.keys(value).length > 0 : true)
     );
 }
 
