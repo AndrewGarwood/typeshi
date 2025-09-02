@@ -18,7 +18,11 @@ const F = extractFileName(__filename);
  * @returns **`sourceString`** `string` to use in log statements or argumentValidation calls
  */
 export function getSourceString(
-    fileName: string, func: string | Function, funcInfo?: any, startLine?: number, endLine?: number
+    fileName: string, 
+    func: string | Function, 
+    funcInfo?: any, 
+    startLine?: number, 
+    endLine?: number
 ): string {
     let lineNumberText = (isInteger(startLine) 
         ? `:${startLine}` 
@@ -30,7 +34,7 @@ export function getSourceString(
         : ''
     ); 
     let funcName = typeof func === 'string' ? func : func.name
-    return `[${fileName}.${funcName}(${funcInfo ?? ''})${lineNumberText}]`;
+    return `[${fileName}.${funcName}(${isNonEmptyString(funcInfo) ? ` ${funcInfo} `: ''})${lineNumberText}]`;
 }
 
 /**

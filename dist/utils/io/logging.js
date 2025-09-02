@@ -67,7 +67,7 @@ function getSourceString(fileName, func, funcInfo, startLine, endLine) {
         ? lineNumberText + `-${endLine}`
         : '');
     let funcName = typeof func === 'string' ? func : func.name;
-    return `[${fileName}.${funcName}(${funcInfo ?? ''})${lineNumberText}]`;
+    return `[${fileName}.${funcName}(${(0, typeValidation_1.isNonEmptyString)(funcInfo) ? ` ${funcInfo} ` : ''})${lineNumberText}]`;
 }
 /**
  * Auto-formats debug logs at the end of application execution.
