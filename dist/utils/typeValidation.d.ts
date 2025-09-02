@@ -99,12 +99,15 @@ export declare function hasKeys<T extends object>(obj: T, keys: Array<keyof T> |
  */
 export declare function areEquivalentObjects(objA: Record<string, any>, objB: Record<string, any>): boolean;
 /**
- * @TODO maybe should do like charArray.every(char=>isInteger)
- * - and maybe add `requireInteger` param so know whether or not to accept decimal stuff
- * @param value
- * @returns **`isNumericString`** `boolean`
+ * @param value `any`
+ * @param requireInteger `boolean` `default = false`
+ * @param requireNonNegative `boolean` `default = false`
+ * @returns **`isNumeric`** `value is string | number`
+ * - **`true`** `if` `value` is either a `number` or a `string` that can be casted to a `number`
+ * while also meeting the boolean parameter requirements
+ * - **`false`** `otherwise`
  */
-export declare function isNumericString(value: any): boolean;
+export declare function isNumeric(value: any, requireInteger?: boolean, requireNonNegative?: boolean): value is string | number;
 /**
  * @param value `any`
  * @returns **`isNonEmptyString`** `boolean`
@@ -134,6 +137,14 @@ export declare function isInteger(value: any, requireNonNegative?: boolean): val
  * @returns **`isObject`** `boolean` `value is Record<string, any>`
  */
 export declare function isObject(value: any, requireNonEmpty?: boolean, requireNonArray?: boolean): value is Record<string, any>;
+/**
+ * isBoolean is may be unnecessary, but added for completeness
+ */
+/**
+ * @param value `any`
+ * @returns **`isBoolean`** `boolean`
+ */
+export declare function isBoolean(value: any): value is boolean;
 /**
  * @TODO deprecate and remove this
  * @enum {string} **`TypeOfEnum`**

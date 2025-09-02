@@ -13,11 +13,12 @@ exports.isStringArray = isStringArray;
 exports.hasNonTrivialKeys = hasNonTrivialKeys;
 exports.hasKeys = hasKeys;
 exports.areEquivalentObjects = areEquivalentObjects;
-exports.isNumericString = isNumericString;
+exports.isNumeric = isNumeric;
 exports.isNonEmptyString = isNonEmptyString;
 exports.isPrimitiveValue = isPrimitiveValue;
 exports.isInteger = isInteger;
 exports.isObject = isObject;
+exports.isBoolean = isBoolean;
 const index_1 = require("./regex/index");
 /**
  * - alias for {@link isNullLike}
@@ -202,15 +203,36 @@ function areEquivalentObjects(objA, objB) {
     });
 }
 /**
- * @TODO maybe should do like charArray.every(char=>isInteger)
- * - and maybe add `requireInteger` param so know whether or not to accept decimal stuff
- * @param value
- * @returns **`isNumericString`** `boolean`
+ * @param value `any`
+ * @param requireInteger `boolean` `default = false`
+ * @param requireNonNegative `boolean` `default = false`
+ * @returns **`isNumeric`** `value is string | number`
+ * - **`true`** `if` `value` is either a `number` or a `string` that can be casted to a `number`
+ * while also meeting the boolean parameter requirements
+ * - **`false`** `otherwise`
  */
-function isNumericString(value) {
-    if (!isNonEmptyString(value))
+function isNumeric(value, requireInteger = false, requireNonNegative = false) {
+    let numValue;
+    if (typeof value === 'number') {
+        numValue = value;
+    }
+    else if (isNonEmptyString(value)) {
+        const trimmed = value.trim();
+        if (isNaN(Number(trimmed))) {
+            return false;
+        }
+        numValue = Number(trimmed);
+    }
+    else {
         return false;
-    return !isNaN(Number(value.trim()));
+    }
+    if (requireInteger && !Number.isInteger(numValue)) {
+        return false;
+    }
+    if (requireNonNegative && numValue < 0) {
+        return false;
+    }
+    return true;
 }
 /**
  * @param value `any`
@@ -256,6 +278,16 @@ function isObject(value, requireNonEmpty = true, requireNonArray = true) {
     return (value && typeof value === 'object'
         && (requireNonArray ? !Array.isArray(value) : true)
         && (requireNonEmpty ? Object.keys(value).length > 0 : true));
+}
+/**
+ * isBoolean is may be unnecessary, but added for completeness
+ */
+/**
+ * @param value `any`
+ * @returns **`isBoolean`** `boolean`
+ */
+function isBoolean(value) {
+    return (typeof value === 'boolean');
 }
 /**
  * @TODO deprecate and remove this

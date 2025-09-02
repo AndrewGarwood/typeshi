@@ -37,6 +37,13 @@ export declare function existingFileArgument(source: string, extension: string |
 export declare function existingDirectoryArgument(source: string, arg2: string | {
     [label: string]: any;
 }, value?: any): void;
+/**
+ * - uses {@link isNumeric}`(value): value is string | number`
+ * - to check whether `value` is either a `number` or a `string` that can be casted to a `number`
+ * @param source `string`
+ * @param arg2 `string | { [label: string]: any }`
+ * @param value `any`
+ */
 export declare function numericStringArgument(source: string, arg2: string | {
     [label: string]: any;
 }, value?: any): void;

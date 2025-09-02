@@ -12,7 +12,7 @@
 import { 
     isNonEmptyString, isNonEmptyArray, isNullLike, hasKeys, isEmptyArray, 
     TypeOfEnum, 
-    isNumericString,
+    isNumeric,
     isObject,
     isStringArray
 } from "./typeValidation";
@@ -148,24 +148,30 @@ export function existingDirectoryArgument(
     }
 }
 
-
+/**
+ * - uses {@link isNumeric}`(value): value is string | number`
+ * - to check whether `value` is either a `number` or a `string` that can be casted to a `number`
+ * @param source `string`
+ * @param arg2 `string | { [label: string]: any }`
+ * @param value `any`
+ */
 export function numericStringArgument(
     source: string,
     arg2: string | { [label: string]: any },
     value?: any
 ): void {
+    const vSource = bracketed(`${F}.${numericStringArgument.name}`)
     source = bracketed(source);
     let label: string = '';
     if (isObject(arg2)) {
         const keys = Object.keys(arg2);
         if (keys.length !== 1) {
-            throw new Error(`${source} -> [${F}.numericStringArgument()] Invalid argument: '${JSON.stringify(arg2)}' - expected a single key`);
+            throw new Error(`${source} -> ${vSource} Invalid argument: '${JSON.stringify(arg2)}' - expected a single key`);
         }
         label = keys[0];
         value = arg2[label];
     }
-    if (typeof value !== TypeOfEnum.NUMBER 
-        && (typeof value !== TypeOfEnum.STRING || !isNumericString(value))) {
+    if (!isNumeric(value)) {
         let msg = [`${source} Invalid argument: '${label}'`,
             `Expected '${label}' to be: number or string (numeric string)`,
             `Received '${label}' value: ${typeof value} = '${value}'`
@@ -193,8 +199,9 @@ export function numberArgument(
  * @param arg2 `string | { [label: string]: any }` the argument/parameter name
  * @param arg3 `any` the value passed into the `source` 
  * for the argument corresponding to `label`
- * @param requireInteger `boolean` optional, if `true`, validates that `value` is an integer
- * - `default` is `false`, meaning `value` can be a float
+ * @param requireInteger `boolean` `(optional)` `default = false` 
+ * - `if` `true`, validates that `value` is an `integer`
+ * - `if` `false`, `value` can be a `float`
  * @throws **`Error`** if `value` is not a number or is not an integer (if `requireInteger` is `true`)
  * 
  * **`msg`**: `[source()] Invalid argument: '${label}'`

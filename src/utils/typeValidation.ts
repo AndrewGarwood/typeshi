@@ -213,14 +213,38 @@ export function areEquivalentObjects(
 }
 
 /**
- * @TODO maybe should do like charArray.every(char=>isInteger)
- * - and maybe add `requireInteger` param so know whether or not to accept decimal stuff
- * @param value 
- * @returns **`isNumericString`** `boolean`
+ * @param value `any`
+ * @param requireInteger `boolean` `default = false`
+ * @param requireNonNegative `boolean` `default = false`
+ * @returns **`isNumeric`** `value is string | number`
+ * - **`true`** `if` `value` is either a `number` or a `string` that can be casted to a `number`
+ * while also meeting the boolean parameter requirements
+ * - **`false`** `otherwise`
  */
-export function isNumericString(value: any): boolean {
-    if (!isNonEmptyString(value)) return false;
-    return !isNaN(Number(value.trim()));
+export function isNumeric(
+    value: any, 
+    requireInteger: boolean = false, 
+    requireNonNegative: boolean = false
+): value is string | number {
+    let numValue: number;
+    if (typeof value === 'number') {
+        numValue = value;
+    } else if (isNonEmptyString(value)) {
+        const trimmed = value.trim();
+        if (isNaN(Number(trimmed))) {
+            return false;
+        }
+        numValue = Number(trimmed);
+    } else {
+        return false;
+    }
+    if (requireInteger && !Number.isInteger(numValue)) {
+        return false;
+    }
+    if (requireNonNegative && numValue < 0) {
+        return false;
+    }
+    return true;
 }
 
 /**
@@ -281,6 +305,17 @@ export function isObject(
         && (requireNonArray ? !Array.isArray(value) : true)
         && (requireNonEmpty ? Object.keys(value).length > 0 : true)
     );
+}
+
+/**
+ * isBoolean is may be unnecessary, but added for completeness
+ */
+/**
+ * @param value `any`
+ * @returns **`isBoolean`** `boolean`
+ */
+export function isBoolean(value: any): value is boolean {
+    return (typeof value === 'boolean');
 }
 
 /**

@@ -161,19 +161,26 @@ function existingDirectoryArgument(source, arg2, value) {
         throw new Error(msg);
     }
 }
+/**
+ * - uses {@link isNumeric}`(value): value is string | number`
+ * - to check whether `value` is either a `number` or a `string` that can be casted to a `number`
+ * @param source `string`
+ * @param arg2 `string | { [label: string]: any }`
+ * @param value `any`
+ */
 function numericStringArgument(source, arg2, value) {
+    const vSource = (0, exports.bracketed)(`${F}.${numericStringArgument.name}`);
     source = (0, exports.bracketed)(source);
     let label = '';
     if ((0, typeValidation_1.isObject)(arg2)) {
         const keys = Object.keys(arg2);
         if (keys.length !== 1) {
-            throw new Error(`${source} -> [${F}.numericStringArgument()] Invalid argument: '${JSON.stringify(arg2)}' - expected a single key`);
+            throw new Error(`${source} -> ${vSource} Invalid argument: '${JSON.stringify(arg2)}' - expected a single key`);
         }
         label = keys[0];
         value = arg2[label];
     }
-    if (typeof value !== typeValidation_1.TypeOfEnum.NUMBER
-        && (typeof value !== typeValidation_1.TypeOfEnum.STRING || !(0, typeValidation_1.isNumericString)(value))) {
+    if (!(0, typeValidation_1.isNumeric)(value)) {
         let msg = [`${source} Invalid argument: '${label}'`,
             `Expected '${label}' to be: number or string (numeric string)`,
             `Received '${label}' value: ${typeof value} = '${value}'`
@@ -187,8 +194,9 @@ function numericStringArgument(source, arg2, value) {
  * @param arg2 `string | { [label: string]: any }` the argument/parameter name
  * @param arg3 `any` the value passed into the `source`
  * for the argument corresponding to `label`
- * @param requireInteger `boolean` optional, if `true`, validates that `value` is an integer
- * - `default` is `false`, meaning `value` can be a float
+ * @param requireInteger `boolean` `(optional)` `default = false`
+ * - `if` `true`, validates that `value` is an `integer`
+ * - `if` `false`, `value` can be a `float`
  * @throws **`Error`** if `value` is not a number or is not an integer (if `requireInteger` is `true`)
  *
  * **`msg`**: `[source()] Invalid argument: '${label}'`
