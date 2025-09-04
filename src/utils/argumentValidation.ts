@@ -730,10 +730,8 @@ function isEnumArgumentOptions(value: any): value is EnumArgumentOptions {
  * - `isEnumFunctionLabel:` `isEnumFunction` // use `isEnumFunction` to check if valid enum value
  */
 type EnumArgumentOptions = { 
-    [valueLabel: string]: any
-} & ({
-    [validationEntryLabel: string]: EnumObject | ((value: any) => boolean)
-})
+    [entryLabel: string]: any | EnumObject | ((value: any) => boolean)
+}
 // | {
 //     [isEnumFunctionLabel: string]: 
 // })

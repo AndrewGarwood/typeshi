@@ -169,10 +169,8 @@ type EnumObject = Record<string, string> | Record<string, number>;
  * - `isEnumFunctionLabel:` `isEnumFunction` // use `isEnumFunction` to check if valid enum value
  */
 type EnumArgumentOptions = {
-    [valueLabel: string]: any;
-} & ({
-    [validationEntryLabel: string]: EnumObject | ((value: any) => boolean);
-});
+    [entryLabel: string]: any | EnumObject | ((value: any) => boolean);
+};
 export declare function enumArgument(source: string, label: string, value: any, enumLabel: string, enumObject: EnumObject): string | number;
 /**
  * @param source `string` indicating what called `enumArgument()`
