@@ -79,7 +79,7 @@ const typeGuardNamePattern = /(?<=^is).*$/i;
  */
 function stringArgument(source, arg2, value) {
     source = (0, exports.bracketed)(source);
-    const vSource = `[${F}.stringArgument()]`;
+    const vSource = getSourceString(F, stringArgument.name);
     let label = '';
     if ((0, typeValidation_1.isObject)(arg2)) {
         const keys = Object.keys(arg2);
@@ -119,11 +119,12 @@ function multipleExistingFileArguments(source, extension, labeledFilePaths) {
 }
 function existingFileArgument(source, extension, arg3, value) {
     source = (0, exports.bracketed)(source);
+    const vSource = getSourceString(F, existingFileArgument.name);
     let label = '';
     if ((0, typeValidation_1.isObject)(arg3)) {
         const keys = Object.keys(arg3);
         if (keys.length !== 1) {
-            throw new Error(`${source} -> [${F}.existingFileArgument()] Invalid argument: '${JSON.stringify(arg3)}' - expected a single key`);
+            throw new Error(`${source} -> ${vSource} Invalid argument: '${JSON.stringify(arg3)}' - expected a single key`);
         }
         label = keys[0];
         value = arg3[label];
@@ -143,11 +144,12 @@ function existingFileArgument(source, extension, arg3, value) {
 }
 function existingDirectoryArgument(source, arg2, value) {
     source = (0, exports.bracketed)(source);
+    const vSource = getSourceString(F, existingDirectoryArgument.name);
     let label = '';
     if ((0, typeValidation_1.isObject)(arg2)) {
         const keys = Object.keys(arg2);
         if (keys.length !== 1) {
-            throw new Error(`${source} -> [${F}.existingDirectoryArgument()] Invalid argument: '${JSON.stringify(arg2)}' - expected a single key`);
+            throw new Error(`${source} -> ${vSource} Invalid argument: '${JSON.stringify(arg2)}' - expected a single key`);
         }
         label = keys[0];
         value = arg2[label];
@@ -162,15 +164,17 @@ function existingDirectoryArgument(source, arg2, value) {
     }
 }
 /**
- * - uses {@link isNumeric}`(value): value is string | number`
+ * - uses `isNumeric(value): value is string | number`
  * - to check whether `value` is either a `number` or a `string` that can be casted to a `number`
  * @param source `string`
  * @param arg2 `string | { [label: string]: any }`
- * @param value `any`
+ * @param requireInteger `boolean (optional)` `default` = `false` (argument passed into `isNumeric`)
+ * @param requireNonNegative `boolean (optional)` `default` = `false` (argument passed into `isNumeric`)
  */
-function numericStringArgument(source, arg2, value) {
-    const vSource = (0, exports.bracketed)(`${F}.${numericStringArgument.name}`);
+function numericStringArgument(source, arg2, requireInteger = false, requireNonNegative = false) {
+    const vSource = getSourceString(F, numericStringArgument.name);
     source = (0, exports.bracketed)(source);
+    let value;
     let label = '';
     if ((0, typeValidation_1.isObject)(arg2)) {
         const keys = Object.keys(arg2);
@@ -180,10 +184,12 @@ function numericStringArgument(source, arg2, value) {
         label = keys[0];
         value = arg2[label];
     }
-    if (!(0, typeValidation_1.isNumeric)(value)) {
+    if (!(0, typeValidation_1.isNumeric)(value, requireInteger, requireNonNegative)) {
         let msg = [`${source} Invalid argument: '${label}'`,
             `Expected '${label}' to be: number or string (numeric string)`,
-            `Received '${label}' value: ${typeof value} = '${value}'`
+            ` -- requireInteger ? ${requireInteger}`,
+            ` -- requireNonNegative ? ${requireNonNegative}`,
+            `Received '${label}' value: ${typeof value} = '${value}'`,
         ].join(setupLog_1.INDENT_LOG_LINE);
         setupLog_1.typeshiLogger.error(msg);
         throw new Error(msg);
@@ -205,12 +211,13 @@ function numericStringArgument(source, arg2, value) {
  */
 function numberArgument(source, arg2, arg3, requireInteger = false) {
     source = (0, exports.bracketed)(source);
+    const vSource = getSourceString(F, numberArgument.name);
     let label = '';
     let value = arg3;
     if ((0, typeValidation_1.isObject)(arg2)) {
         const keys = Object.keys(arg2);
         if (keys.length !== 1) {
-            throw new Error(`${source} -> [${F}.numberArgument()] Invalid argument: '${JSON.stringify(arg2)}' - expected a single key`);
+            throw new Error(`${source} -> ${vSource} Invalid argument: '${JSON.stringify(arg2)}' - expected a single key`);
         }
         label = keys[0];
         value = arg2[label];
@@ -248,11 +255,12 @@ function numberArgument(source, arg2, arg3, requireInteger = false) {
  * -  `Received '${label}' value: ${typeof value} = '${value}'`
  */
 function booleanArgument(source, arg2, value) {
+    const vSource = getSourceString(F, booleanArgument.name);
     let label = '';
     if ((0, typeValidation_1.isObject)(arg2)) {
         const keys = Object.keys(arg2);
         if (keys.length !== 1) {
-            throw new Error(`[${F}.booleanArgument()] Invalid argument: '${JSON.stringify(arg2)}' - expected a single key`);
+            throw new Error(`${source} -> ${vSource} Invalid argument: '${JSON.stringify(arg2)}' - expected a single key`);
         }
         label = keys[0];
         value = arg2[label];
@@ -277,11 +285,13 @@ function booleanArgument(source, arg2, value) {
  * -  `Received '${label}' value: ${typeof value} = '${value}'`
  */
 function functionArgument(source, arg2, value) {
+    const vSource = getSourceString(F, booleanArgument.name);
+    source = (0, exports.bracketed)(source);
     let label = '';
     if ((0, typeValidation_1.isObject)(arg2)) {
         const keys = Object.keys(arg2);
         if (keys.length !== 1) {
-            let msg = [`[${F}.functionArgument()] Invalid arg2 as labeledFunction`,
+            let msg = [`${source} -> ${vSource} Invalid arg2 as labeledFunction`,
                 `Expected: object with single key-value pair`,
                 `Received: '${JSON.stringify(arg2)}'`,
             ].join(setupLog_1.INDENT_LOG_LINE);
@@ -292,7 +302,7 @@ function functionArgument(source, arg2, value) {
         value = arg2[label];
     }
     if (typeof value !== 'function') {
-        let msg = [`${(0, exports.bracketed)(source)} Invalid argument: '${label}'`,
+        let msg = [`${source} Invalid argument: '${label}'`,
             `Expected '${label}' to be: function`,
             `Received '${label}' value: ${typeof value} = '${value}'`
         ].join(setupLog_1.INDENT_LOG_LINE);
@@ -325,7 +335,7 @@ arg3,
 elementType, 
 /** elementTypeGuard | allowEmpty (boolean) */
 elementTypeGuard, allowEmpty) {
-    const vSource = `[${F}.arrayArgument()]`;
+    const vSource = getSourceString(F, arrayArgument.name);
     source = (0, exports.bracketed)(source);
     let label = '';
     let value = undefined;
@@ -468,7 +478,7 @@ objectTypeGuard,
 /** `allowEmpty (boolean) | undefined` */
 allowEmpty) {
     source = (0, exports.bracketed)(source);
-    const vSource = `[${F}.objectArgument()]`;
+    const vSource = getSourceString(F, objectArgument.name);
     let label = '';
     let functionLabel = '';
     let value = undefined;
@@ -565,11 +575,14 @@ function isEnumArgumentOptions(value) {
     const values = Object.values(value);
     return (keys.length === 2
         && keys.every(k => (0, typeValidation_1.isNonEmptyString)(k))
-        && values.some(v => typeof v === 'number' || typeof v === 'string')
-        && values.some(v => isEnumObject(v)));
+        && values.some(v => typeof v === 'number' || typeof v === 'string') // valueToCheck
+        && values.some(v => // isEnumFunction or EnumObject
+         typeof v === 'function' || isEnumObject(v)));
 }
 /**
  * @param source `string` indicating what called `enumArgument()`
+ * @param arg2 `string | `{@link EnumArgumentOptions}
+ * = `{ [valueLabel: string]: valueToCheck } & ({ isEnumFunction } | { EnumObject })`
  * @returns {string | number} the validated enum value
  * @throws **`Error`** if `value` is not a valid enum value
  *
@@ -586,21 +599,19 @@ function isEnumArgumentOptions(value) {
  * -  `Received '${label}' value: ${value} (${typeof value})`
  * -  `Valid ${enumLabel} options: [key1, value1, key2, value2, ...]`
  */
-function enumArgument(source, 
-/** `label (string) | labeledArgs ({ [label: string]: string | Record<string, number> | Record<string, string> })` */
-arg2, value, enumLabel, enumObject) {
+function enumArgument(source, arg2, value, enumLabel, enumObject) {
     source = (0, exports.bracketed)(source);
     const vSource = `[${F}.enumArgument]`;
-    let label = undefined;
+    let valueLabel = undefined;
     let valueToCheck;
     if ((0, typeValidation_1.isNonEmptyString)(arg2)) {
-        label = arg2;
+        valueLabel = arg2;
         valueToCheck = value;
     }
     else if (isEnumArgumentOptions(arg2)) {
         const keys = Object.keys(arg2);
-        label = keys.find(key => typeof arg2[key] === 'number' || typeof arg2[key] === 'string');
-        if (!label) {
+        valueLabel = keys.find(key => typeof arg2[key] === 'number' || typeof arg2[key] === 'string');
+        if (!valueLabel) {
             let msg = [`${source} -> ${vSource} Invalid parameter: arg2 as EnumArgumentOptions`,
                 `EnumArgumentOptions does not contain a value comparable to values of an EnumObject`,
                 `Expected arg2 to have single entry of format [valueLabel: string]: (string | number)`
@@ -608,14 +619,32 @@ arg2, value, enumLabel, enumObject) {
             setupLog_1.typeshiLogger.error(msg);
             throw new Error(msg);
         }
-        valueToCheck = arg2[label];
+        valueToCheck = arg2[valueLabel];
+        let functionKey = Object.keys(arg2)
+            .find(k => typeof arg2[k] === 'function');
+        if (functionKey) {
+            enumLabel = functionKey.startsWith('is') ?
+                functionKey.slice(2) : '';
+            let isEnumFunction = arg2[functionKey];
+            if (!isEnumFunction(valueToCheck)) {
+                let msg = [`${source} Invalid enum value Argument: '${valueLabel}'`,
+                    `Expected '${valueLabel}' to be: ` + ((0, typeValidation_1.isNonEmptyString)(enumLabel) ? enumLabel : `value satisfying ${functionKey}`),
+                    `Received '${valueLabel}' value: ${typeof valueToCheck} = '${valueToCheck}'`,
+                ].join(setupLog_1.INDENT_LOG_LINE);
+                setupLog_1.typeshiLogger.error(msg);
+                throw new Error(msg);
+            }
+            else { // isEnumFunction(valueToCheck) === true
+                return valueToCheck;
+            }
+        }
         enumLabel = keys
-            .filter(key => key !== label)
+            .filter(key => key !== valueLabel)
             .find(key => isEnumObject(arg2[key]));
         if (!enumLabel) {
             let msg = [`${source} -> ${vSource} Invalid parameter: arg2 as EnumArgumentOptions`,
-                `EnumArgumentOptions does not contain an entry with a value that is an EnumObject`,
-                `Expected arg2 to have single entry of format [enumLabel: string]: EnumObject`
+                `EnumArgumentOptions does not contain an entry with a value that is an EnumObject or isEnumFunction`,
+                `Expected arg2 to have single entry of format [label: string]: EnumObject | Function`
             ].join(setupLog_1.INDENT_LOG_LINE);
             setupLog_1.typeshiLogger.error(msg);
             throw new Error(msg);
@@ -677,10 +706,10 @@ arg2, value, enumLabel, enumObject) {
         }
     }
     if (matchedValue === undefined) {
-        let msg = [`${(0, exports.bracketed)(source)} Invalid argument: '${label}'`,
-            `Expected '${label}' to be: valid ${enumLabel} enum ${isStringEnum
+        let msg = [`${source} Invalid argument: '${valueLabel}'`,
+            `Expected '${valueLabel}' to be: valid ${enumLabel} enum ${isStringEnum
                 ? 'key (string) or value (string)' : 'key (string) or value (number)'}`,
-            `Received '${label}' value: ${valueToCheck} (${typeof valueToCheck})`,
+            `Received '${valueLabel}' value: ${valueToCheck} (${typeof valueToCheck})`,
         ].join(setupLog_1.INDENT_LOG_LINE);
         setupLog_1.typeshiLogger.error(msg);
         throw new Error(msg);
@@ -689,7 +718,8 @@ arg2, value, enumLabel, enumObject) {
 }
 /** use existingFileArgument() or existingDirectoryArgument() */
 function existingPathArgument(source, arg2, value, extension) {
-    const vSource = `[${F}.existingPathArgument()]`;
+    const vSource = getSourceString(F, existingPathArgument.name);
+    source = (0, exports.bracketed)(source);
     let label = '';
     if ((0, typeValidation_1.isObject)(arg2)) {
         const keys = Object.keys(arg2);
@@ -707,7 +737,7 @@ function existingPathArgument(source, arg2, value, extension) {
     let hasExpectedExtension = Boolean(!extension || ((0, typeValidation_1.isNonEmptyString)(extension)
         && value.toLowerCase().endsWith(extension.toLowerCase())));
     if (!(0, typeValidation_1.isNonEmptyString)(value) || !hasExpectedExtension || !fs.existsSync(value)) {
-        let msg = [`${(0, exports.bracketed)(source)} Invalid argument: '${label}'`,
+        let msg = [`${source} Invalid argument: '${label}'`,
             `Expected '${label}' to be: existing path`
                 + ((0, typeValidation_1.isNonEmptyString)(extension) ? ` with extension '${extension}'` : ``),
             `Received '${label}' value: ${typeof value} = '${value}'`
@@ -748,4 +778,24 @@ function isFile(value) {
     return ((0, typeValidation_1.isNonEmptyString)(value)
         && fs.existsSync(value)
         && fs.statSync(value).isFile());
+}
+/**
+ * local copy of func from `io/logging.ts`
+ * @param fileName `string`
+ * @param func `Function` - to get Function.name
+ * @param funcInfo `any` `(optional)` - context or params of func (converted to string)
+ * @param startLine `number` `(optional)`
+ * @param endLine `number` `(optional)`
+ * @returns **`sourceString`** `string` to use in log statements or argumentValidation calls
+ */
+function getSourceString(fileName, func, funcInfo, startLine, endLine) {
+    let lineNumberText = ((0, typeValidation_1.isInteger)(startLine)
+        ? `:${startLine}`
+        : '');
+    lineNumberText = ((0, typeValidation_1.isNonEmptyString)(lineNumberText)
+        && (0, typeValidation_1.isInteger)(endLine)
+        ? lineNumberText + `-${endLine}`
+        : '');
+    let funcName = typeof func === 'string' ? func : func.name;
+    return `[${fileName}.${funcName}(${(0, typeValidation_1.isNonEmptyString)(funcInfo) ? ` ${funcInfo} ` : ''})${lineNumberText}]`;
 }

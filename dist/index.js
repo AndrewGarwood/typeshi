@@ -1,7 +1,6 @@
 "use strict";
 /**
  * @file src/index.ts
- * Main entry point for the typeshi utility package
  */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;

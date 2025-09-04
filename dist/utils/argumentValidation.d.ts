@@ -38,15 +38,16 @@ export declare function existingDirectoryArgument(source: string, arg2: string |
     [label: string]: any;
 }, value?: any): void;
 /**
- * - uses {@link isNumeric}`(value): value is string | number`
+ * - uses `isNumeric(value): value is string | number`
  * - to check whether `value` is either a `number` or a `string` that can be casted to a `number`
  * @param source `string`
  * @param arg2 `string | { [label: string]: any }`
- * @param value `any`
+ * @param requireInteger `boolean (optional)` `default` = `false` (argument passed into `isNumeric`)
+ * @param requireNonNegative `boolean (optional)` `default` = `false` (argument passed into `isNumeric`)
  */
 export declare function numericStringArgument(source: string, arg2: string | {
     [label: string]: any;
-}, value?: any): void;
+}, requireInteger?: boolean, requireNonNegative?: boolean): void;
 export declare function numberArgument(source: string, labeledNumber: {
     [label: string]: any;
 }, requireInteger?: boolean): void;
@@ -160,15 +161,27 @@ labeledArgs: ObjectArgumentOptions | {
     [label: string]: any | ((value: any) => boolean);
 }, allowEmpty?: boolean): void;
 type EnumObject = Record<string, string> | Record<string, number>;
+/**
+ * Object with 2 entries:
+ * 1. `valueLabel` mapped to `valueToCheck`
+ * 2. **One of:**
+ * - `enumLabel` mapped to {@link EnumObject} // let `enumArgument()` check if valid enum value
+ * - `isEnumFunctionLabel:` `isEnumFunction` // use `isEnumFunction` to check if valid enum value
+ */
 type EnumArgumentOptions = {
     [valueLabel: string]: any;
-} & {
+} & ({
     [enumLabel: string]: EnumObject;
-};
+} | {
+    [isEnumFunctionLabel: string]: (value: any) => boolean;
+});
 export declare function enumArgument(source: string, label: string, value: any, enumLabel: string, enumObject: EnumObject): string | number;
-export declare function enumArgument(source: string, labeledArgs: EnumArgumentOptions | {
-    [label: string]: string | EnumObject;
-}): string | number;
+/**
+ * @param source `string` indicating what called `enumArgument()`
+ * @param labeledArgs {@link EnumArgumentOptions}
+ * = `{ [valueLabel: string]: valueToCheck } & ({ isEnumFunction } | { EnumObject })`
+ */
+export declare function enumArgument(source: string, labeledArgs: EnumArgumentOptions): string | number;
 /** use existingFileArgument() or existingDirectoryArgument() */
 export declare function existingPathArgument(source: string, arg2: string | {
     [label: string]: any;
