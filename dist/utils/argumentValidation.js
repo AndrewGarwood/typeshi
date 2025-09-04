@@ -601,7 +601,7 @@ function isEnumArgumentOptions(value) {
  */
 function enumArgument(source, arg2, value, enumLabel, enumObject) {
     source = (0, exports.bracketed)(source);
-    const vSource = `[${F}.enumArgument]`;
+    const vSource = getSourceString(F, enumArgument.name);
     let valueLabel = undefined;
     let valueToCheck;
     if ((0, typeValidation_1.isNonEmptyString)(arg2)) {

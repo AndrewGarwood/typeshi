@@ -732,10 +732,11 @@ function isEnumArgumentOptions(value: any): value is EnumArgumentOptions {
 type EnumArgumentOptions = { 
     [valueLabel: string]: any
 } & ({
-    [enumLabel: string]: EnumObject 
-} | {
-    [isEnumFunctionLabel: string]: (value: any) => boolean
+    [validationEntryLabel: string]: EnumObject | ((value: any) => boolean)
 })
+// | {
+//     [isEnumFunctionLabel: string]: 
+// })
 
 export function enumArgument(
     source: string,
@@ -783,7 +784,7 @@ export function enumArgument(
     enumObject?: EnumObject | undefined,
 ): string | number {
     source = bracketed(source);
-    const vSource = `[${F}.enumArgument]`;
+    const vSource = getSourceString(F, enumArgument.name);
     let valueLabel: string | undefined = undefined;
     let valueToCheck: any;
     if (isNonEmptyString(arg2)) {

@@ -171,9 +171,7 @@ type EnumObject = Record<string, string> | Record<string, number>;
 type EnumArgumentOptions = {
     [valueLabel: string]: any;
 } & ({
-    [enumLabel: string]: EnumObject;
-} | {
-    [isEnumFunctionLabel: string]: (value: any) => boolean;
+    [validationEntryLabel: string]: EnumObject | ((value: any) => boolean);
 });
 export declare function enumArgument(source: string, label: string, value: any, enumLabel: string, enumObject: EnumObject): string | number;
 /**
