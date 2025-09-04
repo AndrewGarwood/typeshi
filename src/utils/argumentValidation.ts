@@ -494,7 +494,9 @@ export function arrayArgument(
             )
         )
     );
-    if (typeof elementTypeGuard === 'function' && typeGuardIsForArray) {
+    if (typeof elementTypeGuard === 'function' 
+        && typeGuardIsForArray 
+        && !elementTypeGuard(value)) {
         let msg = [`${source} Invalid Array Argument: '${label}'`,
             `Expected '${label}' to be: Array`+(elementType ? `<${elementType}>`:'')+
             ` (typeGuard used = '${elementTypeGuard.name}')`,
