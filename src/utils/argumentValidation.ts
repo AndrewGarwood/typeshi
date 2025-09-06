@@ -8,6 +8,7 @@
  * - change the validation functions such that they return the validated value, if possible?
  * - or maybe have them return boolean type predicates ? 
  * - -> maybe have to make a class
+ * - research the thingy where a type is after the function name and before parens
  */
 import { 
     isNonEmptyString, isNonEmptyArray, isNullLike, hasKeys, isEmptyArray, 
@@ -21,9 +22,9 @@ import {
     typeshiLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL 
 } from "../config/setupLog";
 import { RegExpFlagsEnum, stringEndsWithAnyOf } from "./regex";
-import { extractFileName } from "./regex/misc"
 import * as fs from "fs";
-const F = extractFileName(__filename);
+import path from "node:path";
+
 
 const typeGuardNamePattern = /(?<=^is).*$/i;
 
@@ -45,7 +46,7 @@ export function stringArgument(
     value?: any,
 ): void {
     source = bracketed(source);
-    const vSource = getSourceString(F, stringArgument.name);
+    const vSource = getSourceString(__filename, stringArgument.name);
     let label: string = '';
     if (isObject(arg2)) {
         const keys = Object.keys(arg2);
@@ -100,7 +101,7 @@ export function existingFileArgument(
     value?: any,
 ): void {
     source = bracketed(source);
-    const vSource = getSourceString(F, existingFileArgument.name);
+    const vSource = getSourceString(__filename, existingFileArgument.name);
     let label: string = '';
     if (isObject(arg3)) {
         const keys = Object.keys(arg3);
@@ -131,7 +132,7 @@ export function existingDirectoryArgument(
     value?: any,
 ): void {
     source = bracketed(source);
-    const vSource = getSourceString(F, existingDirectoryArgument.name);
+    const vSource = getSourceString(__filename, existingDirectoryArgument.name);
     let label: string = '';
     if (isObject(arg2)) {
         const keys = Object.keys(arg2);
@@ -165,7 +166,7 @@ export function numericStringArgument(
     requireInteger: boolean = false,
     requireNonNegative: boolean = false,
 ): void {
-    const vSource = getSourceString(F, numericStringArgument.name);
+    const vSource = getSourceString(__filename, numericStringArgument.name);
     source = bracketed(source);
     let value: any;
     let label: string = '';
@@ -180,7 +181,7 @@ export function numericStringArgument(
     if (!isNumeric(value, requireInteger, requireNonNegative)) {
         let msg = [`${source} Invalid argument: '${label}'`,
             `Expected '${label}' to be: number or string (numeric string)`,
-            ` -- requireInteger ? ${requireInteger}`,
+            ` --     requireInteger ? ${requireInteger}`,
             ` -- requireNonNegative ? ${requireNonNegative}`,
             `Received '${label}' value: ${typeof value} = '${value}'`,
         ].join(TAB);
@@ -223,7 +224,7 @@ export function numberArgument(
     requireInteger: boolean = false
 ): void {
     source = bracketed(source);
-    const vSource = getSourceString(F, numberArgument.name);
+    const vSource = getSourceString(__filename, numberArgument.name);
     let label: string = '';
     let value: any = arg3;
     if (isObject(arg2)) {
@@ -237,7 +238,7 @@ export function numberArgument(
             requireInteger = arg3;
         }
     }
-    if (typeof value !== TypeOfEnum.NUMBER || isNaN(value)) {
+    if (typeof value !== 'number' || isNaN(value)) {
         let msg = [`${source} Invalid argument: '${label}'`,
             `Expected '${label}' to be: number`,
             `Received '${label}' value: ${typeof value} = '${value}'`
@@ -272,7 +273,7 @@ export function booleanArgument(
     arg2: string | { [label: string]: any },
     value?: any
 ): void {
-    const vSource = getSourceString(F, booleanArgument.name);
+    const vSource = getSourceString(__filename, booleanArgument.name);
     let label: string = '';
     if (isObject(arg2)) {
         const keys = Object.keys(arg2);
@@ -282,9 +283,9 @@ export function booleanArgument(
         label = keys[0];
         value = arg2[label];
     }
-    if (typeof value !== TypeOfEnum.BOOLEAN) {
+    if (typeof value !== 'boolean') {
         throw new Error([`${bracketed(source)} Invalid argument: '${label}'`,
-            `Expected '${label}' to be: ${TypeOfEnum.BOOLEAN}`,
+            `Expected '${label}' to be: boolean`,
             `Received '${label}' value: ${typeof value} = '${value}'`
         ].join(TAB));
     }
@@ -307,7 +308,7 @@ export function functionArgument(
     arg2: string | { [label: string]: any},
     value?: any
 ): void {
-    const vSource = getSourceString(F, booleanArgument.name);
+    const vSource = getSourceString(__filename, booleanArgument.name);
     source = bracketed(source)
     let label: string = '';
     if (isObject(arg2)) {
@@ -414,7 +415,7 @@ export function arrayArgument(
     elementTypeGuard?: ((value: any) => boolean) | undefined,
     allowEmpty?: boolean | undefined
 ): void {
-    const vSource = getSourceString(F, arrayArgument.name);
+    const vSource = getSourceString(__filename, arrayArgument.name);
     source = bracketed(source);
     let label: string = '';
     let value: any = undefined;
@@ -613,7 +614,7 @@ export function objectArgument(
     allowEmpty?: boolean | undefined
 ): void {
     source = bracketed(source);
-    const vSource = getSourceString(F, objectArgument.name);
+    const vSource = getSourceString(__filename, objectArgument.name);
     let label: string = '';
     let functionLabel: string | undefined = '';
     let value: any = undefined;
@@ -784,7 +785,7 @@ export function enumArgument(
     enumObject?: EnumObject | undefined,
 ): string | number {
     source = bracketed(source);
-    const vSource = getSourceString(F, enumArgument.name);
+    const vSource = getSourceString(__filename, enumArgument.name);
     let valueLabel: string | undefined = undefined;
     let valueToCheck: any;
     if (isNonEmptyString(arg2)) {
@@ -909,7 +910,7 @@ export function existingPathArgument(
     value?: any,
     extension?: string
 ): void {
-    const vSource = getSourceString(F, existingPathArgument.name);
+    const vSource = getSourceString(__filename, existingPathArgument.name);
     source = bracketed(source)
     let label: string = '';
     if (isObject(arg2)) {
@@ -993,6 +994,7 @@ function getSourceString(
     startLine?: number, 
     endLine?: number
 ): string {
+    fileName = path.basename(fileName).replace(/(?<=.+)\.[a-z0-9]{1,}$/i, '');
     let lineNumberText = (isInteger(startLine) 
         ? `:${startLine}` 
         : ''

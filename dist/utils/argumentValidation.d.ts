@@ -8,6 +8,7 @@
  * - change the validation functions such that they return the validated value, if possible?
  * - or maybe have them return boolean type predicates ?
  * - -> maybe have to make a class
+ * - research the thingy where a type is after the function name and before parens
  */
 import { TypeOfEnum } from "./typeValidation";
 /**

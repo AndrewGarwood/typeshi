@@ -20,6 +20,7 @@ export declare function writeObjectToJsonSync(options: WriteJsonOptions): void;
  * @returns {void}
  */
 export declare function writeObjectToJsonSync(data: Record<string, any> | string, filePath: string, indent?: number, enableOverwrite?: boolean): void;
+export declare const writeJsonSync: typeof writeObjectToJsonSync;
 /**
  * @param data `Record<string, any> | string` - JSON data to stringify
  * @param indent `number` `optional`, default=`0` - number of additional indents to add to each line
@@ -39,7 +40,7 @@ export declare function getFileNameTimestamp(): string;
  */
 export declare function writeListsToCsvSync(listData: Record<string, Array<string>>, outputPath: string, delimiter?: string, columnDelimiter?: string): void;
 /**
- * @TODO consider if should allow other file extensions
+ * @TODO handle other file extensions
  * @param maxMB - Maximum size in MB to keep in the file, default is `5` -> 5MB.
  * @param filePaths arbitrary number of text file paths to trim
  */

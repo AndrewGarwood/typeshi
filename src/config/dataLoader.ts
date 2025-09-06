@@ -1,32 +1,27 @@
 /**
  * @file src/config/dataLoader.ts
+ * @TODO change this file and env.ts to use initializeEnvironment() pattern
  */
 import { STOP_RUNNING, DATA_DIR } from "./env";
-import { typeshiLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL, INFO_LOGS as INFO } from "./setupLog";
-import { readJsonFileAsObject as read, validatePath } from "../utils/io/reading";
-import { isNonEmptyArray, hasKeys, isNonEmptyString, } from "../utils/typeValidation";
+import { 
+    typeshiLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL, 
+    typeshiSimpleLogger as slog 
+} from "./setupLog";
+import { readJsonFileAsObject as read } from "../utils/io/reading";
+import { isNonEmptyArray, hasKeys, isNonEmptyString, isObject } from "../utils/typeValidation";
 import path from "node:path";
 import * as validate from "../utils/argumentValidation";
 
 let dataInitialized = false;
 
-const REGEX_CONSTANTS_DIR = path.join(DATA_DIR, 'regex');
-validate.existingDirectoryArgument(`[typeshi.config.dataLoader()]`, {REGEX_CONSTANTS_DIR});
-
 let config: DataLoaderConfig | null = null;
-/** 
- * required keys of {@link DataLoaderConfig} 
- * - `['regexFile',]` */
-const configKeys = [
-    'regexFile',
-];
 
 /**
  * @enum {string} **`DataDomainEnum`** `string`
- * @property **`REGEX`** = `'REGEX'`
+ * @property **`REGEX`** = `'regex'`
  */
 export enum DataDomainEnum {
-    REGEX = 'REGEX'
+    REGEX = 'regex'
 }
 
 /* ---------------------- LOAD REGEX CONFIG -------------------------- */
@@ -41,25 +36,23 @@ const DEFAULT_DOMAINS_TO_LOAD = [
  * This should be called once at the start of the application.
  */
 export async function initializeData(...domains: DataDomainEnum[]): Promise<void> {
-    const source = `[typeshi.dataLoader.initializeData()]`;
+    const source = getSourceString(__filename, initializeData.name);
     if (dataInitialized) {
         mlog.info(`${source} Data already initialized, skipping...`);
         return;
     }
-    const DATA_LOADER_CONFIG_FILE = path.join(DATA_DIR, `dataLoader_config.json`);
-    validate.existingFileArgument(source, '.json', {DATA_LOADER_CONFIG_FILE});
-    config = await loadConfig(DATA_LOADER_CONFIG_FILE) as DataLoaderConfig;
-    const regexPath = path.join(REGEX_CONSTANTS_DIR, config.regexFile);
+    
     if (!domains || domains.length === 0) {
         domains.push(...DEFAULT_DOMAINS_TO_LOAD)
     }
-    INFO.push((INFO.length === 0 ? '' : NL) 
-    + `${source} Starting data initialization...`);
+    slog.info(`${source} Starting data initialization...`);
     try {
+        const configPath = path.join(DATA_DIR, `typeshi.data.config.json`);        
+        config = await loadConfig(configPath) as DataLoaderConfig;
         for (const d of domains) {
             switch (d) {
                 case DataDomainEnum.REGEX:
-                    regexConstants = await loadRegexConstants(regexPath);
+                    regexConstants = await loadRegexConstants(path.join(DATA_DIR, DataDomainEnum.REGEX, config.regexFile));
                     break;
                 default:
                     mlog.warn(
@@ -69,9 +62,7 @@ export async function initializeData(...domains: DataDomainEnum[]): Promise<void
             }
         }
         dataInitialized = true;
-        INFO.push(NL+`${source} ✓ All data initialized successfully`);
-        mlog.info(...INFO);
-        INFO.length = 0;
+        slog.info(`${source} ✓ All data initialized successfully`);
     } catch (error) {
         mlog.error(`${source} ✗ Failed to initialize data:`, error);
         STOP_RUNNING(1, `Data initialization failed`);
@@ -114,15 +105,11 @@ export function isDataInitialized(): boolean {
 async function loadConfig(
     jsonPath: string
 ): Promise<DataLoaderConfig> {
-    validatePath(jsonPath);
+    const source = getSourceString(__filename, loadConfig.name);
+    validate.existingFileArgument(source, '.json', {jsonPath});
     let configData = read(jsonPath);
-    if (!isDataLoaderConfig(configData)) {
-        throw new Error([`[dataLoader.getConfig()] Invalid DataLoaderConfig json file`,
-            `config filePath: '${jsonPath}'`,
-            `  required keys: ${JSON.stringify(configKeys)}`
-        ].join(TAB));
-    }
-    return configData;
+    validate.objectArgument(source, {configData, isDataLoaderConfig});
+    return configData as DataLoaderConfig;
 }
 
 
@@ -132,8 +119,8 @@ async function loadConfig(
 async function loadRegexConstants(
     filePath: string
 ): Promise<RegexConstants> {
-    const source = `[dataLoader.loadRegexConstants()]`;
-    INFO.push(NL+`${source} Loading regex constants...`);
+    const source = getSourceString(__filename, loadRegexConstants.name);
+    slog.info(`${source} Loading regex constants...`);
     validate.existingFileArgument(source, '.json', {filePath});
     const REGEX_CONSTANTS = read(filePath) as Record<string, any>;
     if (!REGEX_CONSTANTS || !hasKeys(REGEX_CONSTANTS, 
@@ -148,7 +135,7 @@ async function loadRegexConstants(
     if (!isNonEmptyArray(JOB_TITLE_SUFFIX_LIST)) {
         throw new Error(`${source} Invalid JOB_TITLE_SUFFIX_LIST in REGEX_CONSTANTS file at '${filePath}'`);
     }
-    INFO.push(NL+`${source} ✓ Regex constants loaded successfully`);
+    slog.info(`${source} ✓ Regex constants loaded successfully`);
     return {
         COMPANY_KEYWORD_LIST,
         JOB_TITLE_SUFFIX_LIST,
@@ -157,8 +144,7 @@ async function loadRegexConstants(
 
 
 function isDataLoaderConfig(value: any): value is DataLoaderConfig {
-    return (value && typeof value === 'object'
-        && hasKeys(value, configKeys)
+    return (isObject(value)
         && Object.values(value).every(v => isNonEmptyString(v))
     );
 }
@@ -179,4 +165,14 @@ export interface RegexConstants {
 export type DataLoaderConfig = {
     regexFile: string;
     [key: string]: string
+}
+
+function getSourceString(
+    fileName: string, 
+    func: string | Function, 
+    funcInfo?: any, 
+): string {
+    fileName = path.basename(fileName).replace(/(?<=.+)\.[a-z0-9]{1,}$/i, '');
+    let funcName = typeof func === 'string' ? func : func.name
+    return `[typeshi.${fileName}.${funcName}(${isNonEmptyString(funcInfo) ? ` ${funcInfo} `: ''})]`;
 }

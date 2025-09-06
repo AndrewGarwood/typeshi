@@ -36,6 +36,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.readJsonSync = void 0;
 exports.isDirectory = isDirectory;
 exports.isFile = isFile;
 exports.getDelimiterFromFilePath = getDelimiterFromFilePath;
@@ -58,6 +59,7 @@ exports.isValidCsvSync = isValidCsvSync;
 exports.analyzeCsv = analyzeCsv;
 exports.repairCsv = repairCsv;
 exports.validatePath = validatePath;
+exports.extractTargetRows = extractTargetRows;
 /**
  * @file src/utils/io/reading.ts
  */
@@ -72,6 +74,7 @@ const config_1 = require("../../config");
 const types_1 = require("./types");
 const typeValidation_1 = require("../typeValidation");
 const validate = __importStar(require("../argumentValidation"));
+const logging_1 = require("./logging");
 const F = (0, misc_1.extractFileName)(__filename);
 /** for testing if `pathString (value)` points to an existing directory */
 function isDirectory(value) {
@@ -108,17 +111,27 @@ function getDelimiterFromFilePath(filePath) {
  * @returns **`jsonData`** — `Record<string, any>`
  * - JSON data as an object
  */
+exports.readJsonSync = readJsonFileAsObject;
+/**
+ * @param filePath `string`
+ * @returns **`jsonData`** — `Record<string, any>`
+ * - JSON data as an object
+ */
 function readJsonFileAsObject(filePath) {
-    filePath = coerceFileExtension(filePath, 'json');
-    validate.existingPathArgument(`reading.readJsonFileAsObject`, { filePath });
+    const source = (0, logging_1.getSourceString)(F, readJsonFileAsObject.name);
     try {
+        filePath = coerceFileExtension(filePath, 'json');
+        validate.existingPathArgument(source, { filePath });
         const data = fs_1.default.readFileSync(filePath, 'utf8');
         const jsonData = JSON.parse(data);
         return jsonData;
     }
-    catch (err) {
-        config_1.typeshiLogger.error('[readJsonFileAsObject()] Error reading or parsing the JSON file:', config_1.INDENT_LOG_LINE + `Given filePath: '${filePath}'`);
-        throw new Error(JSON.stringify(err));
+    catch (error) {
+        config_1.typeshiLogger.error([`${source} Error reading JSON file`,
+            `Given filePath: '${filePath}'`,
+            `error: `, error
+        ].join(config_1.INDENT_LOG_LINE));
+        throw new Error(JSON.stringify(error));
     }
 }
 /**
@@ -152,7 +165,7 @@ function coerceFileExtension(filePath, expectedExtension) {
  * @returns **`concatenatedRows`** `Promise<Record<string, any>[]>`
  */
 async function concatenateFiles(arg1, sheetName = 'Sheet1', requiredHeaders = [], strictRequirement = true, targetExtensions = ['.csv', '.tsv', '.xlsx']) {
-    const source = `[reading.concatenateDirectoryFiles()]`;
+    const source = (0, logging_1.getSourceString)(F, concatenateFiles.name);
     validate.stringArgument(source, { sheetName });
     validate.arrayArgument(source, { targetExtensions, isNonEmptyString: typeValidation_1.isNonEmptyString });
     let files;
@@ -370,23 +383,24 @@ async function getCsvRows(arg1) {
  * @param valueColumn `string` - the column name whose contents will be used as values in the dictionary.
  * @returns **`dict`** `Record<string, string>`
  */
-async function getOneToOneDictionary(arg1, keyColumn, valueColumn) {
-    validate.multipleStringArguments(`reading.getOneToOneDictionary`, { keyColumn, valueColumn });
+async function getOneToOneDictionary(arg1, keyColumn, valueColumn, keyOptions, valueOptions) {
+    const source = (0, logging_1.getSourceString)(F, getOneToOneDictionary.name);
+    validate.multipleStringArguments(source, { keyColumn, valueColumn });
     let rows = await handleFileArgument(arg1, getOneToOneDictionary.name, [keyColumn, valueColumn]);
     const dict = {};
     for (const row of rows) {
         if (!(0, typeValidation_1.hasKeys)(row, [keyColumn, valueColumn])) {
-            config_1.typeshiLogger.error(`[getOneToOneDictionary()] Row missing keys: '${keyColumn}' or '${valueColumn}'`);
-            throw new Error(`[getOneToOneDictionary()] Row missing keys: '${keyColumn}' or '${valueColumn}'`);
+            config_1.typeshiLogger.error(`${source} Row missing keys: '${keyColumn}' or '${valueColumn}'`);
+            throw new Error(`${source} Row missing keys: '${keyColumn}' or '${valueColumn}'`);
         }
-        const key = String(row[keyColumn]).trim();
-        const value = String(row[valueColumn]).trim();
+        const key = (0, regex_1.clean)(String(row[keyColumn]), keyOptions);
+        const value = (0, regex_1.clean)(String(row[valueColumn]), valueOptions);
         if (!key || !value) {
-            config_1.typeshiLogger.warn(`[getOneToOneDictionary()] Row missing key or value.`, config_1.INDENT_LOG_LINE + `keyColumn: '${keyColumn}', valueColumn: '${valueColumn}'`);
+            config_1.typeshiLogger.warn(`${source} Row missing key or value.`, config_1.INDENT_LOG_LINE + `keyColumn: '${keyColumn}', valueColumn: '${valueColumn}'`);
             continue;
         }
         if (dict[key]) {
-            config_1.typeshiLogger.warn(`[getOneToOneDictionary()] Duplicate key found: '${key}'`, config_1.INDENT_LOG_LINE + `overwriting value '${dict[key]}' with '${value}'`);
+            config_1.typeshiLogger.warn(`${source} Duplicate key found: '${key}'`, config_1.INDENT_LOG_LINE + `overwriting value '${dict[key]}' with '${value}'`);
         }
         dict[key] = value;
     }
@@ -452,7 +466,7 @@ async function getIndexedColumnValues(arg1, columnName, cleaner) {
  * @returns **`rows`** `Promise<Record<string, any>[]>`
  */
 async function handleFileArgument(arg1, invocationSource, requiredHeaders = [], sheetName) {
-    const source = `[reading.handleFileArgument()]`;
+    const source = (0, logging_1.getSourceString)(F, handleFileArgument.name);
     validate.stringArgument(source, { invocationSource });
     validate.arrayArgument(source, { requiredHeaders, isNonEmptyString: typeValidation_1.isNonEmptyString }, true);
     let rows = [];
@@ -499,7 +513,7 @@ async function handleFileArgument(arg1, invocationSource, requiredHeaders = [], 
  * @returns **`targetFiles`** `string[]` array of full file paths
  */
 function getDirectoryFiles(dir, ...targetExtensions) {
-    const source = `[reading.getDirectoryFiles()]`;
+    const source = (0, logging_1.getSourceString)(F, getDirectoryFiles.name);
     validate.existingPathArgument(source, { dir });
     validate.arrayArgument(source, { targetExtensions, isNonEmptyString: typeValidation_1.isNonEmptyString }, true);
     // ensure all target extensions start with period
@@ -524,7 +538,7 @@ function getDirectoryFiles(dir, ...targetExtensions) {
  * @returns **`dict`** `Promise<Record<string, string[]>>`
  */
 async function getOneToManyDictionary(dataSource, keyColumn, valueColumn, keyOptions, valueOptions, sheetName) {
-    const source = `[${F}.${getOneToManyDictionary.name}()]`;
+    const source = (0, logging_1.getSourceString)(F, getOneToManyDictionary.name);
     validate.multipleStringArguments(source, { keyColumn, valueColumn });
     if (keyOptions)
         validate.objectArgument(source, { keyOptions, isCleanStringOptions: regex_1.isCleanStringOptions });
@@ -546,7 +560,7 @@ async function getOneToManyDictionary(dataSource, keyColumn, valueColumn, keyOpt
     return dict;
 }
 /**
- * @deprecated -> use {@link getOneToOneDictionary}
+ * @deprecated -> use {@link getOneToManyDictionary}
  * @param filePath `string`
  * @param sheetName `string`
  * @param keyColumn `string`
@@ -585,7 +599,7 @@ function parseExcelForOneToMany(filePath, sheetName, keyColumn, valueColumn, opt
     }
 }
 /**
- * @deprecated -> use {@link getOneToOneDictionary}
+ * @deprecated -> use {@link getOneToManyDictionary}
  * @param filePath `string`
  * @param keyColumn `string`
  * @param valueColumn `string`
@@ -1081,4 +1095,96 @@ async function validatePath(...paths) {
             throw new Error(`[ERROR reading.validatePath()]: path does not exist: ${path}`);
         }
     }
+}
+/**
+ * @param rowSource `string | Record<string, any>[]`
+ * @param targetColumn `string`
+ * @param targetValues `string[]`
+ * @param extractor `function (columnValue: string, ...args: any[]) => string`
+ * @param extractorArgs `any[]`
+ * @returns **`targetRows`** `Promise<Record<string, any>[]>`
+ * - array of all rows where either `row[targetColumn]` or `extractor(row[targetColumn])` is in `targetValues`
+ */
+async function extractTargetRows(
+/**
+ * - `string` -> filePath to a csv file
+ * - `Record<string, any>[]` -> array of rows
+ * */
+rowSource, targetColumn, targetValues, extractor, extractorArgs) {
+    const source = (0, logging_1.getSourceString)(F, extractTargetRows.name);
+    if (!(0, typeValidation_1.isNonEmptyString)(rowSource) && !(0, typeValidation_1.isNonEmptyArray)(rowSource)) {
+        throw new Error([`${source} Invalid param 'rowSource'`,
+            `Expected rowSource: string | Record<string, any>[]`,
+            `Received rowSource: '${typeof rowSource}'`
+        ].join(config_1.INDENT_LOG_LINE));
+    }
+    validate.stringArgument(source, { targetColumn });
+    if (extractor !== undefined)
+        validate.functionArgument(source, { extractor });
+    validate.arrayArgument(source, { targetValues, isNonEmptyString: typeValidation_1.isNonEmptyString });
+    const sourceRows = await handleFileArgument(rowSource, extractTargetRows.name, [targetColumn]);
+    const remainingValues = [];
+    let potentials = {};
+    let valuesFound = [];
+    const targetRows = [];
+    for (let i = 0; i < sourceRows.length; i++) {
+        const row = sourceRows[i];
+        if (!(0, typeValidation_1.hasKeys)(row, targetColumn)) {
+            config_1.typeshiLogger.warn([`${source} row does not have provided targetColumn`,
+                `    targetColumn: '${targetColumn}'`,
+                `Object.keys(row):  ${JSON.stringify(Object.keys(row))}`,
+            ].join(config_1.INDENT_LOG_LINE));
+            continue;
+        }
+        const originalValue = String(row[targetColumn]);
+        if (targetValues.includes(originalValue)) {
+            targetRows.push(row);
+            if (!valuesFound.includes(originalValue))
+                valuesFound.push(originalValue);
+            // slog.debug(`${source} ORIGINAL VALUE IN TARGET VALUES`)
+            continue;
+        }
+        if (!extractor) {
+            continue;
+        }
+        const extractedValue = await extractor(originalValue, extractorArgs);
+        if (!(0, typeValidation_1.isNonEmptyString)(extractedValue)) {
+            // slog.warn([`${source} extractor(value) returned invalid string`,
+            //     ` originalValue: '${originalValue}'`, 
+            //     `rowSource type: '${typeof rowSource}'`
+            // ].join(TAB));
+            continue;
+        }
+        if (targetValues.includes(extractedValue)) {
+            targetRows.push(row);
+            if (!valuesFound.includes(extractedValue))
+                valuesFound.push(extractedValue);
+            continue;
+        }
+        let targetMatch = targetValues.find(v => {
+            v = v.toUpperCase();
+            return v.startsWith(extractedValue.toUpperCase());
+        });
+        if (targetMatch) {
+            if (!potentials[targetMatch]) {
+                potentials[targetMatch] = [i];
+            }
+            else {
+                potentials[targetMatch].push(i);
+            }
+            // slog.debug([`${source} Found potentialMatch for a targetValue at rowIndex ${i}`,
+            //     ` originalValue: '${originalValue}'`, 
+            //     `extractedValue: '${extractedValue}'`, 
+            //     `potentialMatch: '${targetMatch}'`, 
+            // ].join(TAB));
+        }
+    }
+    remainingValues.push(...targetValues.filter(v => !valuesFound.includes(v)));
+    // if (remainingValues.length > 0) {
+    //     mlog.warn([`${source} ${remainingValues.length} value(s) from targetValues did not have a matching row`,
+    //         // indentedStringify(remainingValues)
+    //     ].join(TAB));
+    //     write({remainingValues}, path.join(CLOUD_LOG_DIR, `${getFileNameTimestamp()}_remainingValues.json`))
+    // }
+    return { rows: targetRows, remainingValues };
 }

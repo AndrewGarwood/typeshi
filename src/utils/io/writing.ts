@@ -6,9 +6,13 @@ import { DELAY } from "../../config/env";
 import { typeshiLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL } from "../../config/setupLog";
 import { coerceFileExtension, getDelimiterFromFilePath } from "./reading";
 import { DelimiterCharacterEnum, isWriteJsonOptions, WriteJsonOptions } from "./types";
-import { hasKeys, isEmptyArray, isNonEmptyString, } from "../typeValidation";
+import { hasKeys, isEmptyArray, isNonEmptyString, isObject, } from "../typeValidation";
 import * as validate from "../argumentValidation";
 import { existsSync, writeFileSync } from "fs";
+import { getSourceString } from "./logging";
+
+
+
 
 /**
  * Output JSON data to a file with `fs.writeFileSync` or `fs.appendFileSync`.
@@ -38,7 +42,6 @@ export function writeObjectToJsonSync(
     enableOverwrite?: boolean
 ): void
 
-
 export function writeObjectToJsonSync(
     /** {@link WriteJsonOptions} `| Record<string, any> | string`, */
     arg1: WriteJsonOptions | Record<string, any> | string, 
@@ -46,8 +49,9 @@ export function writeObjectToJsonSync(
     indent: number=4,
     enableOverwrite: boolean=true
 ): void {
+    const source = getSourceString(__filename, writeObjectToJsonSync.name);
     if (!arg1) {
-        mlog.error('[writing.writeObjectToJson()] No data to write to JSON file');
+        mlog.error(`${source} No data to write to JSON file'`);
         return;
     }
     let data: Record<string, any> | string;
@@ -61,7 +65,7 @@ export function writeObjectToJsonSync(
         outputEnableOverwrite = arg1.enableOverwrite ?? enableOverwrite;
     } else {
         if (!isNonEmptyString(filePath)) {
-            mlog.error('[writing.writeObjectToJson()] filePath is required when not using WriteJsonOptions object');
+            mlog.error(`${source} filePath is required when not using WriteJsonOptions object'`);
             return;
         }
         data = arg1;
@@ -69,18 +73,23 @@ export function writeObjectToJsonSync(
     }
     
     let objectData: Record<string, any>;
-    if (typeof data === 'string') {
+    if (isNonEmptyString(data)) {
         try {
             objectData = JSON.parse(data) as Record<string, any>;
         } catch (error) {
             mlog.error(
-                '[writing.writeObjectToJson()] Error parsing string to JSON',
+                `${source} Error parsing string to JSON'`,
                 error
             );
             return;
         }
-    } else { // is already an object
+    } else if (isObject(data)) {
         objectData = data;
+    } else {
+        mlog.error(
+            `${source} Invalid parameter 'data'`,
+        );
+        return;
     }
     
     const outputPath = coerceFileExtension(outputFilePath, 'json');
@@ -93,12 +102,14 @@ export function writeObjectToJsonSync(
         }
         // mlog.info(`[writing.writeObjectToJson()] file saved to '${outputPath}'`)
     } catch (error) {
-        mlog.error('[writing.writeObjectToJson()] Error writing to JSON file',
+        mlog.error(`${source} Error writing to JSON file'`,
             error
         );
         throw error;
     }
 }
+
+export const writeJsonSync = writeObjectToJsonSync;
 
 /**
  * @param data `Record<string, any> | string` - JSON data to stringify
@@ -175,7 +186,7 @@ export function writeListsToCsvSync(
 }
 
 /**
- * @TODO consider if should allow other file extensions
+ * @TODO handle other file extensions
  * @param maxMB - Maximum size in MB to keep in the file, default is `5` -> 5MB.
  * @param filePaths arbitrary number of text file paths to trim
  */

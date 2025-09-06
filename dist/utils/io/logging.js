@@ -51,7 +51,7 @@ const validate = __importStar(require("../argumentValidation"));
 const node_path_1 = __importDefault(require("node:path"));
 const F = (0, regex_1.extractFileName)(__filename);
 /**
- * @param fileName `string`
+ * @param fileName `string` passed into `extractFileName()`
  * @param func `Function` - to get Function.name
  * @param funcInfo `any` `(optional)` - context or params of func (converted to string)
  * @param startLine `number` `(optional)`
@@ -59,6 +59,7 @@ const F = (0, regex_1.extractFileName)(__filename);
  * @returns **`sourceString`** `string` to use in log statements or argumentValidation calls
  */
 function getSourceString(fileName, func, funcInfo, startLine, endLine) {
+    fileName = (0, regex_1.extractFileName)(fileName);
     let lineNumberText = ((0, typeValidation_1.isInteger)(startLine)
         ? `:${startLine}`
         : '');

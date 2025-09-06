@@ -1,5 +1,5 @@
 /**
- * @param fileName `string`
+ * @param fileName `string` passed into `extractFileName()`
  * @param func `Function` - to get Function.name
  * @param funcInfo `any` `(optional)` - context or params of func (converted to string)
  * @param startLine `number` `(optional)`

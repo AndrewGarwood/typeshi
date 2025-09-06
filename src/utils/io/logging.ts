@@ -3,14 +3,14 @@
  */
 import * as fs from "fs";
 import { typeshiLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL } from "../../config/setupLog";
-import { isInteger, isIntegerArray, isNonEmptyArray, isNonEmptyString, isStringArray, } from "../typeValidation";
+import { isInteger, isNonEmptyString, isStringArray, } from "../typeValidation";
 import { extractFileName } from "../regex";
 import * as validate from "../argumentValidation";
 import path from "node:path";
 const F = extractFileName(__filename);
 
 /**
- * @param fileName `string` 
+ * @param fileName `string` passed into `extractFileName()`
  * @param func `Function` - to get Function.name
  * @param funcInfo `any` `(optional)` - context or params of func (converted to string)
  * @param startLine `number` `(optional)`
@@ -24,6 +24,7 @@ export function getSourceString(
     startLine?: number, 
     endLine?: number
 ): string {
+    fileName = extractFileName(fileName);
     let lineNumberText = (isInteger(startLine) 
         ? `:${startLine}` 
         : ''

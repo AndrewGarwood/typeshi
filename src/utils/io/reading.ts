@@ -12,9 +12,9 @@ import { RegExpFlagsEnum, StringCaseOptions, stringEndsWithAnyOf,
     isCleanStringOptions
 } from "../regex";
 import { extractFileName } from "../regex/misc";
-import { FileData, ParseOneToManyOptions,} from "./types/Io";
+import { FileData,} from "./types/Io";
 import { 
-    typeshiLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL, SUPPRESSED_LOGS as SUP 
+    typeshiLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL, SUPPRESSED_LOGS as SUP, typeshiSimpleLogger as slog 
 } from "../../config";
 import { DelimiterCharacterEnum, DelimitedFileTypeEnum, isFileData } from "./types";
 import { 
@@ -23,6 +23,7 @@ import {
     isObject
 } from "../typeValidation";
 import * as validate from "../argumentValidation";
+import { getSourceString } from "./logging";
 
 const F = extractFileName(__filename);
 
@@ -40,9 +41,6 @@ export function isFile(value: string): value is string {
         && fs.statSync(value).isFile()
     );
 }
-
-
-
 
 /**
  * Determines the proper delimiter based on file type or extension
@@ -68,18 +66,26 @@ export function getDelimiterFromFilePath(
  * @returns **`jsonData`** — `Record<string, any>` 
  * - JSON data as an object
  */
+export const readJsonSync = readJsonFileAsObject;
+/**
+ * @param filePath `string`
+ * @returns **`jsonData`** — `Record<string, any>` 
+ * - JSON data as an object
+ */
 export function readJsonFileAsObject(filePath: string): Record<string, any> {
-    filePath = coerceFileExtension(filePath, 'json');
-    validate.existingPathArgument(`reading.readJsonFileAsObject`, {filePath});
+    const source = getSourceString(F, readJsonFileAsObject.name);
     try {
+        filePath = coerceFileExtension(filePath, 'json');
+        validate.existingPathArgument(source, {filePath});
         const data = fs.readFileSync(filePath, 'utf8');
         const jsonData = JSON.parse(data);
         return jsonData;
-    } catch (err) {
-        mlog.error('[readJsonFileAsObject()] Error reading or parsing the JSON file:',
-            TAB+`Given filePath: '${filePath}'`
-        );
-        throw new Error(JSON.stringify(err))
+    } catch (error: any) {
+        mlog.error([`${source} Error reading JSON file`,
+            `Given filePath: '${filePath}'`,
+            `error: `, error
+        ].join(TAB));
+        throw new Error(JSON.stringify(error))
     }
 }
 
@@ -123,7 +129,7 @@ export async function concatenateFiles(
     strictRequirement: boolean = true,
     targetExtensions: string[] = ['.csv', '.tsv', '.xlsx']
 ): Promise<Record<string, any>[]> {
-    const source = `[reading.concatenateDirectoryFiles()]`;
+    const source = getSourceString(F, concatenateFiles.name);
     validate.stringArgument(source, {sheetName});
     validate.arrayArgument(source, {targetExtensions, isNonEmptyString});
     let files: Array<FileData | string>;
@@ -354,28 +360,31 @@ export async function getOneToOneDictionary(
     arg1: string | Record<string, any>[] | FileData,
     keyColumn: string,
     valueColumn: string,
+    keyOptions?: CleanStringOptions,
+    valueOptions?: CleanStringOptions
 ): Promise<Record<string, string>> {
-    validate.multipleStringArguments(`reading.getOneToOneDictionary`, {keyColumn, valueColumn});
+    const source = getSourceString(F, getOneToOneDictionary.name)
+    validate.multipleStringArguments(source, {keyColumn, valueColumn});
     let rows: Record<string, any>[] = await handleFileArgument(
         arg1, getOneToOneDictionary.name, [keyColumn, valueColumn]
     );
     const dict: Record<string, string> = {};
     for (const row of rows) {
         if (!hasKeys(row, [keyColumn, valueColumn])) {
-            mlog.error(`[getOneToOneDictionary()] Row missing keys: '${keyColumn}' or '${valueColumn}'`, 
+            mlog.error(`${source} Row missing keys: '${keyColumn}' or '${valueColumn}'`, 
             );
-            throw new Error(`[getOneToOneDictionary()] Row missing keys: '${keyColumn}' or '${valueColumn}'`);
+            throw new Error(`${source} Row missing keys: '${keyColumn}' or '${valueColumn}'`);
         }
-        const key = String(row[keyColumn]).trim();
-        const value = String(row[valueColumn]).trim();
+        const key = clean(String(row[keyColumn]), keyOptions) 
+        const value = clean(String(row[valueColumn]), valueOptions) 
         if (!key || !value) {
-            mlog.warn(`[getOneToOneDictionary()] Row missing key or value.`, 
+            mlog.warn(`${source} Row missing key or value.`, 
                 TAB+`keyColumn: '${keyColumn}', valueColumn: '${valueColumn}'`
             );
             continue;
         }
         if (dict[key]) {
-            mlog.warn(`[getOneToOneDictionary()] Duplicate key found: '${key}'`,
+            mlog.warn(`${source} Duplicate key found: '${key}'`,
                 TAB+`overwriting value '${dict[key]}' with '${value}'`
             );
         }
@@ -462,7 +471,7 @@ export async function handleFileArgument(
     requiredHeaders: string[] = [],
     sheetName?: string
 ): Promise<Record<string, any>[]> {
-    const source = `[reading.handleFileArgument()]`;
+    const source = getSourceString(F, handleFileArgument.name);
     validate.stringArgument(source, {invocationSource});
     validate.arrayArgument(source, {requiredHeaders, isNonEmptyString}, true);
     let rows: Record<string, any>[] = [];
@@ -513,7 +522,7 @@ export function getDirectoryFiles(
     dir: string,
     ...targetExtensions: string[]
 ): string[] {
-    const source = `[reading.getDirectoryFiles()]`
+    const source = getSourceString(F, getDirectoryFiles.name);
     validate.existingPathArgument(source, {dir});
     validate.arrayArgument(source, {targetExtensions, isNonEmptyString}, true);
     // ensure all target extensions start with period
@@ -549,7 +558,7 @@ export async function getOneToManyDictionary(
     valueOptions?: CleanStringOptions,
     sheetName?: string
 ): Promise<Record<string, string[]>> {
-    const source = `[${F}.${getOneToManyDictionary.name}()]`;
+    const source = getSourceString(F, getOneToManyDictionary.name);
     validate.multipleStringArguments(source, {keyColumn, valueColumn});
     if (keyOptions) validate.objectArgument(source, {keyOptions, isCleanStringOptions});
     if (valueOptions) validate.objectArgument(source, {valueOptions, isCleanStringOptions});
@@ -570,7 +579,7 @@ export async function getOneToManyDictionary(
 }
 
 /**
- * @deprecated -> use {@link getOneToOneDictionary}
+ * @deprecated -> use {@link getOneToManyDictionary}
  * @param filePath `string`
  * @param sheetName `string`
  * @param keyColumn `string`
@@ -587,7 +596,14 @@ export function parseExcelForOneToMany(
     sheetName: string, 
     keyColumn: string, 
     valueColumn: string,
-    options: ParseOneToManyOptions = {},
+    options: {
+        keyStripOptions?: StringStripOptions;
+        valueStripOptions?: StringStripOptions;
+        keyCaseOptions?: StringCaseOptions;
+        valueCaseOptions?: StringCaseOptions;
+        keyPadOptions?: StringPadOptions;
+        valuePadOptions?: StringPadOptions;
+    } = {},
 ): Record<string, Array<string>> {
     filePath = coerceFileExtension(filePath, 'xlsx');
     validate.multipleStringArguments(`reading.parseExcelForOneToMany`, {filePath, sheetName, keyColumn, valueColumn});
@@ -630,7 +646,7 @@ export function parseExcelForOneToMany(
 }
 
 /**
- * @deprecated -> use {@link getOneToOneDictionary}
+ * @deprecated -> use {@link getOneToManyDictionary}
  * @param filePath `string`
  * @param keyColumn `string`
  * @param valueColumn `string`
@@ -646,7 +662,14 @@ export function parseCsvForOneToMany(
     keyColumn: string,
     valueColumn: string,
     delimiter: DelimiterCharacterEnum | string = DelimiterCharacterEnum.COMMA,
-    options: ParseOneToManyOptions = {},
+    options: {
+        keyStripOptions?: StringStripOptions;
+        valueStripOptions?: StringStripOptions;
+        keyCaseOptions?: StringCaseOptions;
+        valueCaseOptions?: StringCaseOptions;
+        keyPadOptions?: StringPadOptions;
+        valuePadOptions?: StringPadOptions;
+    } = {},
 ): Record<string, Array<string>> {
     filePath = coerceFileExtension(filePath, 
         (delimiter === DelimiterCharacterEnum.TAB) ? 'tsv' : 'csv'
@@ -1242,4 +1265,102 @@ export async function validatePath(...paths: string[]): Promise<void> {
             throw new Error(`[ERROR reading.validatePath()]: path does not exist: ${path}`);
         }
     }
+}
+
+
+/**
+ * @param rowSource `string | Record<string, any>[]`
+ * @param targetColumn `string`
+ * @param targetValues `string[]`
+ * @param extractor `function (columnValue: string, ...args: any[]) => string`
+ * @param extractorArgs `any[]`
+ * @returns **`targetRows`** `Promise<Record<string, any>[]>` 
+ * - array of all rows where either `row[targetColumn]` or `extractor(row[targetColumn])` is in `targetValues`
+ */
+export async function extractTargetRows(
+    /** 
+     * - `string` -> filePath to a csv file
+     * - `Record<string, any>[]` -> array of rows
+     * */
+    rowSource: string | Record<string, any>[],
+    targetColumn: string, 
+    targetValues: string[],
+    extractor?: (columnValue: string, ...args: any[]) => string | Promise<string>, 
+    extractorArgs?: any[]
+): Promise<{
+    rows: Record<string, any>[];
+    remainingValues: string[]
+}> {
+    const source = getSourceString(F, extractTargetRows.name);
+    if(!isNonEmptyString(rowSource) && !isNonEmptyArray(rowSource)) {
+        throw new Error([`${source} Invalid param 'rowSource'`,
+            `Expected rowSource: string | Record<string, any>[]`,
+            `Received rowSource: '${typeof rowSource}'`
+        ].join(TAB));
+    }
+    validate.stringArgument(source, {targetColumn});
+    if (extractor !== undefined) validate.functionArgument(source, {extractor});
+    validate.arrayArgument(source, {targetValues, isNonEmptyString});
+    const sourceRows = await handleFileArgument(
+        rowSource, extractTargetRows.name, [targetColumn]
+    );
+    const remainingValues: string[] = [];
+    let potentials: Record<string, number[]> = {};
+    let valuesFound: string[] = [];
+    const targetRows: Record<string, any>[] = [];
+    for (let i = 0; i < sourceRows.length; i++) {
+        const row = sourceRows[i];
+        if (!hasKeys(row, targetColumn)) {
+            mlog.warn([`${source} row does not have provided targetColumn`,
+                `    targetColumn: '${targetColumn}'`,
+                `Object.keys(row):  ${JSON.stringify(Object.keys(row))}`,
+            ].join(TAB));
+            continue;
+        }
+        const originalValue = String(row[targetColumn]);
+        if (targetValues.includes(originalValue)) {
+            targetRows.push(row);
+            if (!valuesFound.includes(originalValue)) valuesFound.push(originalValue);
+            // slog.debug(`${source} ORIGINAL VALUE IN TARGET VALUES`)
+            continue;
+        }
+        if (!extractor) { continue }
+        const extractedValue = await extractor(originalValue, extractorArgs);
+        if (!isNonEmptyString(extractedValue)) {
+            // slog.warn([`${source} extractor(value) returned invalid string`,
+            //     ` originalValue: '${originalValue}'`, 
+            //     `rowSource type: '${typeof rowSource}'`
+            // ].join(TAB));
+            continue;
+        }
+        if (targetValues.includes(extractedValue)) {
+            targetRows.push(row);
+            if (!valuesFound.includes(extractedValue)) valuesFound.push(extractedValue);
+            continue;
+        }
+        let targetMatch = targetValues.find(v=>{
+            v = v.toUpperCase();
+            return v.startsWith(extractedValue.toUpperCase())
+        });
+        if (targetMatch) {
+            if (!potentials[targetMatch]) {
+                potentials[targetMatch] = [i]
+            } else {
+                potentials[targetMatch].push(i)
+            }
+            // slog.debug([`${source} Found potentialMatch for a targetValue at rowIndex ${i}`,
+            //     ` originalValue: '${originalValue}'`, 
+            //     `extractedValue: '${extractedValue}'`, 
+            //     `potentialMatch: '${targetMatch}'`, 
+            // ].join(TAB));
+        }
+    }
+    remainingValues.push(...targetValues.filter(v=> !valuesFound.includes(v)));
+    // if (remainingValues.length > 0) {
+    //     mlog.warn([`${source} ${remainingValues.length} value(s) from targetValues did not have a matching row`,
+    //         // indentedStringify(remainingValues)
+    //     ].join(TAB));
+    //     write({remainingValues}, path.join(CLOUD_LOG_DIR, `${getFileNameTimestamp()}_remainingValues.json`))
+    // }
+    return {rows: targetRows, remainingValues};
 }

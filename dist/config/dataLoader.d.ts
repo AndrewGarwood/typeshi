@@ -1,9 +1,9 @@
 /**
  * @enum {string} **`DataDomainEnum`** `string`
- * @property **`REGEX`** = `'REGEX'`
+ * @property **`REGEX`** = `'regex'`
  */
 export declare enum DataDomainEnum {
-    REGEX = "REGEX"
+    REGEX = "regex"
 }
 /**
  * Initialize all data required by the application.

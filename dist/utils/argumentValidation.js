@@ -32,6 +32,9 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.bracketed = void 0;
 exports.stringArgument = stringArgument;
@@ -57,13 +60,13 @@ exports.existingPathArgument = existingPathArgument;
  * - change the validation functions such that they return the validated value, if possible?
  * - or maybe have them return boolean type predicates ?
  * - -> maybe have to make a class
+ * - research the thingy where a type is after the function name and before parens
  */
 const typeValidation_1 = require("./typeValidation");
 const setupLog_1 = require("../config/setupLog");
 const regex_1 = require("./regex");
-const misc_1 = require("./regex/misc");
 const fs = __importStar(require("fs"));
-const F = (0, misc_1.extractFileName)(__filename);
+const node_path_1 = __importDefault(require("node:path"));
 const typeGuardNamePattern = /(?<=^is).*$/i;
 /**
  * - {@link isNonEmptyString}`(value: any): value is string & { length: number; }`
@@ -79,7 +82,7 @@ const typeGuardNamePattern = /(?<=^is).*$/i;
  */
 function stringArgument(source, arg2, value) {
     source = (0, exports.bracketed)(source);
-    const vSource = getSourceString(F, stringArgument.name);
+    const vSource = getSourceString(__filename, stringArgument.name);
     let label = '';
     if ((0, typeValidation_1.isObject)(arg2)) {
         const keys = Object.keys(arg2);
@@ -119,7 +122,7 @@ function multipleExistingFileArguments(source, extension, labeledFilePaths) {
 }
 function existingFileArgument(source, extension, arg3, value) {
     source = (0, exports.bracketed)(source);
-    const vSource = getSourceString(F, existingFileArgument.name);
+    const vSource = getSourceString(__filename, existingFileArgument.name);
     let label = '';
     if ((0, typeValidation_1.isObject)(arg3)) {
         const keys = Object.keys(arg3);
@@ -144,7 +147,7 @@ function existingFileArgument(source, extension, arg3, value) {
 }
 function existingDirectoryArgument(source, arg2, value) {
     source = (0, exports.bracketed)(source);
-    const vSource = getSourceString(F, existingDirectoryArgument.name);
+    const vSource = getSourceString(__filename, existingDirectoryArgument.name);
     let label = '';
     if ((0, typeValidation_1.isObject)(arg2)) {
         const keys = Object.keys(arg2);
@@ -172,7 +175,7 @@ function existingDirectoryArgument(source, arg2, value) {
  * @param requireNonNegative `boolean (optional)` `default` = `false` (argument passed into `isNumeric`)
  */
 function numericStringArgument(source, arg2, requireInteger = false, requireNonNegative = false) {
-    const vSource = getSourceString(F, numericStringArgument.name);
+    const vSource = getSourceString(__filename, numericStringArgument.name);
     source = (0, exports.bracketed)(source);
     let value;
     let label = '';
@@ -187,7 +190,7 @@ function numericStringArgument(source, arg2, requireInteger = false, requireNonN
     if (!(0, typeValidation_1.isNumeric)(value, requireInteger, requireNonNegative)) {
         let msg = [`${source} Invalid argument: '${label}'`,
             `Expected '${label}' to be: number or string (numeric string)`,
-            ` -- requireInteger ? ${requireInteger}`,
+            ` --     requireInteger ? ${requireInteger}`,
             ` -- requireNonNegative ? ${requireNonNegative}`,
             `Received '${label}' value: ${typeof value} = '${value}'`,
         ].join(setupLog_1.INDENT_LOG_LINE);
@@ -211,7 +214,7 @@ function numericStringArgument(source, arg2, requireInteger = false, requireNonN
  */
 function numberArgument(source, arg2, arg3, requireInteger = false) {
     source = (0, exports.bracketed)(source);
-    const vSource = getSourceString(F, numberArgument.name);
+    const vSource = getSourceString(__filename, numberArgument.name);
     let label = '';
     let value = arg3;
     if ((0, typeValidation_1.isObject)(arg2)) {
@@ -225,7 +228,7 @@ function numberArgument(source, arg2, arg3, requireInteger = false) {
             requireInteger = arg3;
         }
     }
-    if (typeof value !== typeValidation_1.TypeOfEnum.NUMBER || isNaN(value)) {
+    if (typeof value !== 'number' || isNaN(value)) {
         let msg = [`${source} Invalid argument: '${label}'`,
             `Expected '${label}' to be: number`,
             `Received '${label}' value: ${typeof value} = '${value}'`
@@ -255,7 +258,7 @@ function numberArgument(source, arg2, arg3, requireInteger = false) {
  * -  `Received '${label}' value: ${typeof value} = '${value}'`
  */
 function booleanArgument(source, arg2, value) {
-    const vSource = getSourceString(F, booleanArgument.name);
+    const vSource = getSourceString(__filename, booleanArgument.name);
     let label = '';
     if ((0, typeValidation_1.isObject)(arg2)) {
         const keys = Object.keys(arg2);
@@ -265,9 +268,9 @@ function booleanArgument(source, arg2, value) {
         label = keys[0];
         value = arg2[label];
     }
-    if (typeof value !== typeValidation_1.TypeOfEnum.BOOLEAN) {
+    if (typeof value !== 'boolean') {
         throw new Error([`${(0, exports.bracketed)(source)} Invalid argument: '${label}'`,
-            `Expected '${label}' to be: ${typeValidation_1.TypeOfEnum.BOOLEAN}`,
+            `Expected '${label}' to be: boolean`,
             `Received '${label}' value: ${typeof value} = '${value}'`
         ].join(setupLog_1.INDENT_LOG_LINE));
     }
@@ -285,7 +288,7 @@ function booleanArgument(source, arg2, value) {
  * -  `Received '${label}' value: ${typeof value} = '${value}'`
  */
 function functionArgument(source, arg2, value) {
-    const vSource = getSourceString(F, booleanArgument.name);
+    const vSource = getSourceString(__filename, booleanArgument.name);
     source = (0, exports.bracketed)(source);
     let label = '';
     if ((0, typeValidation_1.isObject)(arg2)) {
@@ -335,7 +338,7 @@ arg3,
 elementType, 
 /** elementTypeGuard | allowEmpty (boolean) */
 elementTypeGuard, allowEmpty) {
-    const vSource = getSourceString(F, arrayArgument.name);
+    const vSource = getSourceString(__filename, arrayArgument.name);
     source = (0, exports.bracketed)(source);
     let label = '';
     let value = undefined;
@@ -480,7 +483,7 @@ objectTypeGuard,
 /** `allowEmpty (boolean) | undefined` */
 allowEmpty) {
     source = (0, exports.bracketed)(source);
-    const vSource = getSourceString(F, objectArgument.name);
+    const vSource = getSourceString(__filename, objectArgument.name);
     let label = '';
     let functionLabel = '';
     let value = undefined;
@@ -603,7 +606,7 @@ function isEnumArgumentOptions(value) {
  */
 function enumArgument(source, arg2, value, enumLabel, enumObject) {
     source = (0, exports.bracketed)(source);
-    const vSource = getSourceString(F, enumArgument.name);
+    const vSource = getSourceString(__filename, enumArgument.name);
     let valueLabel = undefined;
     let valueToCheck;
     if ((0, typeValidation_1.isNonEmptyString)(arg2)) {
@@ -720,7 +723,7 @@ function enumArgument(source, arg2, value, enumLabel, enumObject) {
 }
 /** use existingFileArgument() or existingDirectoryArgument() */
 function existingPathArgument(source, arg2, value, extension) {
-    const vSource = getSourceString(F, existingPathArgument.name);
+    const vSource = getSourceString(__filename, existingPathArgument.name);
     source = (0, exports.bracketed)(source);
     let label = '';
     if ((0, typeValidation_1.isObject)(arg2)) {
@@ -791,6 +794,7 @@ function isFile(value) {
  * @returns **`sourceString`** `string` to use in log statements or argumentValidation calls
  */
 function getSourceString(fileName, func, funcInfo, startLine, endLine) {
+    fileName = node_path_1.default.basename(fileName).replace(/(?<=.+)\.[a-z0-9]{1,}$/i, '');
     let lineNumberText = ((0, typeValidation_1.isInteger)(startLine)
         ? `:${startLine}`
         : '');

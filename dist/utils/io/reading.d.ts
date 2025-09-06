@@ -1,5 +1,5 @@
-import { CleanStringOptions } from "../regex";
-import { FileData, ParseOneToManyOptions } from "./types/Io";
+import { StringCaseOptions, StringPadOptions, StringStripOptions, CleanStringOptions } from "../regex";
+import { FileData } from "./types/Io";
 import { DelimiterCharacterEnum } from "./types";
 /** for testing if `pathString (value)` points to an existing directory */
 export declare function isDirectory(value: any): value is string;
@@ -12,6 +12,12 @@ export declare function isFile(value: string): value is string;
  * @throws an error if the file extension is unsupported
  */
 export declare function getDelimiterFromFilePath(filePath: string): DelimiterCharacterEnum | string;
+/**
+ * @param filePath `string`
+ * @returns **`jsonData`** — `Record<string, any>`
+ * - JSON data as an object
+ */
+export declare const readJsonSync: typeof readJsonFileAsObject;
 /**
  * @param filePath `string`
  * @returns **`jsonData`** — `Record<string, any>`
@@ -71,7 +77,7 @@ export declare function getCsvRows(arg1: FileData | string): Promise<Record<stri
  * @param valueColumn `string` - the column name whose contents will be used as values in the dictionary.
  * @returns **`dict`** `Record<string, string>`
  */
-export declare function getOneToOneDictionary(arg1: string | Record<string, any>[] | FileData, keyColumn: string, valueColumn: string): Promise<Record<string, string>>;
+export declare function getOneToOneDictionary(arg1: string | Record<string, any>[] | FileData, keyColumn: string, valueColumn: string, keyOptions?: CleanStringOptions, valueOptions?: CleanStringOptions): Promise<Record<string, string>>;
 /**
  * @param arg1 `string | FileData | Record<string, any>[]` - the `filePath` to a CSV file or an array of rows.
  * @param columnName `string` - the column name whose values will be returned.
@@ -112,7 +118,7 @@ export declare function getDirectoryFiles(dir: string, ...targetExtensions: stri
  */
 export declare function getOneToManyDictionary(dataSource: string | FileData | Record<string, any>[], keyColumn: string, valueColumn: string, keyOptions?: CleanStringOptions, valueOptions?: CleanStringOptions, sheetName?: string): Promise<Record<string, string[]>>;
 /**
- * @deprecated -> use {@link getOneToOneDictionary}
+ * @deprecated -> use {@link getOneToManyDictionary}
  * @param filePath `string`
  * @param sheetName `string`
  * @param keyColumn `string`
@@ -124,9 +130,16 @@ export declare function getOneToManyDictionary(dataSource: string | FileData | R
  * - {@link StringPadOptions} = `{ padLength`: `number`, `padChar`?: `string`, `padLeft`?: `boolean`, `padRight`?: `boolean }`
  * @returns **`dict`** `Record<string, Array<string>>` — key-value pairs where key is from `keyColumn` and value is an array of values from `valueColumn`
  */
-export declare function parseExcelForOneToMany(filePath: string, sheetName: string, keyColumn: string, valueColumn: string, options?: ParseOneToManyOptions): Record<string, Array<string>>;
+export declare function parseExcelForOneToMany(filePath: string, sheetName: string, keyColumn: string, valueColumn: string, options?: {
+    keyStripOptions?: StringStripOptions;
+    valueStripOptions?: StringStripOptions;
+    keyCaseOptions?: StringCaseOptions;
+    valueCaseOptions?: StringCaseOptions;
+    keyPadOptions?: StringPadOptions;
+    valuePadOptions?: StringPadOptions;
+}): Record<string, Array<string>>;
 /**
- * @deprecated -> use {@link getOneToOneDictionary}
+ * @deprecated -> use {@link getOneToManyDictionary}
  * @param filePath `string`
  * @param keyColumn `string`
  * @param valueColumn `string`
@@ -137,7 +150,14 @@ export declare function parseExcelForOneToMany(filePath: string, sheetName: stri
  * - {@link StringPadOptions} = `{ padLength`: `number`, `padChar`?: `string`, `padLeft`?: `boolean`, `padRight`?: `boolean }`
  * @returns `Record<string, Array<string>>` - key-value pairs where key is from `keyColumn` and value is an array of values from `valueColumn`
  */
-export declare function parseCsvForOneToMany(filePath: string, keyColumn: string, valueColumn: string, delimiter?: DelimiterCharacterEnum | string, options?: ParseOneToManyOptions): Record<string, Array<string>>;
+export declare function parseCsvForOneToMany(filePath: string, keyColumn: string, valueColumn: string, delimiter?: DelimiterCharacterEnum | string, options?: {
+    keyStripOptions?: StringStripOptions;
+    valueStripOptions?: StringStripOptions;
+    keyCaseOptions?: StringCaseOptions;
+    valueCaseOptions?: StringCaseOptions;
+    keyPadOptions?: StringPadOptions;
+    valuePadOptions?: StringPadOptions;
+}): Record<string, Array<string>>;
 export interface CsvValidationOptions {
     allowEmptyRows?: boolean;
     allowInconsistentColumns?: boolean;
@@ -214,3 +234,21 @@ export declare function repairCsv(filePath: string, outputPath: string, options?
 };
 /** paths to folders or files */
 export declare function validatePath(...paths: string[]): Promise<void>;
+/**
+ * @param rowSource `string | Record<string, any>[]`
+ * @param targetColumn `string`
+ * @param targetValues `string[]`
+ * @param extractor `function (columnValue: string, ...args: any[]) => string`
+ * @param extractorArgs `any[]`
+ * @returns **`targetRows`** `Promise<Record<string, any>[]>`
+ * - array of all rows where either `row[targetColumn]` or `extractor(row[targetColumn])` is in `targetValues`
+ */
+export declare function extractTargetRows(
+/**
+ * - `string` -> filePath to a csv file
+ * - `Record<string, any>[]` -> array of rows
+ * */
+rowSource: string | Record<string, any>[], targetColumn: string, targetValues: string[], extractor?: (columnValue: string, ...args: any[]) => string | Promise<string>, extractorArgs?: any[]): Promise<{
+    rows: Record<string, any>[];
+    remainingValues: string[];
+}>;

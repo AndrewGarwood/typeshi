@@ -44,6 +44,7 @@ exports.getJobTitleSuffixList = getJobTitleSuffixList;
 exports.isDataInitialized = isDataInitialized;
 /**
  * @file src/config/dataLoader.ts
+ * @TODO change this file and env.ts to use initializeEnvironment() pattern
  */
 const env_1 = require("./env");
 const setupLog_1 = require("./setupLog");
@@ -52,22 +53,14 @@ const typeValidation_1 = require("../utils/typeValidation");
 const node_path_1 = __importDefault(require("node:path"));
 const validate = __importStar(require("../utils/argumentValidation"));
 let dataInitialized = false;
-const REGEX_CONSTANTS_DIR = node_path_1.default.join(env_1.DATA_DIR, 'regex');
-validate.existingDirectoryArgument(`[typeshi.config.dataLoader()]`, { REGEX_CONSTANTS_DIR });
 let config = null;
 /**
- * required keys of {@link DataLoaderConfig}
- * - `['regexFile',]` */
-const configKeys = [
-    'regexFile',
-];
-/**
  * @enum {string} **`DataDomainEnum`** `string`
- * @property **`REGEX`** = `'REGEX'`
+ * @property **`REGEX`** = `'regex'`
  */
 var DataDomainEnum;
 (function (DataDomainEnum) {
-    DataDomainEnum["REGEX"] = "REGEX";
+    DataDomainEnum["REGEX"] = "regex";
 })(DataDomainEnum || (exports.DataDomainEnum = DataDomainEnum = {}));
 /* ---------------------- LOAD REGEX CONFIG -------------------------- */
 let regexConstants = null;
@@ -80,25 +73,22 @@ const DEFAULT_DOMAINS_TO_LOAD = [
  * This should be called once at the start of the application.
  */
 async function initializeData(...domains) {
-    const source = `[typeshi.dataLoader.initializeData()]`;
+    const source = getSourceString(__filename, initializeData.name);
     if (dataInitialized) {
         setupLog_1.typeshiLogger.info(`${source} Data already initialized, skipping...`);
         return;
     }
-    const DATA_LOADER_CONFIG_FILE = node_path_1.default.join(env_1.DATA_DIR, `dataLoader_config.json`);
-    validate.existingFileArgument(source, '.json', { DATA_LOADER_CONFIG_FILE });
-    config = await loadConfig(DATA_LOADER_CONFIG_FILE);
-    const regexPath = node_path_1.default.join(REGEX_CONSTANTS_DIR, config.regexFile);
     if (!domains || domains.length === 0) {
         domains.push(...DEFAULT_DOMAINS_TO_LOAD);
     }
-    setupLog_1.INFO_LOGS.push((setupLog_1.INFO_LOGS.length === 0 ? '' : setupLog_1.NEW_LINE)
-        + `${source} Starting data initialization...`);
+    setupLog_1.typeshiSimpleLogger.info(`${source} Starting data initialization...`);
     try {
+        const configPath = node_path_1.default.join(env_1.DATA_DIR, `typeshi.data.config.json`);
+        config = await loadConfig(configPath);
         for (const d of domains) {
             switch (d) {
                 case DataDomainEnum.REGEX:
-                    regexConstants = await loadRegexConstants(regexPath);
+                    regexConstants = await loadRegexConstants(node_path_1.default.join(env_1.DATA_DIR, DataDomainEnum.REGEX, config.regexFile));
                     break;
                 default:
                     setupLog_1.typeshiLogger.warn(`${source} Unrecognized data domain: '${d}'. Skipping...`);
@@ -106,9 +96,7 @@ async function initializeData(...domains) {
             }
         }
         dataInitialized = true;
-        setupLog_1.INFO_LOGS.push(setupLog_1.NEW_LINE + `${source} ✓ All data initialized successfully`);
-        setupLog_1.typeshiLogger.info(...setupLog_1.INFO_LOGS);
-        setupLog_1.INFO_LOGS.length = 0;
+        setupLog_1.typeshiSimpleLogger.info(`${source} ✓ All data initialized successfully`);
     }
     catch (error) {
         setupLog_1.typeshiLogger.error(`${source} ✗ Failed to initialize data:`, error);
@@ -141,22 +129,18 @@ function isDataInitialized() {
     return dataInitialized;
 }
 async function loadConfig(jsonPath) {
-    (0, reading_1.validatePath)(jsonPath);
+    const source = getSourceString(__filename, loadConfig.name);
+    validate.existingFileArgument(source, '.json', { jsonPath });
     let configData = (0, reading_1.readJsonFileAsObject)(jsonPath);
-    if (!isDataLoaderConfig(configData)) {
-        throw new Error([`[dataLoader.getConfig()] Invalid DataLoaderConfig json file`,
-            `config filePath: '${jsonPath}'`,
-            `  required keys: ${JSON.stringify(configKeys)}`
-        ].join(setupLog_1.INDENT_LOG_LINE));
-    }
+    validate.objectArgument(source, { configData, isDataLoaderConfig });
     return configData;
 }
 /**
  * Load regex constants
  */
 async function loadRegexConstants(filePath) {
-    const source = `[dataLoader.loadRegexConstants()]`;
-    setupLog_1.INFO_LOGS.push(setupLog_1.NEW_LINE + `${source} Loading regex constants...`);
+    const source = getSourceString(__filename, loadRegexConstants.name);
+    setupLog_1.typeshiSimpleLogger.info(`${source} Loading regex constants...`);
     validate.existingFileArgument(source, '.json', { filePath });
     const REGEX_CONSTANTS = (0, reading_1.readJsonFileAsObject)(filePath);
     if (!REGEX_CONSTANTS || !(0, typeValidation_1.hasKeys)(REGEX_CONSTANTS, ['COMPANY_KEYWORD_LIST', 'JOB_TITLE_SUFFIX_LIST'])) {
@@ -170,14 +154,18 @@ async function loadRegexConstants(filePath) {
     if (!(0, typeValidation_1.isNonEmptyArray)(JOB_TITLE_SUFFIX_LIST)) {
         throw new Error(`${source} Invalid JOB_TITLE_SUFFIX_LIST in REGEX_CONSTANTS file at '${filePath}'`);
     }
-    setupLog_1.INFO_LOGS.push(setupLog_1.NEW_LINE + `${source} ✓ Regex constants loaded successfully`);
+    setupLog_1.typeshiSimpleLogger.info(`${source} ✓ Regex constants loaded successfully`);
     return {
         COMPANY_KEYWORD_LIST,
         JOB_TITLE_SUFFIX_LIST,
     };
 }
 function isDataLoaderConfig(value) {
-    return (value && typeof value === 'object'
-        && (0, typeValidation_1.hasKeys)(value, configKeys)
+    return ((0, typeValidation_1.isObject)(value)
         && Object.values(value).every(v => (0, typeValidation_1.isNonEmptyString)(v)));
+}
+function getSourceString(fileName, func, funcInfo) {
+    fileName = node_path_1.default.basename(fileName).replace(/(?<=.+)\.[a-z0-9]{1,}$/i, '');
+    let funcName = typeof func === 'string' ? func : func.name;
+    return `[typeshi.${fileName}.${funcName}(${(0, typeValidation_1.isNonEmptyString)(funcInfo) ? ` ${funcInfo} ` : ''})]`;
 }

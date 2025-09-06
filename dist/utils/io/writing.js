@@ -33,6 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.writeJsonSync = void 0;
 exports.writeObjectToJsonSync = writeObjectToJsonSync;
 exports.indentedStringify = indentedStringify;
 exports.getFileNameTimestamp = getFileNameTimestamp;
@@ -53,11 +54,13 @@ const types_1 = require("./types");
 const typeValidation_1 = require("../typeValidation");
 const validate = __importStar(require("../argumentValidation"));
 const fs_1 = require("fs");
+const logging_1 = require("./logging");
 function writeObjectToJsonSync(
 /** {@link WriteJsonOptions} `| Record<string, any> | string`, */
 arg1, filePath, indent = 4, enableOverwrite = true) {
+    const source = (0, logging_1.getSourceString)(__filename, writeObjectToJsonSync.name);
     if (!arg1) {
-        setupLog_1.typeshiLogger.error('[writing.writeObjectToJson()] No data to write to JSON file');
+        setupLog_1.typeshiLogger.error(`${source} No data to write to JSON file'`);
         return;
     }
     let data;
@@ -72,24 +75,28 @@ arg1, filePath, indent = 4, enableOverwrite = true) {
     }
     else {
         if (!(0, typeValidation_1.isNonEmptyString)(filePath)) {
-            setupLog_1.typeshiLogger.error('[writing.writeObjectToJson()] filePath is required when not using WriteJsonOptions object');
+            setupLog_1.typeshiLogger.error(`${source} filePath is required when not using WriteJsonOptions object'`);
             return;
         }
         data = arg1;
         outputFilePath = filePath;
     }
     let objectData;
-    if (typeof data === 'string') {
+    if ((0, typeValidation_1.isNonEmptyString)(data)) {
         try {
             objectData = JSON.parse(data);
         }
         catch (error) {
-            setupLog_1.typeshiLogger.error('[writing.writeObjectToJson()] Error parsing string to JSON', error);
+            setupLog_1.typeshiLogger.error(`${source} Error parsing string to JSON'`, error);
             return;
         }
     }
-    else { // is already an object
+    else if ((0, typeValidation_1.isObject)(data)) {
         objectData = data;
+    }
+    else {
+        setupLog_1.typeshiLogger.error(`${source} Invalid parameter 'data'`);
+        return;
     }
     const outputPath = (0, reading_1.coerceFileExtension)(outputFilePath, 'json');
     try {
@@ -103,10 +110,11 @@ arg1, filePath, indent = 4, enableOverwrite = true) {
         // mlog.info(`[writing.writeObjectToJson()] file saved to '${outputPath}'`)
     }
     catch (error) {
-        setupLog_1.typeshiLogger.error('[writing.writeObjectToJson()] Error writing to JSON file', error);
+        setupLog_1.typeshiLogger.error(`${source} Error writing to JSON file'`, error);
         throw error;
     }
 }
+exports.writeJsonSync = writeObjectToJsonSync;
 /**
  * @param data `Record<string, any> | string` - JSON data to stringify
  * @param indent `number` `optional`, default=`0` - number of additional indents to add to each line
@@ -167,7 +175,7 @@ function writeListsToCsvSync(listData, outputPath, delimiter = types_1.Delimiter
     });
 }
 /**
- * @TODO consider if should allow other file extensions
+ * @TODO handle other file extensions
  * @param maxMB - Maximum size in MB to keep in the file, default is `5` -> 5MB.
  * @param filePaths arbitrary number of text file paths to trim
  */
