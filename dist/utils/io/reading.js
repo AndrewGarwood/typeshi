@@ -122,7 +122,6 @@ function readJsonFileAsObject(filePath) {
     const source = (0, logging_1.getSourceString)(F, readJsonFileAsObject.name);
     try {
         filePath = coerceFileExtension(filePath, 'json');
-        validate.existingPathArgument(source, { filePath });
         const data = fs_1.default.readFileSync(filePath, 'utf8');
         const jsonData = JSON.parse(data);
         return jsonData;
@@ -130,7 +129,7 @@ function readJsonFileAsObject(filePath) {
     catch (error) {
         config_1.typeshiLogger.error([`${source} Error reading JSON file`,
             `Given filePath: '${filePath}'`,
-            `error: `, error
+            `error: `, JSON.stringify(error, null, 4)
         ].join(config_1.INDENT_LOG_LINE));
         throw new Error(JSON.stringify(error));
     }
