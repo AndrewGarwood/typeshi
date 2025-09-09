@@ -1364,3 +1364,46 @@ export async function extractTargetRows(
     // }
     return {rows: targetRows, remainingValues};
 }
+
+/**
+ * @param extantValues `string[]`
+ * @param csvFiles `string[] | FileData[] | Record<string, any>[][]`
+ * @param column `string`
+ * @param extractor `(columnValue: string, ...args: any[]) => string | Promise<string>`
+ * @param extractorArgs `any[]`
+ * @returns **`missingValues`** `Promise<string[][]>` 
+ * where `missingValues[i]` is the array of values 
+ * that are found in `csvFiles[i][column]` but not in `extantValues`
+ */
+export async function findMissingValues(
+    extantValues: string[],
+    csvFiles: string[] | FileData[] | Record<string, any>[][],
+    column: string, 
+    extractor: (columnValue: string, ...args: any[]) => string | Promise<string>,
+    extractorArgs: any[] = []
+): Promise<string[][]> {
+    const source = getSourceString(__filename, findMissingValues.name);
+    const missingValues: string[][] = [];
+    for (let i = 0; i < csvFiles.length; i++) {
+        const rowSource = csvFiles[i];
+        missingValues[i] = [];
+        const columnValues = await getColumnValues(rowSource, column);
+        for (const originalValue of columnValues) {
+            const extractedValue = await extractor(originalValue, ...extractorArgs);
+            if (!isNonEmptyString(extractedValue)) {
+                slog.warn([`${source} extractor(value) returned invalid string`,
+                    `originalValue: '${originalValue}'`, 
+                ].join(TAB));
+                if (!missingValues[i].includes(originalValue)) {
+                    missingValues[i].push(originalValue);
+                }
+                continue;
+            } 
+            if (!extantValues.includes(extractedValue) 
+                && !missingValues[i].includes(extractedValue)) {
+                missingValues[i].push(extractedValue);
+            }
+        }
+    }
+    return missingValues;
+}

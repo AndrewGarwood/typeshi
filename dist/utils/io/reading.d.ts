@@ -252,3 +252,14 @@ rowSource: string | Record<string, any>[], targetColumn: string, targetValues: s
     rows: Record<string, any>[];
     remainingValues: string[];
 }>;
+/**
+ * @param extantValues `string[]`
+ * @param csvFiles `string[] | FileData[] | Record<string, any>[][]`
+ * @param column `string`
+ * @param extractor `(columnValue: string, ...args: any[]) => string | Promise<string>`
+ * @param extractorArgs `any[]`
+ * @returns **`missingValues`** `Promise<string[][]>`
+ * where `missingValues[i]` is the array of values
+ * that are found in `csvFiles[i][column]` but not in `extantValues`
+ */
+export declare function findMissingValues(extantValues: string[], csvFiles: string[] | FileData[] | Record<string, any>[][], column: string, extractor: (columnValue: string, ...args: any[]) => string | Promise<string>, extractorArgs?: any[]): Promise<string[][]>;

@@ -60,6 +60,7 @@ exports.analyzeCsv = analyzeCsv;
 exports.repairCsv = repairCsv;
 exports.validatePath = validatePath;
 exports.extractTargetRows = extractTargetRows;
+exports.findMissingValues = findMissingValues;
 /**
  * @file src/utils/io/reading.ts
  */
@@ -1187,4 +1188,40 @@ rowSource, targetColumn, targetValues, extractor, extractorArgs) {
     //     write({remainingValues}, path.join(CLOUD_LOG_DIR, `${getFileNameTimestamp()}_remainingValues.json`))
     // }
     return { rows: targetRows, remainingValues };
+}
+/**
+ * @param extantValues `string[]`
+ * @param csvFiles `string[] | FileData[] | Record<string, any>[][]`
+ * @param column `string`
+ * @param extractor `(columnValue: string, ...args: any[]) => string | Promise<string>`
+ * @param extractorArgs `any[]`
+ * @returns **`missingValues`** `Promise<string[][]>`
+ * where `missingValues[i]` is the array of values
+ * that are found in `csvFiles[i][column]` but not in `extantValues`
+ */
+async function findMissingValues(extantValues, csvFiles, column, extractor, extractorArgs = []) {
+    const source = (0, logging_1.getSourceString)(__filename, findMissingValues.name);
+    const missingValues = [];
+    for (let i = 0; i < csvFiles.length; i++) {
+        const rowSource = csvFiles[i];
+        missingValues[i] = [];
+        const columnValues = await getColumnValues(rowSource, column);
+        for (const originalValue of columnValues) {
+            const extractedValue = await extractor(originalValue, ...extractorArgs);
+            if (!(0, typeValidation_1.isNonEmptyString)(extractedValue)) {
+                config_1.typeshiSimpleLogger.warn([`${source} extractor(value) returned invalid string`,
+                    `originalValue: '${originalValue}'`,
+                ].join(config_1.INDENT_LOG_LINE));
+                if (!missingValues[i].includes(originalValue)) {
+                    missingValues[i].push(originalValue);
+                }
+                continue;
+            }
+            if (!extantValues.includes(extractedValue)
+                && !missingValues[i].includes(extractedValue)) {
+                missingValues[i].push(extractedValue);
+            }
+        }
+    }
+    return missingValues;
 }
