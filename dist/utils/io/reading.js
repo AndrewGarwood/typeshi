@@ -322,7 +322,7 @@ async function getExcelRows(arg1, sheetName = 'Sheet1') {
  * - an array of objects representing rows from a CSV file.
  */
 async function getCsvRows(arg1) {
-    const source = '[reading.getCsvRows()]';
+    const source = (0, logging_1.getSourceString)(__filename, getCsvRows.name);
     let filePath;
     let fileContent;
     let delimiter = types_1.DelimiterCharacterEnum.COMMA;
@@ -384,23 +384,32 @@ async function getCsvRows(arg1) {
  * @returns **`dict`** `Record<string, string>`
  */
 async function getOneToOneDictionary(arg1, keyColumn, valueColumn, keyOptions, valueOptions) {
-    const source = (0, logging_1.getSourceString)(F, getOneToOneDictionary.name);
+    const source = (0, logging_1.getSourceString)(__filename, getOneToOneDictionary.name);
     validate.multipleStringArguments(source, { keyColumn, valueColumn });
     let rows = await handleFileArgument(arg1, getOneToOneDictionary.name, [keyColumn, valueColumn]);
     const dict = {};
-    for (const row of rows) {
+    for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
         if (!(0, typeValidation_1.hasKeys)(row, [keyColumn, valueColumn])) {
-            config_1.typeshiLogger.error(`${source} Row missing keys: '${keyColumn}' or '${valueColumn}'`);
-            throw new Error(`${source} Row missing keys: '${keyColumn}' or '${valueColumn}'`);
+            config_1.typeshiLogger.warn([`${source} row @ index ${i} missing key(s): '${keyColumn}', '${valueColumn}'`,
+                `  keyColumn: '${keyColumn}' in row ? ${keyColumn in row} -> row[keyColumn] = '${row[keyColumn]}'`,
+                `valueColumn: '${valueColumn}' in row ? ${valueColumn in row} -> row[valueColumn] = '${row[valueColumn]}'`,
+            ].join(config_1.INDENT_LOG_LINE));
+            continue;
+            // throw new Error(`${source} Row missing keys: '${keyColumn}' or '${valueColumn}'`);
         }
         const key = (0, regex_1.clean)(String(row[keyColumn]), keyOptions);
         const value = (0, regex_1.clean)(String(row[valueColumn]), valueOptions);
         if (!key || !value) {
-            config_1.typeshiLogger.warn(`${source} Row missing key or value.`, config_1.INDENT_LOG_LINE + `keyColumn: '${keyColumn}', valueColumn: '${valueColumn}'`);
+            config_1.typeshiLogger.warn([`${source} Row @ index ${i} missing key or value.`,
+                `keyColumn: '${keyColumn}', valueColumn: '${valueColumn}'`
+            ].join(config_1.INDENT_LOG_LINE));
             continue;
         }
         if (dict[key]) {
-            config_1.typeshiLogger.warn(`${source} Duplicate key found: '${key}'`, config_1.INDENT_LOG_LINE + `overwriting value '${dict[key]}' with '${value}'`);
+            config_1.typeshiLogger.warn([`${source} row @ index ${i} Duplicate key found: '${key}'`,
+                `overwriting value '${dict[key]}' with '${value}'`
+            ].join(config_1.INDENT_LOG_LINE));
         }
         dict[key] = value;
     }

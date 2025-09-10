@@ -293,7 +293,7 @@ export async function getExcelRows(
 export async function getCsvRows(
     arg1: FileData | string
 ): Promise<Record<string, any>[]> {
-    const source = '[reading.getCsvRows()]';
+    const source = getSourceString(__filename, getCsvRows.name);
     let filePath: string;
     let fileContent: string | undefined;
     let delimiter: DelimiterCharacterEnum | string = DelimiterCharacterEnum.COMMA;
@@ -362,30 +362,34 @@ export async function getOneToOneDictionary(
     keyOptions?: CleanStringOptions,
     valueOptions?: CleanStringOptions
 ): Promise<Record<string, string>> {
-    const source = getSourceString(F, getOneToOneDictionary.name)
+    const source = getSourceString(__filename, getOneToOneDictionary.name);
     validate.multipleStringArguments(source, {keyColumn, valueColumn});
     let rows: Record<string, any>[] = await handleFileArgument(
         arg1, getOneToOneDictionary.name, [keyColumn, valueColumn]
     );
     const dict: Record<string, string> = {};
-    for (const row of rows) {
+    for (let i = 0; i < rows.length; i++) {
+        const row = rows[i]
         if (!hasKeys(row, [keyColumn, valueColumn])) {
-            mlog.error(`${source} Row missing keys: '${keyColumn}' or '${valueColumn}'`, 
-            );
-            throw new Error(`${source} Row missing keys: '${keyColumn}' or '${valueColumn}'`);
+            mlog.warn([`${source} row @ index ${i} missing key(s): '${keyColumn}', '${valueColumn}'`,
+                `  keyColumn: '${keyColumn}' in row ? ${keyColumn in row} -> row[keyColumn] = '${row[keyColumn]}'`,
+                `valueColumn: '${valueColumn}' in row ? ${valueColumn in row} -> row[valueColumn] = '${row[valueColumn]}'`,
+            ].join(TAB));
+            continue;
+            // throw new Error(`${source} Row missing keys: '${keyColumn}' or '${valueColumn}'`);
         }
         const key = clean(String(row[keyColumn]), keyOptions) 
         const value = clean(String(row[valueColumn]), valueOptions) 
         if (!key || !value) {
-            mlog.warn(`${source} Row missing key or value.`, 
-                TAB+`keyColumn: '${keyColumn}', valueColumn: '${valueColumn}'`
-            );
+            mlog.warn([`${source} Row @ index ${i} missing key or value.`, 
+                `keyColumn: '${keyColumn}', valueColumn: '${valueColumn}'`
+            ].join(TAB));
             continue;
         }
         if (dict[key]) {
-            mlog.warn(`${source} Duplicate key found: '${key}'`,
-                TAB+`overwriting value '${dict[key]}' with '${value}'`
-            );
+            mlog.warn([`${source} row @ index ${i} Duplicate key found: '${key}'`,
+                `overwriting value '${dict[key]}' with '${value}'`
+            ].join(TAB));
         }
         dict[key] = value;
     }
