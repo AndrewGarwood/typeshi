@@ -317,26 +317,21 @@ export function writeRowsToCsvSync(
     rows: Record<string, any>[],
     outputPath: string,
 ): void {
-    const source = `[writing.writeRowsToCsv()]`
+    const source = getSourceString(__filename, writeRowsToCsvSync.name);
     validate.arrayArgument(source, {rows});
     validate.stringArgument(source, {outputPath});
     const delimiter = getDelimiterFromFilePath(outputPath);
-    const headers = Object.keys(rows[0] || {});
+    const headers = Array.from(
+        new Set(rows.map(r=>Object.keys(r)).flat())
+    );
     if (isEmptyArray(headers)) {
-        mlog.error(`${source} No headers found in rows, nothing to write.`,
-            TAB + `Intended outputPath: '${outputPath}'`,
-        );
-        return;
-    }
-    if (rows.some(row => !hasKeys(row, headers))) {
-        mlog.error([`${source} Some rows do not have all headers!`,
-            `headers: ${JSON.stringify(headers)}`,
-            `Intended outputPath: '${outputPath}'`
+        mlog.error([`${source} No headers found in rows, nothing to write.`,
+            `Intended outputPath: '${outputPath}'`,
         ].join(TAB));
         return;
     }
     const csvContent: string = [headers.join(delimiter)].concat(
-        rows.map(row => headers.map(header => row[header] || '').join(delimiter))
+        rows.map(row => headers.map(h => row[h] ?? '').join(delimiter))
     ).join('\n');
     try {
         fs.writeFileSync(outputPath, csvContent, { encoding: 'utf-8' });
