@@ -64,4 +64,4 @@ export declare function clearFile(...filePaths: string[]): Promise<void>;
  * @param outputPath `string` - path to the output CSV file.
  * @returns **`void`**
  */
-export declare function writeRowsToCsvSync(rows: Record<string, any>[], outputPath: string): void;
+export declare function writeRowsToCsvSync(rows: Record<string, any>[], outputPath: string, headers?: string[]): void;

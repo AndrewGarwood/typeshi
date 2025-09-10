@@ -6,7 +6,7 @@ import { DELAY } from "../../config/env";
 import { typeshiLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL } from "../../config/setupLog";
 import { coerceFileExtension, getDelimiterFromFilePath } from "./reading";
 import { DelimiterCharacterEnum, isWriteJsonOptions, WriteJsonOptions } from "./types";
-import { hasKeys, isEmptyArray, isNonEmptyString, isObject, } from "../typeValidation";
+import { hasKeys, isEmptyArray, isNonEmptyString, isObject, isStringArray, } from "../typeValidation";
 import * as validate from "../argumentValidation";
 import { existsSync, writeFileSync } from "fs";
 import { getSourceString } from "./logging";
@@ -316,14 +316,17 @@ export async function clearFile(...filePaths: string[]): Promise<void> {
 export function writeRowsToCsvSync(
     rows: Record<string, any>[],
     outputPath: string,
+    headers?: string[]
 ): void {
     const source = getSourceString(__filename, writeRowsToCsvSync.name);
     validate.arrayArgument(source, {rows});
     validate.stringArgument(source, {outputPath});
     const delimiter = getDelimiterFromFilePath(outputPath);
-    const headers = Array.from(
-        new Set(rows.map(r=>Object.keys(r)).flat())
-    );
+    if (!isStringArray(headers)) {
+        headers = Array.from(
+            new Set(rows.map(r=>Object.keys(r)).flat())
+        );
+    }
     if (isEmptyArray(headers)) {
         mlog.error([`${source} No headers found in rows, nothing to write.`,
             `Intended outputPath: '${outputPath}'`,

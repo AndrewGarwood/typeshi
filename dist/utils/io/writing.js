@@ -307,12 +307,14 @@ async function clearFile(...filePaths) {
  * @param outputPath `string` - path to the output CSV file.
  * @returns **`void`**
  */
-function writeRowsToCsvSync(rows, outputPath) {
+function writeRowsToCsvSync(rows, outputPath, headers) {
     const source = (0, logging_1.getSourceString)(__filename, writeRowsToCsvSync.name);
     validate.arrayArgument(source, { rows });
     validate.stringArgument(source, { outputPath });
     const delimiter = (0, reading_1.getDelimiterFromFilePath)(outputPath);
-    const headers = Array.from(new Set(rows.map(r => Object.keys(r)).flat()));
+    if (!(0, typeValidation_1.isStringArray)(headers)) {
+        headers = Array.from(new Set(rows.map(r => Object.keys(r)).flat()));
+    }
     if ((0, typeValidation_1.isEmptyArray)(headers)) {
         setupLog_1.typeshiLogger.error([`${source} No headers found in rows, nothing to write.`,
             `Intended outputPath: '${outputPath}'`,
