@@ -360,7 +360,8 @@ export async function getOneToOneDictionary(
     keyColumn: string,
     valueColumn: string,
     keyOptions?: CleanStringOptions,
-    valueOptions?: CleanStringOptions
+    valueOptions?: CleanStringOptions,
+    requireIncludeAllRows: boolean = false
 ): Promise<Record<string, string>> {
     const source = getSourceString(__filename, getOneToOneDictionary.name);
     validate.multipleStringArguments(source, {keyColumn, valueColumn});
@@ -371,22 +372,27 @@ export async function getOneToOneDictionary(
     for (let i = 0; i < rows.length; i++) {
         const row = rows[i]
         if (!hasKeys(row, [keyColumn, valueColumn])) {
-            mlog.warn([`${source} row @ index ${i} missing key(s): '${keyColumn}', '${valueColumn}'`,
+            let msg = [`${source} row @ index ${i} missing key(s): '${keyColumn}', '${valueColumn}'`,
                 `  keyColumn: '${keyColumn}' in row ? ${keyColumn in row} -> row[keyColumn] = '${row[keyColumn]}'`,
                 `valueColumn: '${valueColumn}' in row ? ${valueColumn in row} -> row[valueColumn] = '${row[valueColumn]}'`,
-            ].join(TAB));
+            ].join(TAB);
+            if (requireIncludeAllRows) throw new Error(msg);
+            mlog.warn(msg);
             continue;
-            // throw new Error(`${source} Row missing keys: '${keyColumn}' or '${valueColumn}'`);
         }
         const key = clean(String(row[keyColumn]), keyOptions) 
         const value = clean(String(row[valueColumn]), valueOptions) 
         if (!key || !value) {
-            mlog.warn([`${source} Row @ index ${i} missing key or value.`, 
-                `  keyColumn: '${keyColumn}' in row ? ${keyColumn in row} -> row[keyColumn] = '${row[keyColumn]}'`,
-                `clean(String(row[keyColumn]), keyOptions): ${clean(String(row[keyColumn]), keyOptions)}`,
-                `valueColumn: '${valueColumn}' in row ? ${valueColumn in row} -> row[valueColumn] = '${row[valueColumn]}'`,
-                `clean(String(row[valueColumn]), valueOptions): ${clean(String(row[valueColumn]), valueOptions)}`,
-            ].join(TAB));
+            let msg = [`${source} Row @ index ${i} missing key or value.`, 
+                `  keyColumn: '${keyColumn}' in row ? ${keyColumn in row}`,
+                `->   row[keyColumn] = '${row[keyColumn]}'`,
+                `    clean(String(row[keyColumn]), keyOptions): '${key}'`,
+                `valueColumn: '${valueColumn}' in row ? ${valueColumn in row}`,
+                `-> row[valueColumn] = '${row[valueColumn]}'`,
+                `clean(String(row[valueColumn]), valueOptions): '${value}'`,
+            ].join(TAB);
+            if (requireIncludeAllRows) throw new Error(msg);
+            mlog.warn(msg);
             continue;
         }
         if (dict[key]) {

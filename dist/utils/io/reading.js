@@ -383,7 +383,7 @@ async function getCsvRows(arg1) {
  * @param valueColumn `string` - the column name whose contents will be used as values in the dictionary.
  * @returns **`dict`** `Record<string, string>`
  */
-async function getOneToOneDictionary(arg1, keyColumn, valueColumn, keyOptions, valueOptions) {
+async function getOneToOneDictionary(arg1, keyColumn, valueColumn, keyOptions, valueOptions, requireIncludeAllRows = false) {
     const source = (0, logging_1.getSourceString)(__filename, getOneToOneDictionary.name);
     validate.multipleStringArguments(source, { keyColumn, valueColumn });
     let rows = await handleFileArgument(arg1, getOneToOneDictionary.name, [keyColumn, valueColumn]);
@@ -391,22 +391,29 @@ async function getOneToOneDictionary(arg1, keyColumn, valueColumn, keyOptions, v
     for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
         if (!(0, typeValidation_1.hasKeys)(row, [keyColumn, valueColumn])) {
-            config_1.typeshiLogger.warn([`${source} row @ index ${i} missing key(s): '${keyColumn}', '${valueColumn}'`,
+            let msg = [`${source} row @ index ${i} missing key(s): '${keyColumn}', '${valueColumn}'`,
                 `  keyColumn: '${keyColumn}' in row ? ${keyColumn in row} -> row[keyColumn] = '${row[keyColumn]}'`,
                 `valueColumn: '${valueColumn}' in row ? ${valueColumn in row} -> row[valueColumn] = '${row[valueColumn]}'`,
-            ].join(config_1.INDENT_LOG_LINE));
+            ].join(config_1.INDENT_LOG_LINE);
+            if (requireIncludeAllRows)
+                throw new Error(msg);
+            config_1.typeshiLogger.warn(msg);
             continue;
-            // throw new Error(`${source} Row missing keys: '${keyColumn}' or '${valueColumn}'`);
         }
         const key = (0, regex_1.clean)(String(row[keyColumn]), keyOptions);
         const value = (0, regex_1.clean)(String(row[valueColumn]), valueOptions);
         if (!key || !value) {
-            config_1.typeshiLogger.warn([`${source} Row @ index ${i} missing key or value.`,
-                `  keyColumn: '${keyColumn}' in row ? ${keyColumn in row} -> row[keyColumn] = '${row[keyColumn]}'`,
-                `clean(String(row[keyColumn]), keyOptions): ${(0, regex_1.clean)(String(row[keyColumn]), keyOptions)}`,
-                `valueColumn: '${valueColumn}' in row ? ${valueColumn in row} -> row[valueColumn] = '${row[valueColumn]}'`,
-                `clean(String(row[valueColumn]), valueOptions): ${(0, regex_1.clean)(String(row[valueColumn]), valueOptions)}`,
-            ].join(config_1.INDENT_LOG_LINE));
+            let msg = [`${source} Row @ index ${i} missing key or value.`,
+                `  keyColumn: '${keyColumn}' in row ? ${keyColumn in row}`,
+                `->   row[keyColumn] = '${row[keyColumn]}'`,
+                `    clean(String(row[keyColumn]), keyOptions): '${key}'`,
+                `valueColumn: '${valueColumn}' in row ? ${valueColumn in row}`,
+                `-> row[valueColumn] = '${row[valueColumn]}'`,
+                `clean(String(row[valueColumn]), valueOptions): '${value}'`,
+            ].join(config_1.INDENT_LOG_LINE);
+            if (requireIncludeAllRows)
+                throw new Error(msg);
+            config_1.typeshiLogger.warn(msg);
             continue;
         }
         if (dict[key]) {

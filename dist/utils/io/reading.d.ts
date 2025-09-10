@@ -77,7 +77,7 @@ export declare function getCsvRows(arg1: FileData | string): Promise<Record<stri
  * @param valueColumn `string` - the column name whose contents will be used as values in the dictionary.
  * @returns **`dict`** `Record<string, string>`
  */
-export declare function getOneToOneDictionary(arg1: string | Record<string, any>[] | FileData, keyColumn: string, valueColumn: string, keyOptions?: CleanStringOptions, valueOptions?: CleanStringOptions): Promise<Record<string, string>>;
+export declare function getOneToOneDictionary(arg1: string | Record<string, any>[] | FileData, keyColumn: string, valueColumn: string, keyOptions?: CleanStringOptions, valueOptions?: CleanStringOptions, requireIncludeAllRows?: boolean): Promise<Record<string, string>>;
 /**
  * @param arg1 `string | FileData | Record<string, any>[]` - the `filePath` to a CSV file or an array of rows.
  * @param columnName `string` - the column name whose values will be returned.
