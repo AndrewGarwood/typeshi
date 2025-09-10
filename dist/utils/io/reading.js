@@ -402,7 +402,10 @@ async function getOneToOneDictionary(arg1, keyColumn, valueColumn, keyOptions, v
         const value = (0, regex_1.clean)(String(row[valueColumn]), valueOptions);
         if (!key || !value) {
             config_1.typeshiLogger.warn([`${source} Row @ index ${i} missing key or value.`,
-                `keyColumn: '${keyColumn}', valueColumn: '${valueColumn}'`
+                `  keyColumn: '${keyColumn}' in row ? ${keyColumn in row} -> row[keyColumn] = '${row[keyColumn]}'`,
+                `clean(String(row[keyColumn]), keyOptions): ${(0, regex_1.clean)(String(row[keyColumn]), keyOptions)}`,
+                `valueColumn: '${valueColumn}' in row ? ${valueColumn in row} -> row[valueColumn] = '${row[valueColumn]}'`,
+                `clean(String(row[valueColumn]), valueOptions): ${(0, regex_1.clean)(String(row[valueColumn]), valueOptions)}`,
             ].join(config_1.INDENT_LOG_LINE));
             continue;
         }

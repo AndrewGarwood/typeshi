@@ -382,7 +382,10 @@ export async function getOneToOneDictionary(
         const value = clean(String(row[valueColumn]), valueOptions) 
         if (!key || !value) {
             mlog.warn([`${source} Row @ index ${i} missing key or value.`, 
-                `keyColumn: '${keyColumn}', valueColumn: '${valueColumn}'`
+                `  keyColumn: '${keyColumn}' in row ? ${keyColumn in row} -> row[keyColumn] = '${row[keyColumn]}'`,
+                `clean(String(row[keyColumn]), keyOptions): ${clean(String(row[keyColumn]), keyOptions)}`,
+                `valueColumn: '${valueColumn}' in row ? ${valueColumn in row} -> row[valueColumn] = '${row[valueColumn]}'`,
+                `clean(String(row[valueColumn]), valueOptions): ${clean(String(row[valueColumn]), valueOptions)}`,
             ].join(TAB));
             continue;
         }
