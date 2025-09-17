@@ -3,7 +3,7 @@
  * @reference https://tslog.js.org/#/?id=pretty-templates-and-styles-color-settings
  */
 import { 
-    Logger, ISettingsParam, ISettings, ILogObj, 
+    Logger, ISettingsParam, ILogObj, 
     ILogObjMeta, IPrettyLogStyles, IMeta 
 } from 'tslog';
 import path from 'node:path';
@@ -130,8 +130,23 @@ const SIMPLE_LOGGER_SETTINGS: ISettingsParam<ILogObj> = {
     prettyLogStyles: PRETTY_LOG_STYLES,
 }
 export const typeshiSimpleLogger = new Logger<ILogObj>(SIMPLE_LOGGER_SETTINGS);
+
+const HIDDEN_LOGGER_SETTINGS: ISettingsParam<ILogObj> = {
+    type: "hidden",
+    name: "typeshi_hidden",
+    minLevel: 0,
+    prettyLogTemplate: SIMPLE_LOG_TEMPLATE,
+    prettyErrorTemplate: ERROR_TEMPLATE,
+    prettyErrorStackTemplate: ERROR_STACK_TEMPLATE,
+    stylePrettyLogs: true,
+    prettyLogTimeZone: "local",
+    prettyLogStyles: PRETTY_LOG_STYLES,
+}
+
+export const typeshiHiddenLogger = new Logger<ILogObj>(HIDDEN_LOGGER_SETTINGS);
+
 /**
- * compress metadata into `logObj['-1']` then return stringified `logObj`
+ * reduce metadata into `logObj['-1']` then return stringified `logObj`
  * @param logObj {@link ILogObj}
  * @returns `string`
  */
@@ -146,8 +161,3 @@ export function formatLogObj(logObj: ILogObj | (ILogObj & ILogObjMeta)): string 
     logObj['meta1'] = `${fileInfo} @ ${methodInfo}`;
     return JSON.stringify(logObj, null, 4) + "\n" 
 }
-
-/**suppress logs by putting them here (do not print to console) */
-export const SUPPRESSED_LOGS: any[] = []
-export const INFO_LOGS: any[] = []
-export const DEBUG_LOGS: any[] = [];

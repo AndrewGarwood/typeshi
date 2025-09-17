@@ -7,7 +7,6 @@ import { isInteger, isNonEmptyString, isStringArray, } from "../typeValidation";
 import { extractFileName } from "../regex";
 import * as validate from "../argumentValidation";
 import path from "node:path";
-const F = extractFileName(__filename);
 
 /**
  * @param fileName `string` passed into `extractFileName()`
@@ -48,7 +47,7 @@ export function getSourceString(
 export function autoFormatLogsOnExit(
     filePaths?: string[]
 ): void {
-    const source = `[${F}.${autoFormatLogsOnExit.name}()]`
+    const source = getSourceString(__filename, autoFormatLogsOnExit.name, `Array<string>(${(filePaths ?? []).length})`)
     if (!isStringArray(filePaths)) {
         mlog.warn([`${source} Invalid param 'filePaths'`,
             `Expected: string[] (array of filePaths)`,

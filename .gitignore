@@ -1,6 +1,7 @@
 .notes.txt
 README.draft.md
 *.crf.txt
+*.bak
 # Dependency directories
 node_modules/
 npm-debug.log*

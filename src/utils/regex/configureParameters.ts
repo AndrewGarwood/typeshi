@@ -8,18 +8,6 @@ import {
     stringEndsWithAnyOf,
     RegExpFlagsEnum, 
 } from ".";
-import { getRegexConstants } from "../../config/dataLoader";
-
-// These are now loaded via the dataLoader system
-export function getCompanyKeywordList(): string[] {
-    return getRegexConstants().COMPANY_KEYWORD_LIST;
-}
-
-export function getJobTitleSuffixList(): string[] {
-    return getRegexConstants().JOB_TITLE_SUFFIX_LIST;
-}
-
-/** strip leading `.` and (trailing `.` if satisfy stripRightCondition: {@link doesNotEndWithKnownAbbreviation}) */
 
 /** 
  * @param {string} s - `string` - the string to check

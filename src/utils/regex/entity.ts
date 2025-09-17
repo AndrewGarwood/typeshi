@@ -1,8 +1,10 @@
 /**
  * @file src/utils/regex/entity.ts
  */
-import { typeshiLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL, 
-    DEBUG_LOGS as DEBUG 
+import { typeshiLogger as mlog, 
+    INDENT_LOG_LINE as TAB, 
+    NEW_LINE as NL, 
+    typeshiHiddenLogger as hlog, 
 } from "../../config";
 import { StringReplaceOptions, 
     KOREA_ADDRESS_LATIN_TEXT_PATTERN, 
@@ -96,11 +98,11 @@ export function extractName(
         || KOREA_ADDRESS_LATIN_TEXT_PATTERN.test(name)) {
         return { first: '', middle: '', last: '' };
     }
-    DEBUG.push(`extractName()`,
-        TAB + `  originalName = "${originalName}"`,
-        TAB + `  cleaned name = "${name}"`,
-        TAB + `jobTitleSuffix = "${jobTitleSuffix}"`
-    );
+    hlog.debug([`extractName()`,
+        `  originalName = "${originalName}"`,
+        `  cleaned name = "${name}"`,
+        `jobTitleSuffix = "${jobTitleSuffix}"`
+    ].join(TAB));
     let nameSplit = name.split(/(?<!,)\s+/);
     if (nameSplit.length === 0) {
         return { first: '', middle: '', last: '' };
@@ -113,9 +115,9 @@ export function extractName(
         strip: STRIP_DOT_IF_NOT_END_WITH_ABBREVIATION, 
         replace: [{searchValue: /(^[-+])*/g, replaceValue: ''}]
     }));
-    DEBUG.push(NL + `nameSplit.length === ${nameSplit.length},`,
+    hlog.debug([`nameSplit.length === ${nameSplit.length},`,
         `nameSplit: ${JSON.stringify(nameSplit)}`
-    );
+    ].join(TAB));
     if (nameSplit.length == 1) {
         return { 
             first: nameSplit[0].replace(/(,|\.)$/g, ''), 
@@ -165,7 +167,7 @@ export function extractName(
                 // .replace(/(,|\.)$/g, '') 
         };
     }
-    DEBUG.push(NL + `extractName() - no valid name parts found, returning empty strings`);
+    hlog.debug(NL + `extractName() - no valid name parts found, returning empty strings`);
     return { first: '', middle: '', last: '' }; 
 }
 
@@ -190,11 +192,11 @@ export function extractJobTitleSuffix(
         { searchValue: /,$/g, replaceValue: '' }
     ]});
     if (JOB_TITLE_SUFFIX_PATTERN.test(s)) {
-        DEBUG.push(NL + `[regex/entity.extractJobTitleSuffix()]`, TAB + `s = "${s}"`);
+        hlog.debug(NL + `[regex/entity.extractJobTitleSuffix()]`, `s = "${s}"`);
         const jobTitleMatch = s.match(JOB_TITLE_SUFFIX_PATTERN);
         if (jobTitleMatch && jobTitleMatch.length > 0) {
             let jobTitle = jobTitleMatch[0].replace(/^\s*,\s*/g, '').trim();
-            DEBUG.push(TAB + `jobTitleMatch[0] = "${jobTitleMatch[0]}" -> trim and return "${jobTitle}"`);
+            hlog.debug(`jobTitleMatch[0] = "${jobTitleMatch[0]}" -> trim and return "${jobTitle}"`);
             return jobTitle;
         }
     }

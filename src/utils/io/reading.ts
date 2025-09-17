@@ -14,7 +14,11 @@ import { RegExpFlagsEnum, StringCaseOptions, stringEndsWithAnyOf,
 import { extractFileName } from "../regex/misc";
 import { FileData,} from "./types/Io";
 import { 
-    typeshiLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL, SUPPRESSED_LOGS as SUP, typeshiSimpleLogger as slog 
+    typeshiLogger as mlog, 
+    INDENT_LOG_LINE as TAB, 
+    NEW_LINE as NL,
+    typeshiSimpleLogger as slog, 
+    typeshiHiddenLogger as hlog, 
 } from "../../config";
 import { DelimiterCharacterEnum, DelimitedFileTypeEnum, isFileData } from "./types";
 import { 
@@ -333,7 +337,7 @@ export async function getCsvRows(
             .pipe(csv({ separator: delimiter }))
             .on('data', (row: Record<string, any>) => rows.push(row))
             .on('end', () => {
-                SUP.push([`${source} Successfully read CSV file.`,
+                hlog.debug([`${source} Successfully read CSV file.`,
                     `filePath: '${filePath}'`,
                     `Number of rows read: ${rows.length}`
                 ].join(TAB));

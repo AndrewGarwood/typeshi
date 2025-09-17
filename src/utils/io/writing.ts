@@ -3,7 +3,7 @@
  */
 import * as fs from "fs";
 import { DELAY } from "../../config/env";
-import { typeshiLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL } from "../../config/setupLog";
+import { typeshiLogger as mlog, INDENT_LOG_LINE as TAB } from "../../config/setupLog";
 import { coerceFileExtension, getDelimiterFromFilePath } from "./reading";
 import { DelimiterCharacterEnum, isWriteJsonOptions, WriteJsonOptions } from "./types";
 import { hasKeys, isEmptyArray, isNonEmptyString, isObject, isStringArray, } from "../typeValidation";
@@ -136,7 +136,7 @@ export function indentedStringify(
 }
 
 /**
- * @returns **`timestamp`** `string` = `(${MM}-${DD})-(${HH}-${mm}.${ss}.${ms})`
+ * @returns **`timestamp`** `string` = `(${MM}-${DD})_(${HH}-${mm}.${ss}.${ms})`
  */
 export function getFileNameTimestamp(): string {
     const now = new Date();
@@ -146,7 +146,7 @@ export function getFileNameTimestamp(): string {
     const mm = String(now.getMinutes()).padStart(2, '0');
     const ss = String(now.getSeconds()).padStart(2, '0');
     const ms = String(now.getMilliseconds()).padStart(3, '0');
-    return `(${MM}-${DD})-(${HH}-${mm}.${ss}.${ms})`
+    return `(${MM}-${DD})_(${HH}-${mm}.${ss}.${ms})`
 }
 
 /**
@@ -163,8 +163,6 @@ export function writeListsToCsvSync(
 ): void {
     const listNames = Object.keys(listData);
     const listValues = Object.values(listData);
-
-    // Get the maximum length of the lists
     const maxLength = Math.max(...listValues.map(list => list.length));
     let csvContent = listNames.join(delimiter) + '\n';
 
