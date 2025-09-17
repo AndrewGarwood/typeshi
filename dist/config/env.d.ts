@@ -1,9 +1,6 @@
-/** = `process.cwd()` */
-export declare const NODE_HOME_DIR: string;
-/** = {@link NODE_HOME_DIR}`/src` = `process.cwd()/src`*/
-export declare const SRC_DIR: string;
-/** = `typeshi/src/data` */
-export declare const DATA_DIR: string;
+/**
+ * @file src/config/env.ts
+ */
 /**
  * @description Exit the program/script for debugging purposes
  * @param exitCode `number` - The exit code to use when exiting the program. Default is `0`. Use `1` for error.

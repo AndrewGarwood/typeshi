@@ -49,7 +49,6 @@ const typeValidation_1 = require("../typeValidation");
 const regex_1 = require("../regex");
 const validate = __importStar(require("../argumentValidation"));
 const node_path_1 = __importDefault(require("node:path"));
-const F = (0, regex_1.extractFileName)(__filename);
 /**
  * @param fileName `string` passed into `extractFileName()`
  * @param func `Function` - to get Function.name
@@ -78,7 +77,7 @@ function getSourceString(fileName, func, funcInfo, startLine, endLine) {
  * @returns `void`
  */
 function autoFormatLogsOnExit(filePaths) {
-    const source = `[${F}.${autoFormatLogsOnExit.name}()]`;
+    const source = getSourceString(__filename, autoFormatLogsOnExit.name, `Array<string>(${(filePaths ?? []).length})`);
     if (!(0, typeValidation_1.isStringArray)(filePaths)) {
         setupLog_1.typeshiLogger.warn([`${source} Invalid param 'filePaths'`,
             `Expected: string[] (array of filePaths)`,

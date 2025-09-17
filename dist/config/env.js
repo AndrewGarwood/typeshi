@@ -1,19 +1,9 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.DELAY = exports.STOP_RUNNING = exports.DATA_DIR = exports.SRC_DIR = exports.NODE_HOME_DIR = void 0;
 /**
  * @file src/config/env.ts
  */
-const node_path_1 = __importDefault(require("node:path"));
-/** = `process.cwd()` */
-exports.NODE_HOME_DIR = process.cwd();
-/** = {@link NODE_HOME_DIR}`/src` = `process.cwd()/src`*/
-exports.SRC_DIR = node_path_1.default.join(exports.NODE_HOME_DIR, 'node_modules', 'typeshi', 'dist');
-/** = `typeshi/src/data` */
-exports.DATA_DIR = node_path_1.default.join(exports.SRC_DIR, 'data');
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.DELAY = exports.STOP_RUNNING = void 0;
 /**
  * @description Exit the program/script for debugging purposes
  * @param exitCode `number` - The exit code to use when exiting the program. Default is `0`. Use `1` for error.

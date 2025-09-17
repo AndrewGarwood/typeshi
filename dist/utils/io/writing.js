@@ -135,7 +135,7 @@ function indentedStringify(data, indent = 0, spaces = 4) {
     return jsonString;
 }
 /**
- * @returns **`timestamp`** `string` = `(${MM}-${DD})-(${HH}-${mm}.${ss}.${ms})`
+ * @returns **`timestamp`** `string` = `(${MM}-${DD})_(${HH}-${mm}.${ss}.${ms})`
  */
 function getFileNameTimestamp() {
     const now = new Date();
@@ -145,7 +145,7 @@ function getFileNameTimestamp() {
     const mm = String(now.getMinutes()).padStart(2, '0');
     const ss = String(now.getSeconds()).padStart(2, '0');
     const ms = String(now.getMilliseconds()).padStart(3, '0');
-    return `(${MM}-${DD})-(${HH}-${mm}.${ss}.${ms})`;
+    return `(${MM}-${DD})_(${HH}-${mm}.${ss}.${ms})`;
 }
 /**
  * @param listData `Record<string, Array<string>>` map col names to col values
@@ -156,7 +156,6 @@ function getFileNameTimestamp() {
 function writeListsToCsvSync(listData, outputPath, delimiter = types_1.DelimiterCharacterEnum.TAB, columnDelimiter = '') {
     const listNames = Object.keys(listData);
     const listValues = Object.values(listData);
-    // Get the maximum length of the lists
     const maxLength = Math.max(...listValues.map(list => list.length));
     let csvContent = listNames.join(delimiter) + '\n';
     if ((0, typeValidation_1.isNonEmptyString)(columnDelimiter)) {

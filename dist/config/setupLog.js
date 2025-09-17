@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DEBUG_LOGS = exports.INFO_LOGS = exports.SUPPRESSED_LOGS = exports.typeshiSimpleLogger = exports.typeshiLogger = exports.NEW_LINE = exports.INDENT_LOG_LINE = void 0;
+exports.typeshiHiddenLogger = exports.typeshiSimpleLogger = exports.typeshiLogger = exports.NEW_LINE = exports.INDENT_LOG_LINE = void 0;
 exports.formatLogObj = formatLogObj;
 /**
  * @file src/config/setupLog.ts
@@ -122,8 +122,20 @@ const SIMPLE_LOGGER_SETTINGS = {
     prettyLogStyles: PRETTY_LOG_STYLES,
 };
 exports.typeshiSimpleLogger = new tslog_1.Logger(SIMPLE_LOGGER_SETTINGS);
+const HIDDEN_LOGGER_SETTINGS = {
+    type: "hidden",
+    name: "typeshi_hidden",
+    minLevel: 0,
+    prettyLogTemplate: SIMPLE_LOG_TEMPLATE,
+    prettyErrorTemplate: ERROR_TEMPLATE,
+    prettyErrorStackTemplate: ERROR_STACK_TEMPLATE,
+    stylePrettyLogs: true,
+    prettyLogTimeZone: "local",
+    prettyLogStyles: PRETTY_LOG_STYLES,
+};
+exports.typeshiHiddenLogger = new tslog_1.Logger(HIDDEN_LOGGER_SETTINGS);
 /**
- * compress metadata into `logObj['-1']` then return stringified `logObj`
+ * reduce metadata into `logObj['-1']` then return stringified `logObj`
  * @param logObj {@link ILogObj}
  * @returns `string`
  */
@@ -138,7 +150,3 @@ function formatLogObj(logObj) {
     logObj['meta1'] = `${fileInfo} @ ${methodInfo}`;
     return JSON.stringify(logObj, null, 4) + "\n";
 }
-/**suppress logs by putting them here (do not print to console) */
-exports.SUPPRESSED_LOGS = [];
-exports.INFO_LOGS = [];
-exports.DEBUG_LOGS = [];

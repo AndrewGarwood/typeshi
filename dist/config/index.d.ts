@@ -3,4 +3,3 @@
  */
 export * from "./setupLog";
 export * from "./env";
-export * from "./dataLoader";

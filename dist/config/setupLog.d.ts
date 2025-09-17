@@ -27,13 +27,10 @@ export declare const NEW_LINE: string;
  * */
 export declare const typeshiLogger: Logger<ILogObj>;
 export declare const typeshiSimpleLogger: Logger<ILogObj>;
+export declare const typeshiHiddenLogger: Logger<ILogObj>;
 /**
- * compress metadata into `logObj['-1']` then return stringified `logObj`
+ * reduce metadata into `logObj['-1']` then return stringified `logObj`
  * @param logObj {@link ILogObj}
  * @returns `string`
  */
 export declare function formatLogObj(logObj: ILogObj | (ILogObj & ILogObjMeta)): string;
-/**suppress logs by putting them here (do not print to console) */
-export declare const SUPPRESSED_LOGS: any[];
-export declare const INFO_LOGS: any[];
-export declare const DEBUG_LOGS: any[];

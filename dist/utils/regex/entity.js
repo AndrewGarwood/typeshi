@@ -68,7 +68,11 @@ function extractName(name, includeJobTitleSuffix = true) {
         || _1.KOREA_ADDRESS_LATIN_TEXT_PATTERN.test(name)) {
         return { first: '', middle: '', last: '' };
     }
-    config_1.DEBUG_LOGS.push(`extractName()`, config_1.INDENT_LOG_LINE + `  originalName = "${originalName}"`, config_1.INDENT_LOG_LINE + `  cleaned name = "${name}"`, config_1.INDENT_LOG_LINE + `jobTitleSuffix = "${jobTitleSuffix}"`);
+    config_1.typeshiHiddenLogger.debug([`extractName()`,
+        `  originalName = "${originalName}"`,
+        `  cleaned name = "${name}"`,
+        `jobTitleSuffix = "${jobTitleSuffix}"`
+    ].join(config_1.INDENT_LOG_LINE));
     let nameSplit = name.split(/(?<!,)\s+/);
     if (nameSplit.length === 0) {
         return { first: '', middle: '', last: '' };
@@ -81,7 +85,9 @@ function extractName(name, includeJobTitleSuffix = true) {
         strip: _1.STRIP_DOT_IF_NOT_END_WITH_ABBREVIATION,
         replace: [{ searchValue: /(^[-+])*/g, replaceValue: '' }]
     }));
-    config_1.DEBUG_LOGS.push(config_1.NEW_LINE + `nameSplit.length === ${nameSplit.length},`, `nameSplit: ${JSON.stringify(nameSplit)}`);
+    config_1.typeshiHiddenLogger.debug([`nameSplit.length === ${nameSplit.length},`,
+        `nameSplit: ${JSON.stringify(nameSplit)}`
+    ].join(config_1.INDENT_LOG_LINE));
     if (nameSplit.length == 1) {
         return {
             first: nameSplit[0].replace(/(,|\.)$/g, ''),
@@ -125,7 +131,7 @@ function extractName(name, includeJobTitleSuffix = true) {
             // .replace(/(,|\.)$/g, '') 
         };
     }
-    config_1.DEBUG_LOGS.push(config_1.NEW_LINE + `extractName() - no valid name parts found, returning empty strings`);
+    config_1.typeshiHiddenLogger.debug(config_1.NEW_LINE + `extractName() - no valid name parts found, returning empty strings`);
     return { first: '', middle: '', last: '' };
 }
 /**
@@ -148,11 +154,11 @@ function extractJobTitleSuffix(s) {
             { searchValue: /,$/g, replaceValue: '' }
         ] });
     if (exports.JOB_TITLE_SUFFIX_PATTERN.test(s)) {
-        config_1.DEBUG_LOGS.push(config_1.NEW_LINE + `[regex/entity.extractJobTitleSuffix()]`, config_1.INDENT_LOG_LINE + `s = "${s}"`);
+        config_1.typeshiHiddenLogger.debug(config_1.NEW_LINE + `[regex/entity.extractJobTitleSuffix()]`, `s = "${s}"`);
         const jobTitleMatch = s.match(exports.JOB_TITLE_SUFFIX_PATTERN);
         if (jobTitleMatch && jobTitleMatch.length > 0) {
             let jobTitle = jobTitleMatch[0].replace(/^\s*,\s*/g, '').trim();
-            config_1.DEBUG_LOGS.push(config_1.INDENT_LOG_LINE + `jobTitleMatch[0] = "${jobTitleMatch[0]}" -> trim and return "${jobTitle}"`);
+            config_1.typeshiHiddenLogger.debug(`jobTitleMatch[0] = "${jobTitleMatch[0]}" -> trim and return "${jobTitle}"`);
             return jobTitle;
         }
     }

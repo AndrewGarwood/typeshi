@@ -2,9 +2,6 @@
  * @file src/utils/regex/configureParameters.ts
  */
 import { StringStripOptions, StringReplaceParams } from ".";
-export declare function getCompanyKeywordList(): string[];
-export declare function getJobTitleSuffixList(): string[];
-/** strip leading `.` and (trailing `.` if satisfy stripRightCondition: {@link doesNotEndWithKnownAbbreviation}) */
 /**
  * @param {string} s - `string` - the string to check
  * @returns `!s.endsWith('Ph.D.') && !`{@link stringEndsWithAnyOf}`(s`, {@link COMPANY_ABBREVIATION_PATTERN} as RegExp, `[`{@link RegExpFlagsEnum.IGNORE_CASE}`]) && !stringEndsWithAnyOf(s, /\b[A-Z]\.?\b/, [RegExpFlagsEnum.IGNORE_CASE]);` */

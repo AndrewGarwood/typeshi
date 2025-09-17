@@ -1,22 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.REPLACE_EM_HYPHEN = exports.ENSURE_SPACE_AROUND_HYPHEN = exports.UNCONDITIONAL_STRIP_DOT_OPTIONS = exports.STRIP_DOT_IF_NOT_END_WITH_ABBREVIATION = void 0;
-exports.getCompanyKeywordList = getCompanyKeywordList;
-exports.getJobTitleSuffixList = getJobTitleSuffixList;
 exports.doesNotEndWithKnownAbbreviation = doesNotEndWithKnownAbbreviation;
 /**
  * @file src/utils/regex/configureParameters.ts
  */
 const _1 = require(".");
-const dataLoader_1 = require("../../config/dataLoader");
-// These are now loaded via the dataLoader system
-function getCompanyKeywordList() {
-    return (0, dataLoader_1.getRegexConstants)().COMPANY_KEYWORD_LIST;
-}
-function getJobTitleSuffixList() {
-    return (0, dataLoader_1.getRegexConstants)().JOB_TITLE_SUFFIX_LIST;
-}
-/** strip leading `.` and (trailing `.` if satisfy stripRightCondition: {@link doesNotEndWithKnownAbbreviation}) */
 /**
  * @param {string} s - `string` - the string to check
  * @returns `!s.endsWith('Ph.D.') && !`{@link stringEndsWithAnyOf}`(s`, {@link COMPANY_ABBREVIATION_PATTERN} as RegExp, `[`{@link RegExpFlagsEnum.IGNORE_CASE}`]) && !stringEndsWithAnyOf(s, /\b[A-Z]\.?\b/, [RegExpFlagsEnum.IGNORE_CASE]);` */

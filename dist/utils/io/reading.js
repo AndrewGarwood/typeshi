@@ -365,7 +365,7 @@ async function getCsvRows(arg1) {
             .pipe((0, csv_parser_1.default)({ separator: delimiter }))
             .on('data', (row) => rows.push(row))
             .on('end', () => {
-            config_1.SUPPRESSED_LOGS.push([`${source} Successfully read CSV file.`,
+            config_1.typeshiHiddenLogger.debug([`${source} Successfully read CSV file.`,
                 `filePath: '${filePath}'`,
                 `Number of rows read: ${rows.length}`
             ].join(config_1.INDENT_LOG_LINE));
