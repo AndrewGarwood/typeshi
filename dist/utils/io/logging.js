@@ -40,6 +40,7 @@ exports.getSourceString = getSourceString;
 exports.autoFormatLogsOnExit = autoFormatLogsOnExit;
 exports.formatDebugLogFile = formatDebugLogFile;
 exports.formatAllDebugLogs = formatAllDebugLogs;
+exports.formatLogObj = formatLogObj;
 /**
  * @file src/utils/io/logging.ts
  */
@@ -256,4 +257,25 @@ function formatAllDebugLogs(logDirectory) {
         setupLog_1.typeshiLogger.error('[formatAllDebugLogs()] Error reading log directory:', error);
         throw error;
     }
+}
+/**
+ * reduce metadata to two entries, then return stringified `logObj`
+ * @param logObj {@link ILogObj}
+ * @returns `string`
+ */
+function formatLogObj(logObj) {
+    const meta = logObj['_meta'];
+    const { logLevelName, date, path: stackFrame } = meta;
+    const timestamp = date ? date.toLocaleString() : '';
+    if (stackFrame) {
+        const fileInfo = [
+            stackFrame.filePathWithLine ? `${stackFrame.filePathWithLine}` : '',
+            stackFrame.fileColumn && stackFrame.filePathWithLine ? `:${stackFrame.fileColumn}` : '',
+        ].join('');
+        const methodInfo = stackFrame.method ? `${stackFrame.method}()` : '';
+        logObj['meta0'] = `[${logLevelName}] (${timestamp})`;
+        logObj['meta1'] = `${fileInfo || 'unknown_file'} @ ${methodInfo || 'unknown_method'}`;
+        delete logObj['_meta'];
+    }
+    return JSON.stringify(logObj, null, 4) + "\n";
 }

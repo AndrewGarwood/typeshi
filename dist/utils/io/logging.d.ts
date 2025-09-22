@@ -1,3 +1,4 @@
+import { ILogObj, ILogObjMeta } from "tslog";
 /**
  * @param fileName `string` passed into `extractFileName()`
  * @param func `Function` - to get Function.name
@@ -32,3 +33,9 @@ export declare function formatDebugLogFile(inputFilePath: string, outputFilePath
  * @returns `void`
  */
 export declare function formatAllDebugLogs(logDirectory: string): void;
+/**
+ * reduce metadata to two entries, then return stringified `logObj`
+ * @param logObj {@link ILogObj}
+ * @returns `string`
+ */
+export declare function formatLogObj(logObj: ILogObj | (ILogObj & ILogObjMeta)): string;

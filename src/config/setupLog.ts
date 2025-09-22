@@ -3,10 +3,8 @@
  * @reference https://tslog.js.org/#/?id=pretty-templates-and-styles-color-settings
  */
 import { 
-    Logger, ISettingsParam, ILogObj, 
-    ILogObjMeta, IPrettyLogStyles, IMeta 
+    Logger, ISettingsParam, ILogObj, IPrettyLogStyles,
 } from 'tslog';
-import path from 'node:path';
 
 /** 
  * `TAB = INDENT_LOG_LINE =  '\n\t• '` = newLine + tab + bullet + space
@@ -144,20 +142,3 @@ const HIDDEN_LOGGER_SETTINGS: ISettingsParam<ILogObj> = {
 }
 
 export const typeshiHiddenLogger = new Logger<ILogObj>(HIDDEN_LOGGER_SETTINGS);
-
-/**
- * reduce metadata into `logObj['-1']` then return stringified `logObj`
- * @param logObj {@link ILogObj}
- * @returns `string`
- */
-export function formatLogObj(logObj: ILogObj | (ILogObj & ILogObjMeta)): string {
-    const meta = logObj['_meta'] as IMeta;
-    const { logLevelName, date, path } = meta;
-    const timestamp = date ? date.toLocaleString() : '';
-    const fileInfo = `${path?.filePathWithLine}:${path?.fileColumn}`;
-    const methodInfo = `${path?.method ? path.method + '()' : ''}`;
-    delete logObj['_meta'];
-    logObj['meta0'] = `[${logLevelName}] (${timestamp})`;
-    logObj['meta1'] = `${fileInfo} @ ${methodInfo}`;
-    return JSON.stringify(logObj, null, 4) + "\n" 
-}

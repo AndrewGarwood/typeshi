@@ -7,6 +7,7 @@ import { isInteger, isNonEmptyString, isStringArray, } from "../typeValidation";
 import { extractFileName } from "../regex";
 import * as validate from "../argumentValidation";
 import path from "node:path";
+import { ILogObj, ILogObjMeta, IMeta } from "tslog";
 
 /**
  * @param fileName `string` passed into `extractFileName()`
@@ -239,4 +240,26 @@ export function formatAllDebugLogs(
         mlog.error('[formatAllDebugLogs()] Error reading log directory:', error);
         throw error;
     }
+}
+
+/**
+ * reduce metadata to two entries, then return stringified `logObj`
+ * @param logObj {@link ILogObj}
+ * @returns `string`
+ */
+export function formatLogObj(logObj: ILogObj | (ILogObj & ILogObjMeta)): string {
+    const meta = logObj['_meta'] as IMeta;
+    const { logLevelName, date, path: stackFrame } = meta;
+    const timestamp = date ? date.toLocaleString() : '';
+    if (stackFrame) {
+        const fileInfo = [
+            stackFrame.filePathWithLine ? `${stackFrame.filePathWithLine}` : '',
+            stackFrame.fileColumn && stackFrame.filePathWithLine ? `:${stackFrame.fileColumn}` : '',
+        ].join('');
+        const methodInfo = stackFrame.method ? `${stackFrame.method}()` : '';
+        logObj['meta0'] = `[${logLevelName}] (${timestamp})`;
+        logObj['meta1'] = `${fileInfo || 'unknown_file'} @ ${methodInfo || 'unknown_method'}`;
+        delete logObj['_meta'];
+    }
+    return JSON.stringify(logObj, null, 4) + "\n" 
 }

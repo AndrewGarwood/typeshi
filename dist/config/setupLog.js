@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.typeshiHiddenLogger = exports.typeshiSimpleLogger = exports.typeshiLogger = exports.NEW_LINE = exports.INDENT_LOG_LINE = void 0;
-exports.formatLogObj = formatLogObj;
 /**
  * @file src/config/setupLog.ts
  * @reference https://tslog.js.org/#/?id=pretty-templates-and-styles-color-settings
@@ -134,19 +133,3 @@ const HIDDEN_LOGGER_SETTINGS = {
     prettyLogStyles: PRETTY_LOG_STYLES,
 };
 exports.typeshiHiddenLogger = new tslog_1.Logger(HIDDEN_LOGGER_SETTINGS);
-/**
- * reduce metadata into `logObj['-1']` then return stringified `logObj`
- * @param logObj {@link ILogObj}
- * @returns `string`
- */
-function formatLogObj(logObj) {
-    const meta = logObj['_meta'];
-    const { logLevelName, date, path } = meta;
-    const timestamp = date ? date.toLocaleString() : '';
-    const fileInfo = `${path?.filePathWithLine}:${path?.fileColumn}`;
-    const methodInfo = `${path?.method ? path.method + '()' : ''}`;
-    delete logObj['_meta'];
-    logObj['meta0'] = `[${logLevelName}] (${timestamp})`;
-    logObj['meta1'] = `${fileInfo} @ ${methodInfo}`;
-    return JSON.stringify(logObj, null, 4) + "\n";
-}
