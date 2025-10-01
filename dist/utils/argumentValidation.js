@@ -55,19 +55,21 @@ exports.existingPathArgument = existingPathArgument;
  * @description moved the content of parameter type checks at the start of
  * functions to here. use these when you want your function to throw a fit when
  * it receives bad input.
+ * @example
+ * import * as validate from "@typeshi/argumentValidation";
  * @TODO add boolean value configurable by a setter function that specifies if errors should be thrown or only logged
  * - maybe add a configurable value that the validation functions should return if the validation test fails
  * - change the validation functions such that they return the validated value, if possible?
  * - or maybe have them return boolean type predicates ?
  * - -> maybe have to make a class
  * - research the thingy where a type is after the function name and before parens
+ * @consideration add a default export named 'validate'
  */
 const typeValidation_1 = require("./typeValidation");
 const setupLog_1 = require("../config/setupLog");
 const regex_1 = require("./regex");
 const fs = __importStar(require("fs"));
 const node_path_1 = __importDefault(require("node:path"));
-const typeGuardNamePattern = /(?<=^is).*$/i;
 /**
  * - {@link isNonEmptyString}`(value: any): value is string & { length: number; }`
  * @param source `string` indicating what called `stringArgument()`
@@ -313,6 +315,7 @@ function functionArgument(source, arg2, value) {
         throw new Error(msg);
     }
 }
+const typeGuardNamePattern = /(?<=^is).*$/i;
 /**
  * @note `if` `elementTypeGuard`'s name or its label includes 'Array' then only check `elementTypeGuard(value)`
  * instead of checking `value.every(el => elementTypeGuard(el))`
@@ -497,7 +500,7 @@ allowEmpty) {
         functionLabel = keys.find(k => typeof arg2[k] === 'function');
         let variableLabel = keys.find(k => typeof arg2[k] !== 'function');
         if (!variableLabel) {
-            let msg = [`${source} -> ${vSource} Invalid parameter: arg2 as labeledArgs`,
+            let msg = [`${source} -> ${vSource} Invalid parameter: arg2 as ObjectArgumentOptions`,
                 `Expected: object with labeledObject entry and optional labledTypeGuard entry`,
                 `Received: Object.values(arg2) = ${JSON.stringify(Object.values(arg2))}`
             ].join(setupLog_1.INDENT_LOG_LINE);
@@ -516,7 +519,7 @@ allowEmpty) {
     else {
         let msg = [`${source} -> ${vSource} Invalid parameter: 'arg2'`,
             `Expected: label (string) | labeledArgs (ObjectArgumentOptions | { [label: string]: any | ((value: any) => boolean) })`,
-            `Received: ${typeof arg2} = ${arg2}`
+            `Received: ${typeof arg2} = ${JSON.stringify(arg2)}`
         ].join(setupLog_1.INDENT_LOG_LINE);
         setupLog_1.typeshiLogger.error(msg);
         throw new Error(msg);
@@ -721,7 +724,7 @@ function enumArgument(source, arg2, value, enumLabel, enumObject) {
     }
     return matchedValue;
 }
-/** use existingFileArgument() or existingDirectoryArgument() */
+/** recommend to instead use `existingFileArgument()` or `existingDirectoryArgument()` */
 function existingPathArgument(source, arg2, value, extension) {
     const vSource = getSourceString(__filename, existingPathArgument.name);
     source = (0, exports.bracketed)(source);

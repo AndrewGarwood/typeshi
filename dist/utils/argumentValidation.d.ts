@@ -3,12 +3,15 @@
  * @description moved the content of parameter type checks at the start of
  * functions to here. use these when you want your function to throw a fit when
  * it receives bad input.
+ * @example
+ * import * as validate from "@typeshi/argumentValidation";
  * @TODO add boolean value configurable by a setter function that specifies if errors should be thrown or only logged
  * - maybe add a configurable value that the validation functions should return if the validation test fails
  * - change the validation functions such that they return the validated value, if possible?
  * - or maybe have them return boolean type predicates ?
  * - -> maybe have to make a class
  * - research the thingy where a type is after the function name and before parens
+ * @consideration add a default export named 'validate'
  */
 import { TypeOfEnum } from "./typeValidation";
 /**
@@ -179,7 +182,7 @@ export declare function enumArgument(source: string, label: string, value: any, 
  * = `{ [valueLabel: string]: valueToCheck } & ({ isEnumFunction } | { EnumObject })`
  */
 export declare function enumArgument(source: string, labeledArgs: EnumArgumentOptions): string | number;
-/** use existingFileArgument() or existingDirectoryArgument() */
+/** recommend to instead use `existingFileArgument()` or `existingDirectoryArgument()` */
 export declare function existingPathArgument(source: string, arg2: string | {
     [label: string]: any;
 }, value?: any, extension?: string): void;

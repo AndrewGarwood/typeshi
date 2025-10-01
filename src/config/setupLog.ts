@@ -4,7 +4,7 @@
  */
 import { 
     Logger, ISettingsParam, ILogObj, IPrettyLogStyles,
-} from 'tslog';
+} from "tslog";
 
 /** 
  * `TAB = INDENT_LOG_LINE =  '\n\t• '` = newLine + tab + bullet + space
@@ -18,6 +18,8 @@ export const NEW_LINE: string = '\n > ';
 
 const dateTemplate = "{{yyyy}}-{{mm}}-{{dd}}";
 const timeTemplate = "{{hh}}:{{MM}}:{{ss}}";//.{{ms}}";
+/** `"{{hh}}:{{MM}}:{{ss}}.{{ms}}"` */
+const msTimeTemplate = `${timeTemplate}.{{ms}}`
 const timestampTemplate = `(${dateTemplate} ${timeTemplate})`;
 
 /**not included for now */
@@ -31,11 +33,10 @@ const fileInfoTemplate = "{{filePathWithLine}}";
  * use as value for {@link ISettingsParam.prettyLogTemplate} 
  * = {@link timestampTemplate} + {@link logNameTemplate} + {@link logLevelTemplate} + {@link fileInfoTemplate} + `\n\t{{logObjMeta}}`
  * - {@link timestampTemplate} = `({{yyyy}}-{{mm}}-{{dd}} {{hh}}:{{MM}}:{{ss}}.{{ms}})`
- * - {@link logNameTemplate} = `"[{{name}}]"`
  * - {@link logLevelTemplate} = `{{logLevelName}}:`
  * - {@link fileInfoTemplate} = `{{fileName}}:{{fileLine}}`
  * */
-const LOG_TEMPLATE = [
+const DEFAULT_LOG_TEMPLATE = [
     logLevelTemplate, 
     timestampTemplate, 
     // logNameTemplate, 
@@ -50,14 +51,38 @@ const errorInfoTemplate = [
  * use as value for {@link ISettingsParam.prettyErrorTemplate} 
  * @description template string for error message. 
  * */
-const ERROR_TEMPLATE = `${errorInfoTemplate}`; //`${timestampTemplate} ${logNameTemplate} ${logLevelTemplate} ${fileInfoTemplate}\n${errorInfoTemplate}`;
+const DEFAULT_ERROR_TEMPLATE = `${errorInfoTemplate}`; //`${timestampTemplate} ${logNameTemplate} ${logLevelTemplate} ${fileInfoTemplate}\n${errorInfoTemplate}`;
 /** 
  * use as value for {@link ISettingsParam.prettyErrorStackTemplate}.
  * @description template string for error stack trace lines. 
  * */
-const ERROR_STACK_TEMPLATE = `${fileInfoTemplate}:{{method}} {{stack}}`;
+const errorStackTemplate = `${fileInfoTemplate}:{{method}} {{stack}}`;
 
-const PRETTY_LOG_STYLES: IPrettyLogStyles = {
+export const logTemplates = {
+    /**= {@link timestampTemplate} + {@link logNameTemplate} + {@link logLevelTemplate} + {@link fileInfoTemplate} + `\n\t{{logObjMeta}}` */
+    DEFAULT_LOG_TEMPLATE, 
+    /** `"{{errorName}}: {{errorMessage}}{INDENT_LOG_LINE}{{errorStack}}"` */
+    DEFAULT_ERROR_TEMPLATE,
+    /**`"${fileInfoTemplate}:{{method}} {{stack}}"` */ 
+    errorStackTemplate, 
+    /** `"{{yyyy}}-{{mm}}-{{dd}}"` */
+    dateTemplate, 
+    /** `"{{hh}}:{{MM}}:{{ss}}"` */
+    timeTemplate, 
+    /** `"{{hh}}:{{MM}}:{{ss}}.{{ms}}"` */
+    msTimeTemplate,
+    /** `"(${dateTemplate} ${timeTemplate})"` */
+    timestampTemplate, 
+    /** `"[{{name}}]"` */
+    logNameTemplate, 
+    /** `"[{{logLevelName}}]"` */
+    logLevelTemplate, 
+    /** `"{{filePathWithLine}}"` */
+    fileInfoTemplate
+}
+
+
+export const PRETTY_LOG_STYLES: IPrettyLogStyles = {
     yyyy: "green",
     mm: "green",
     dd: "green",
@@ -87,13 +112,13 @@ const PRETTY_LOG_STYLES: IPrettyLogStyles = {
     errorMessage: "redBright",
 };   
 
-const MAIN_LOGGER_SETTINGS: ISettingsParam<ILogObj> = {
+export const MAIN_LOGGER_SETTINGS: ISettingsParam<ILogObj> = {
     type: "pretty",
     name: "typeshi_main",
     minLevel: 0,
-    prettyLogTemplate: LOG_TEMPLATE,
-    prettyErrorTemplate: ERROR_TEMPLATE,
-    prettyErrorStackTemplate: ERROR_STACK_TEMPLATE,
+    prettyLogTemplate: DEFAULT_LOG_TEMPLATE,
+    prettyErrorTemplate: DEFAULT_ERROR_TEMPLATE,
+    prettyErrorStackTemplate: errorStackTemplate,
     stylePrettyLogs: true,
     prettyLogTimeZone: "local",
     prettyLogStyles: PRETTY_LOG_STYLES,
@@ -114,28 +139,28 @@ const MAIN_LOGGER_SETTINGS: ISettingsParam<ILogObj> = {
  * */
 export const typeshiLogger = new Logger<ILogObj>(MAIN_LOGGER_SETTINGS);
 
-const SIMPLE_LOG_TEMPLATE = ` > `
+export const SIMPLE_LOG_TEMPLATE = ` > `;
 /** `type: "pretty"`, `template` = `" > {{logObjMeta}}"` */
-const SIMPLE_LOGGER_SETTINGS: ISettingsParam<ILogObj> = {
+export const SIMPLE_LOGGER_SETTINGS: ISettingsParam<ILogObj> = {
     type: "pretty",
     name: "typeshi_simple",
     minLevel: 0,
     prettyLogTemplate: SIMPLE_LOG_TEMPLATE,
-    prettyErrorTemplate: ERROR_TEMPLATE,
-    prettyErrorStackTemplate: ERROR_STACK_TEMPLATE,
+    prettyErrorTemplate: DEFAULT_ERROR_TEMPLATE,
+    prettyErrorStackTemplate: errorStackTemplate,
     stylePrettyLogs: true,
     prettyLogTimeZone: "local",
     prettyLogStyles: PRETTY_LOG_STYLES,
 }
 export const typeshiSimpleLogger = new Logger<ILogObj>(SIMPLE_LOGGER_SETTINGS);
 
-const HIDDEN_LOGGER_SETTINGS: ISettingsParam<ILogObj> = {
+export const HIDDEN_LOGGER_SETTINGS: ISettingsParam<ILogObj> = {
     type: "hidden",
     name: "typeshi_hidden",
     minLevel: 0,
     prettyLogTemplate: SIMPLE_LOG_TEMPLATE,
-    prettyErrorTemplate: ERROR_TEMPLATE,
-    prettyErrorStackTemplate: ERROR_STACK_TEMPLATE,
+    prettyErrorTemplate: DEFAULT_ERROR_TEMPLATE,
+    prettyErrorStackTemplate: errorStackTemplate,
     stylePrettyLogs: true,
     prettyLogTimeZone: "local",
     prettyLogStyles: PRETTY_LOG_STYLES,
