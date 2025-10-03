@@ -203,3 +203,42 @@ export function toPacificTime(initialDateString: string): string {
     return pacificTime
 }
 
+export const Milliseconds = {
+    from: {
+        hours: (n: number): number => { 
+            return n * (1000 * 60 * 60); 
+        },
+        minutes: (n: number): number => {
+            return n * (1000 * 60);
+        },
+        seconds: (n: number): number => {
+            return n * (1000);
+        },
+        /**
+         * @param d `Date` object
+         * @returns `number` milliseconds since epoch
+         */
+        date: (d: Date): number => {
+            return d.getTime();
+        }
+    },
+    to: {
+        hours: (n: number): number => {
+            return n / (1000 * 60 * 60);
+        },
+        minutes: (n: number): number => {
+            return n / (1000 * 60);
+        },
+        seconds: (n: number): number => {
+            return n / (1000);
+        },
+        /**
+         * interprets `n` as milliseconds since epoch
+         * @param n `number` milliseconds
+         * @returns `Date` object
+         */
+        date: (n: number): Date => {
+            return new Date(n);
+        }
+    },
+};

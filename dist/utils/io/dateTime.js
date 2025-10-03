@@ -3,7 +3,7 @@
  * @file src/utils/io/dateTime.ts
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DEFAULT_TIMEZONE = exports.DEFAULT_LOCALE = exports.ISO_PATTERN = exports.TimeUnitEnum = exports.DateFormatEnum = void 0;
+exports.Milliseconds = exports.DEFAULT_TIMEZONE = exports.DEFAULT_LOCALE = exports.ISO_PATTERN = exports.TimeUnitEnum = exports.DateFormatEnum = void 0;
 exports.getDateFromUnixTimestamp = getDateFromUnixTimestamp;
 exports.calculateDifferenceOfDateStrings = calculateDifferenceOfDateStrings;
 exports.getUnixTimestampFromISO = getUnixTimestampFromISO;
@@ -200,3 +200,42 @@ function toPacificTime(initialDateString) {
     const pacificTime = initialDate.toLocaleString(exports.DEFAULT_LOCALE, { timeZone: exports.DEFAULT_TIMEZONE });
     return pacificTime;
 }
+exports.Milliseconds = {
+    from: {
+        hours: (n) => {
+            return n * (1000 * 60 * 60);
+        },
+        minutes: (n) => {
+            return n * (1000 * 60);
+        },
+        seconds: (n) => {
+            return n * (1000);
+        },
+        /**
+         * @param d `Date` object
+         * @returns `number` milliseconds since epoch
+         */
+        date: (d) => {
+            return d.getTime();
+        }
+    },
+    to: {
+        hours: (n) => {
+            return n / (1000 * 60 * 60);
+        },
+        minutes: (n) => {
+            return n / (1000 * 60);
+        },
+        seconds: (n) => {
+            return n / (1000);
+        },
+        /**
+         * interprets `n` as milliseconds since epoch
+         * @param n `number` milliseconds
+         * @returns `Date` object
+         */
+        date: (n) => {
+            return new Date(n);
+        }
+    },
+};

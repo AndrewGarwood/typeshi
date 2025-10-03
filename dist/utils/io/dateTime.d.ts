@@ -94,3 +94,26 @@ export declare function getCurrentPacificTime(): string;
  * @returns {string} The date string in Pacific Time
  */
 export declare function toPacificTime(initialDateString: string): string;
+export declare const Milliseconds: {
+    from: {
+        hours: (n: number) => number;
+        minutes: (n: number) => number;
+        seconds: (n: number) => number;
+        /**
+         * @param d `Date` object
+         * @returns `number` milliseconds since epoch
+         */
+        date: (d: Date) => number;
+    };
+    to: {
+        hours: (n: number) => number;
+        minutes: (n: number) => number;
+        seconds: (n: number) => number;
+        /**
+         * interprets `n` as milliseconds since epoch
+         * @param n `number` milliseconds
+         * @returns `Date` object
+         */
+        date: (n: number) => Date;
+    };
+};
