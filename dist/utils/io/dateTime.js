@@ -217,6 +217,16 @@ exports.Milliseconds = {
          */
         date: (d) => {
             return d.getTime();
+        },
+        localeString: (s) => {
+            try {
+                const date = parseLocaleStringToDate(s);
+                return date.getTime();
+            }
+            catch (error) {
+                console.error(error);
+                return null;
+            }
         }
     },
     to: {
@@ -236,6 +246,16 @@ exports.Milliseconds = {
          */
         date: (n) => {
             return new Date(n);
+        },
+        /**
+         * @param n `number` milliseconds since epoch
+         * @param locale `string` default = `'en-US'`
+         * @param timeZone `string` default = `'America/Los_Angeles'`
+         * @returns `string` locale date string
+         */
+        localeString: (n, locale = exports.DEFAULT_LOCALE, timeZone = exports.DEFAULT_TIMEZONE) => {
+            const date = new Date(n);
+            return date.toLocaleString(locale, { timeZone });
         }
     },
 };

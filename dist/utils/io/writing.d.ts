@@ -29,7 +29,7 @@ export declare const writeJsonSync: typeof writeObjectToJsonSync;
  */
 export declare function indentedStringify(data: Record<string, any> | string, indent?: number, spaces?: number): string;
 /**
- * @returns **`timestamp`** `string` = `(${MM}-${DD})_(${HH}-${mm}.${ss}.${ms})`
+ * @returns **`timestamp`** `string` = `(${MM}-${DD})_(${HH}.${mm}.${ss}.${ms})`
  */
 export declare function getFileNameTimestamp(): string;
 /**

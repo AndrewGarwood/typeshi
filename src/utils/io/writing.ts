@@ -136,7 +136,7 @@ export function indentedStringify(
 }
 
 /**
- * @returns **`timestamp`** `string` = `(${MM}-${DD})_(${HH}-${mm}.${ss}.${ms})`
+ * @returns **`timestamp`** `string` = `(${MM}-${DD})_(${HH}.${mm}.${ss}.${ms})`
  */
 export function getFileNameTimestamp(): string {
     const now = new Date();
@@ -146,7 +146,7 @@ export function getFileNameTimestamp(): string {
     const mm = String(now.getMinutes()).padStart(2, '0');
     const ss = String(now.getSeconds()).padStart(2, '0');
     const ms = String(now.getMilliseconds()).padStart(3, '0');
-    return `(${MM}-${DD})_(${HH}-${mm}.${ss}.${ms})`
+    return `(${MM}-${DD})_(${HH}.${mm}.${ss}.${ms})`
 }
 
 /**

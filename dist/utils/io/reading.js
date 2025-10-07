@@ -70,13 +70,11 @@ const stream_1 = require("stream");
 const csv_parser_1 = __importDefault(require("csv-parser"));
 const xlsx_1 = __importDefault(require("xlsx"));
 const regex_1 = require("../regex");
-const misc_1 = require("../regex/misc");
 const config_1 = require("../../config");
 const types_1 = require("./types");
 const typeValidation_1 = require("../typeValidation");
 const validate = __importStar(require("../argumentValidation"));
 const logging_1 = require("./logging");
-const F = (0, misc_1.extractFileName)(__filename);
 /** for testing if `pathString (value)` points to an existing directory */
 function isDirectory(value) {
     return ((0, typeValidation_1.isNonEmptyString)(value)
@@ -119,7 +117,7 @@ exports.readJsonSync = readJsonFileAsObject;
  * - JSON data as an object
  */
 function readJsonFileAsObject(filePath) {
-    const source = (0, logging_1.getSourceString)(F, readJsonFileAsObject.name);
+    const source = (0, logging_1.getSourceString)(__filename, readJsonFileAsObject.name);
     try {
         filePath = coerceFileExtension(filePath, 'json');
         const data = fs_1.default.readFileSync(filePath, 'utf8');
@@ -140,7 +138,7 @@ function readJsonFileAsObject(filePath) {
  * @returns **`validatedFilePath`** `string`
  */
 function coerceFileExtension(filePath, expectedExtension) {
-    validate.multipleStringArguments(`reading.coerceFileExtension`, { filePath, expectedExtension });
+    validate.multipleStringArguments((0, logging_1.getSourceString)(__filename, coerceFileExtension.name), { filePath, expectedExtension });
     expectedExtension = expectedExtension.replace(/\./, '');
     if (filePath.endsWith(`.${expectedExtension}`)) {
         return filePath;
@@ -165,7 +163,7 @@ function coerceFileExtension(filePath, expectedExtension) {
  * @returns **`concatenatedRows`** `Promise<Record<string, any>[]>`
  */
 async function concatenateFiles(arg1, sheetName = 'Sheet1', requiredHeaders = [], strictRequirement = true, targetExtensions = ['.csv', '.tsv', '.xlsx']) {
-    const source = (0, logging_1.getSourceString)(F, concatenateFiles.name);
+    const source = (0, logging_1.getSourceString)(__filename, concatenateFiles.name);
     validate.stringArgument(source, { sheetName });
     validate.arrayArgument(source, { targetExtensions, isNonEmptyString: typeValidation_1.isNonEmptyString });
     let files;
@@ -433,7 +431,7 @@ async function getOneToOneDictionary(arg1, keyColumn, valueColumn, keyOptions, v
  * @returns **`values`** `Promise<Array<string>>` - sorted array of values (as strings) from the specified column.
  */
 async function getColumnValues(arg1, columnName, cleaner, allowDuplicates = false) {
-    const source = `[reading.getColumnValues()]`;
+    const source = (0, logging_1.getSourceString)(__filename, getColumnValues.name);
     validate.stringArgument(source, { columnName });
     validate.booleanArgument(source, { allowDuplicates });
     if (cleaner)
@@ -485,7 +483,7 @@ async function getIndexedColumnValues(arg1, columnName, cleaner) {
  * @returns **`rows`** `Promise<Record<string, any>[]>`
  */
 async function handleFileArgument(arg1, invocationSource, requiredHeaders = [], sheetName) {
-    const source = (0, logging_1.getSourceString)(F, handleFileArgument.name);
+    const source = (0, logging_1.getSourceString)(__filename, handleFileArgument.name);
     validate.stringArgument(source, { invocationSource });
     validate.arrayArgument(source, { requiredHeaders, isNonEmptyString: typeValidation_1.isNonEmptyString }, true);
     let rows = [];
@@ -532,7 +530,7 @@ async function handleFileArgument(arg1, invocationSource, requiredHeaders = [], 
  * @returns **`targetFiles`** `string[]` array of full file paths
  */
 function getDirectoryFiles(dir, ...targetExtensions) {
-    const source = (0, logging_1.getSourceString)(F, getDirectoryFiles.name);
+    const source = (0, logging_1.getSourceString)(__filename, getDirectoryFiles.name);
     validate.existingPathArgument(source, { dir });
     validate.arrayArgument(source, { targetExtensions, isNonEmptyString: typeValidation_1.isNonEmptyString }, true);
     // ensure all target extensions start with period
@@ -557,7 +555,7 @@ function getDirectoryFiles(dir, ...targetExtensions) {
  * @returns **`dict`** `Promise<Record<string, string[]>>`
  */
 async function getOneToManyDictionary(dataSource, keyColumn, valueColumn, keyOptions, valueOptions, sheetName) {
-    const source = (0, logging_1.getSourceString)(F, getOneToManyDictionary.name);
+    const source = (0, logging_1.getSourceString)(__filename, getOneToManyDictionary.name);
     validate.multipleStringArguments(source, { keyColumn, valueColumn });
     if (keyOptions)
         validate.objectArgument(source, { keyOptions, isCleanStringOptions: regex_1.isCleanStringOptions });
@@ -1130,7 +1128,7 @@ async function extractTargetRows(
  * - `Record<string, any>[]` -> array of rows
  * */
 rowSource, targetColumn, targetValues, extractor, extractorArgs) {
-    const source = (0, logging_1.getSourceString)(F, extractTargetRows.name);
+    const source = (0, logging_1.getSourceString)(__filename, extractTargetRows.name);
     if (!(0, typeValidation_1.isNonEmptyString)(rowSource) && !(0, typeValidation_1.isNonEmptyArray)(rowSource)) {
         throw new Error([`${source} Invalid param 'rowSource'`,
             `Expected rowSource: string | Record<string, any>[]`,

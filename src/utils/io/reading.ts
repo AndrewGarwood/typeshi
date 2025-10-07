@@ -11,7 +11,6 @@ import { RegExpFlagsEnum, StringCaseOptions, stringEndsWithAnyOf,
     CleanStringOptions,
     isCleanStringOptions
 } from "../regex";
-import { extractFileName } from "../regex/misc";
 import { FileData,} from "./types/Io";
 import { 
     typeshiLogger as mlog, 
@@ -28,8 +27,6 @@ import {
 } from "../typeValidation";
 import * as validate from "../argumentValidation";
 import { getSourceString } from "./logging";
-
-const F = extractFileName(__filename);
 
 /** for testing if `pathString (value)` points to an existing directory */
 export function isDirectory(value: any): value is string {
@@ -77,7 +74,7 @@ export const readJsonSync = readJsonFileAsObject;
  * - JSON data as an object
  */
 export function readJsonFileAsObject(filePath: string): Record<string, any> {
-    const source = getSourceString(F, readJsonFileAsObject.name);
+    const source = getSourceString(__filename, readJsonFileAsObject.name);
     try {
         filePath = coerceFileExtension(filePath, 'json');
         const data = fs.readFileSync(filePath, 'utf8');
@@ -99,7 +96,9 @@ export function readJsonFileAsObject(filePath: string): Record<string, any> {
  * @returns **`validatedFilePath`** `string` 
  */
 export function coerceFileExtension(filePath: string, expectedExtension: string): string {
-    validate.multipleStringArguments(`reading.coerceFileExtension`, {filePath, expectedExtension});
+    validate.multipleStringArguments(getSourceString(__filename, coerceFileExtension.name), 
+        {filePath, expectedExtension}
+    );
     expectedExtension = expectedExtension.replace(/\./, '');
     if (filePath.endsWith(`.${expectedExtension}`)) {
         return filePath
@@ -132,7 +131,7 @@ export async function concatenateFiles(
     strictRequirement: boolean = true,
     targetExtensions: string[] = ['.csv', '.tsv', '.xlsx']
 ): Promise<Record<string, any>[]> {
-    const source = getSourceString(F, concatenateFiles.name);
+    const source = getSourceString(__filename, concatenateFiles.name);
     validate.stringArgument(source, {sheetName});
     validate.arrayArgument(source, {targetExtensions, isNonEmptyString});
     let files: Array<FileData | string>;
@@ -422,7 +421,7 @@ export async function getColumnValues(
     cleaner?: (s: string) => string | Promise<string>,
     allowDuplicates: boolean = false,
 ): Promise<Array<string>> {
-    const source = `[reading.getColumnValues()]`;
+    const source = getSourceString(__filename, getColumnValues.name);
     validate.stringArgument(source, {columnName});
     validate.booleanArgument(source, {allowDuplicates});
     if (cleaner) validate.functionArgument(source, {cleaner})
@@ -487,7 +486,7 @@ export async function handleFileArgument(
     requiredHeaders: string[] = [],
     sheetName?: string
 ): Promise<Record<string, any>[]> {
-    const source = getSourceString(F, handleFileArgument.name);
+    const source = getSourceString(__filename, handleFileArgument.name);
     validate.stringArgument(source, {invocationSource});
     validate.arrayArgument(source, {requiredHeaders, isNonEmptyString}, true);
     let rows: Record<string, any>[] = [];
@@ -538,7 +537,7 @@ export function getDirectoryFiles(
     dir: string,
     ...targetExtensions: string[]
 ): string[] {
-    const source = getSourceString(F, getDirectoryFiles.name);
+    const source = getSourceString(__filename, getDirectoryFiles.name);
     validate.existingPathArgument(source, {dir});
     validate.arrayArgument(source, {targetExtensions, isNonEmptyString}, true);
     // ensure all target extensions start with period
@@ -574,7 +573,7 @@ export async function getOneToManyDictionary(
     valueOptions?: CleanStringOptions,
     sheetName?: string
 ): Promise<Record<string, string[]>> {
-    const source = getSourceString(F, getOneToManyDictionary.name);
+    const source = getSourceString(__filename, getOneToManyDictionary.name);
     validate.multipleStringArguments(source, {keyColumn, valueColumn});
     if (keyOptions) validate.objectArgument(source, {keyOptions, isCleanStringOptions});
     if (valueOptions) validate.objectArgument(source, {valueOptions, isCleanStringOptions});
@@ -1307,7 +1306,7 @@ export async function extractTargetRows(
     rows: Record<string, any>[];
     remainingValues: string[]
 }> {
-    const source = getSourceString(F, extractTargetRows.name);
+    const source = getSourceString(__filename, extractTargetRows.name);
     if(!isNonEmptyString(rowSource) && !isNonEmptyArray(rowSource)) {
         throw new Error([`${source} Invalid param 'rowSource'`,
             `Expected rowSource: string | Record<string, any>[]`,

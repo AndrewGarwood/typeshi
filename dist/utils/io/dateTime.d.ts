@@ -95,25 +95,33 @@ export declare function getCurrentPacificTime(): string;
  */
 export declare function toPacificTime(initialDateString: string): string;
 export declare const Milliseconds: {
-    from: {
-        hours: (n: number) => number;
-        minutes: (n: number) => number;
-        seconds: (n: number) => number;
+    readonly from: {
+        readonly hours: (n: number) => number;
+        readonly minutes: (n: number) => number;
+        readonly seconds: (n: number) => number;
         /**
          * @param d `Date` object
          * @returns `number` milliseconds since epoch
          */
-        date: (d: Date) => number;
+        readonly date: (d: Date) => number;
+        readonly localeString: (s: string) => number | null;
     };
-    to: {
-        hours: (n: number) => number;
-        minutes: (n: number) => number;
-        seconds: (n: number) => number;
+    readonly to: {
+        readonly hours: (n: number) => number;
+        readonly minutes: (n: number) => number;
+        readonly seconds: (n: number) => number;
         /**
          * interprets `n` as milliseconds since epoch
          * @param n `number` milliseconds
          * @returns `Date` object
          */
-        date: (n: number) => Date;
+        readonly date: (n: number) => Date;
+        /**
+         * @param n `number` milliseconds since epoch
+         * @param locale `string` default = `'en-US'`
+         * @param timeZone `string` default = `'America/Los_Angeles'`
+         * @returns `string` locale date string
+         */
+        readonly localeString: (n: number, locale?: string, timeZone?: string) => string;
     };
 };

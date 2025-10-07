@@ -220,6 +220,15 @@ export const Milliseconds = {
          */
         date: (d: Date): number => {
             return d.getTime();
+        },
+        localeString: (s: string): number | null => {
+            try {
+                const date = parseLocaleStringToDate(s);
+                return date.getTime();
+            } catch (error) {
+                console.error(error);
+                return null;
+            }
         }
     },
     to: {
@@ -239,6 +248,16 @@ export const Milliseconds = {
          */
         date: (n: number): Date => {
             return new Date(n);
+        },
+        /**
+         * @param n `number` milliseconds since epoch
+         * @param locale `string` default = `'en-US'`
+         * @param timeZone `string` default = `'America/Los_Angeles'`
+         * @returns `string` locale date string
+         */
+        localeString: (n: number, locale: string = DEFAULT_LOCALE, timeZone: string = DEFAULT_TIMEZONE): string => {
+            const date = new Date(n);
+            return date.toLocaleString(locale, {timeZone});
         }
     },
-};
+} as const;
