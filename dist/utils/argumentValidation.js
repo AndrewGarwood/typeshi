@@ -339,7 +339,7 @@ function arrayArgument(source,
 arg2, 
 /** `value (any) | allowEmpty (boolean)` */
 arg3, 
-/** elementType (TypeOfEnum | string) | undefined */
+/** elementType (string) | undefined */
 elementType, 
 /** elementTypeGuard | allowEmpty (boolean) */
 elementTypeGuard, allowEmpty) {
@@ -810,6 +810,9 @@ function getSourceString(fileName, func, funcInfo, startLine, endLine) {
     let funcName = typeof func === 'string' ? func : func.name;
     return `[${fileName}.${funcName}(${(0, typeValidation_1.isNonEmptyString)(funcInfo) ? ` ${funcInfo} ` : ''})${lineNumberText}]`;
 }
+// isEnumArgumentOptions,
+// isEnumObject,
+// isObjectArgumentOptions,
 const validate = {
     stringArgument,
     multipleStringArguments,
@@ -818,10 +821,7 @@ const validate = {
     numberArgument,
     arrayArgument,
     enumArgument,
-    // isEnumArgumentOptions,
-    // isEnumObject,
     objectArgument,
-    // isObjectArgumentOptions,
     functionArgument,
     existingPathArgument,
     existingDirectoryArgument,

@@ -3,7 +3,7 @@
  * @file src/utils/typeValidation.ts
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TypeOfEnum = exports.isEmpty = void 0;
+exports.isEmpty = void 0;
 exports.isNullLike = isNullLike;
 exports.anyNull = anyNull;
 exports.isNonEmptyArray = isNonEmptyArray;
@@ -289,20 +289,3 @@ function isObject(value, requireNonEmpty = true, requireNonArray = true) {
 function isBoolean(value) {
     return (typeof value === 'boolean');
 }
-/**
- * @TODO deprecate and remove this
- * @enum {string} **`TypeOfEnum`**
- * @property **`STRING`** = `'string'`
- * @property **`NUMBER`** = `'number'`
- * @property **`BOOLEAN`** = `'boolean'`
- * @property **`OBJECT`** = `'object'`
- * @property **`FUNCTION`** = `'function'`
- */
-var TypeOfEnum;
-(function (TypeOfEnum) {
-    TypeOfEnum["STRING"] = "string";
-    TypeOfEnum["NUMBER"] = "number";
-    TypeOfEnum["BOOLEAN"] = "boolean";
-    TypeOfEnum["OBJECT"] = "object";
-    TypeOfEnum["FUNCTION"] = "function";
-})(TypeOfEnum || (exports.TypeOfEnum = TypeOfEnum = {}));

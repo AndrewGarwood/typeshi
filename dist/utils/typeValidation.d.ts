@@ -145,19 +145,3 @@ export declare function isObject(value: any, requireNonEmpty?: boolean, requireN
  * @returns **`isBoolean`** `boolean`
  */
 export declare function isBoolean(value: any): value is boolean;
-/**
- * @TODO deprecate and remove this
- * @enum {string} **`TypeOfEnum`**
- * @property **`STRING`** = `'string'`
- * @property **`NUMBER`** = `'number'`
- * @property **`BOOLEAN`** = `'boolean'`
- * @property **`OBJECT`** = `'object'`
- * @property **`FUNCTION`** = `'function'`
- */
-export declare enum TypeOfEnum {
-    STRING = "string",
-    NUMBER = "number",
-    BOOLEAN = "boolean",
-    OBJECT = "object",
-    FUNCTION = "function"
-}

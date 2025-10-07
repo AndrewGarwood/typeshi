@@ -15,7 +15,6 @@
 import { 
     isNonEmptyString, 
     isEmptyArray, 
-    TypeOfEnum, 
     isNumeric,
     isObject,
     isStringArray,
@@ -348,8 +347,8 @@ const typeGuardNamePattern = /(?<=^is).*$/i;
  * @param label `string` the argument/parameter name
  * @param value `any` the value passed into the `source` 
  * for the argument corresponding to `label`
- * @param elementType `TypeOfEnum | string` `(optional)`, the expected type of each element in the array
- * - `if` provided, must be one of the values in {@link TypeOfEnum} or a string representing the type
+ * @param elementType `string` `(optional)`, the expected type of each element in the array
+ * - `if` provided, must be a string representing the type
  * @param elementTypeGuard `(value: any) => boolean` `(optional)`, a type guard function that checks if each element in the array is of a specific type
  * - `if` provided, must be a function that takes a value and returns a boolean indicating if the value is of the expected type
  * - `if` both `elementType` and `elementTypeGuard` are provided, both must be satisfied
@@ -366,7 +365,7 @@ export function arrayArgument(
     source: string,
     label: string,
     value: any,
-    elementType?: TypeOfEnum | string,
+    elementType?: string,
     elementTypeGuard?: (value: any) => boolean,
     allowEmpty?: boolean
 ): void
@@ -416,8 +415,8 @@ export function arrayArgument(
     arg2: string | { [label: string]: any },
     /** `value (any) | allowEmpty (boolean)` */
     arg3?: any | boolean | undefined,
-    /** elementType (TypeOfEnum | string) | undefined */
-    elementType?: TypeOfEnum | string | undefined,
+    /** elementType (string) | undefined */
+    elementType?: string | undefined,
     /** elementTypeGuard | allowEmpty (boolean) */
     elementTypeGuard?: ((value: any) => boolean) | undefined,
     allowEmpty?: boolean | undefined
@@ -1012,6 +1011,9 @@ function getSourceString(
     return `[${fileName}.${funcName}(${isNonEmptyString(funcInfo) ? ` ${funcInfo} `: ''})${lineNumberText}]`;
 }
 
+    // isEnumArgumentOptions,
+    // isEnumObject,
+    // isObjectArgumentOptions,
 const validate = {
     stringArgument,
     multipleStringArguments,
@@ -1020,10 +1022,7 @@ const validate = {
     numberArgument,
     arrayArgument,
     enumArgument,
-    // isEnumArgumentOptions,
-    // isEnumObject,
     objectArgument,
-    // isObjectArgumentOptions,
     functionArgument,
     existingPathArgument,
     existingDirectoryArgument,

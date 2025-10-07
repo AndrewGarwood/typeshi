@@ -1,19 +1,4 @@
 /**
- * @file src/utils/argumentValidation.ts
- * @description moved the content of parameter type checks at the start of
- * functions to here. use these when you want your function to throw a fit when
- * it receives bad input.
- * @example
- * import * as validate from "@typeshi/argumentValidation";
- * @TODO add boolean value configurable by a setter function that specifies if errors should be thrown or only logged
- * - maybe add a configurable value that the validation functions should return if the validation test fails
- * - change the validation functions such that they return the validated value, if possible?
- * - or maybe have them return boolean type predicates ?
- * - -> maybe have to make a class
- * - research the thingy where a type is after the function name and before parens
- */
-import { TypeOfEnum } from "./typeValidation";
-/**
  * - {@link isNonEmptyString}`(value: any): value is string & { length: number; }`
  * @param source `string` indicating what called `stringArgument()`
  * @param arg2 `string | { [label: string]: any }` the argument/parameter name
@@ -92,8 +77,8 @@ export declare function functionArgument(source: string, arg2: string | {
  * @param label `string` the argument/parameter name
  * @param value `any` the value passed into the `source`
  * for the argument corresponding to `label`
- * @param elementType `TypeOfEnum | string` `(optional)`, the expected type of each element in the array
- * - `if` provided, must be one of the values in {@link TypeOfEnum} or a string representing the type
+ * @param elementType `string` `(optional)`, the expected type of each element in the array
+ * - `if` provided, must be a string representing the type
  * @param elementTypeGuard `(value: any) => boolean` `(optional)`, a type guard function that checks if each element in the array is of a specific type
  * - `if` provided, must be a function that takes a value and returns a boolean indicating if the value is of the expected type
  * - `if` both `elementType` and `elementTypeGuard` are provided, both must be satisfied
@@ -106,7 +91,7 @@ export declare function functionArgument(source: string, arg2: string | {
  * -  `Expected '${label}' to be: non-empty array`
  * -  `Received '${label}' value: ${typeof value} = '${value}'`
  */
-export declare function arrayArgument(source: string, label: string, value: any, elementType?: TypeOfEnum | string, elementTypeGuard?: (value: any) => boolean, allowEmpty?: boolean): void;
+export declare function arrayArgument(source: string, label: string, value: any, elementType?: string, elementTypeGuard?: (value: any) => boolean, allowEmpty?: boolean): void;
 /**
  * @note `if` `elementTypeGuard`'s name or its label includes 'Array' then only check `elementTypeGuard(value)`
  * instead of checking `value.every(el => elementTypeGuard(el))`

@@ -317,20 +317,3 @@ export function isObject(
 export function isBoolean(value: any): value is boolean {
     return (typeof value === 'boolean');
 }
-
-/**
- * @TODO deprecate and remove this
- * @enum {string} **`TypeOfEnum`**
- * @property **`STRING`** = `'string'`
- * @property **`NUMBER`** = `'number'`
- * @property **`BOOLEAN`** = `'boolean'`
- * @property **`OBJECT`** = `'object'`
- * @property **`FUNCTION`** = `'function'`
- */
-export enum TypeOfEnum {
-    STRING = 'string',
-    NUMBER = 'number',
-    BOOLEAN = 'boolean',
-    OBJECT = 'object',
-    FUNCTION = 'function',
-}
