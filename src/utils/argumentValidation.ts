@@ -11,7 +11,6 @@
  * - or maybe have them return boolean type predicates ? 
  * - -> maybe have to make a class
  * - research the thingy where a type is after the function name and before parens
- * @consideration add a default export named 'validate'
  */
 import { 
     isNonEmptyString, 
@@ -337,7 +336,9 @@ export function functionArgument(
     }
 }
 
-
+/**
+ * `re = /(?<=^is).*$/i`
+ */
 const typeGuardNamePattern = /(?<=^is).*$/i;
 
 /**
@@ -741,16 +742,13 @@ function isEnumArgumentOptions(value: any): value is EnumArgumentOptions {
 type EnumArgumentOptions = { 
     [entryLabel: string]: any | EnumObject | ((value: any) => boolean)
 }
-// | {
-//     [isEnumFunctionLabel: string]: 
-// })
 
 export function enumArgument(
     source: string,
     label: string,
     value: any,
     enumLabel: string,
-    enumObject: EnumObject, // @TODO maybe implement overload arg5: EnumObject | ((value: any) => boolean)
+    enumObject: EnumObject,
 ): string | number
 
 /**
@@ -1013,3 +1011,24 @@ function getSourceString(
     let funcName = typeof func === 'string' ? func : func.name
     return `[${fileName}.${funcName}(${isNonEmptyString(funcInfo) ? ` ${funcInfo} `: ''})${lineNumberText}]`;
 }
+
+const validate = {
+    stringArgument,
+    multipleStringArguments,
+    numericStringArgument,
+    booleanArgument,
+    numberArgument,
+    arrayArgument,
+    enumArgument,
+    // isEnumArgumentOptions,
+    // isEnumObject,
+    objectArgument,
+    // isObjectArgumentOptions,
+    functionArgument,
+    existingPathArgument,
+    existingDirectoryArgument,
+    existingFileArgument,
+    multipleExistingFileArguments
+}
+
+export default validate;

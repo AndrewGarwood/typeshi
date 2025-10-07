@@ -11,7 +11,6 @@
  * - or maybe have them return boolean type predicates ?
  * - -> maybe have to make a class
  * - research the thingy where a type is after the function name and before parens
- * @consideration add a default export named 'validate'
  */
 import { TypeOfEnum } from "./typeValidation";
 /**
@@ -192,4 +191,19 @@ export declare function existingPathArgument(source: string, arg2: string | {
  * @returns **`bracketedString`** `string`
  */
 export declare const bracketed: (s: string) => string;
-export {};
+declare const validate: {
+    stringArgument: typeof stringArgument;
+    multipleStringArguments: typeof multipleStringArguments;
+    numericStringArgument: typeof numericStringArgument;
+    booleanArgument: typeof booleanArgument;
+    numberArgument: typeof numberArgument;
+    arrayArgument: typeof arrayArgument;
+    enumArgument: typeof enumArgument;
+    objectArgument: typeof objectArgument;
+    functionArgument: typeof functionArgument;
+    existingPathArgument: typeof existingPathArgument;
+    existingDirectoryArgument: typeof existingDirectoryArgument;
+    existingFileArgument: typeof existingFileArgument;
+    multipleExistingFileArguments: typeof multipleExistingFileArguments;
+};
+export default validate;

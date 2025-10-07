@@ -63,7 +63,6 @@ exports.existingPathArgument = existingPathArgument;
  * - or maybe have them return boolean type predicates ?
  * - -> maybe have to make a class
  * - research the thingy where a type is after the function name and before parens
- * @consideration add a default export named 'validate'
  */
 const typeValidation_1 = require("./typeValidation");
 const setupLog_1 = require("../config/setupLog");
@@ -315,6 +314,9 @@ function functionArgument(source, arg2, value) {
         throw new Error(msg);
     }
 }
+/**
+ * `re = /(?<=^is).*$/i`
+ */
 const typeGuardNamePattern = /(?<=^is).*$/i;
 /**
  * @note `if` `elementTypeGuard`'s name or its label includes 'Array' then only check `elementTypeGuard(value)`
@@ -808,3 +810,22 @@ function getSourceString(fileName, func, funcInfo, startLine, endLine) {
     let funcName = typeof func === 'string' ? func : func.name;
     return `[${fileName}.${funcName}(${(0, typeValidation_1.isNonEmptyString)(funcInfo) ? ` ${funcInfo} ` : ''})${lineNumberText}]`;
 }
+const validate = {
+    stringArgument,
+    multipleStringArguments,
+    numericStringArgument,
+    booleanArgument,
+    numberArgument,
+    arrayArgument,
+    enumArgument,
+    // isEnumArgumentOptions,
+    // isEnumObject,
+    objectArgument,
+    // isObjectArgumentOptions,
+    functionArgument,
+    existingPathArgument,
+    existingDirectoryArgument,
+    existingFileArgument,
+    multipleExistingFileArguments
+};
+exports.default = validate;
