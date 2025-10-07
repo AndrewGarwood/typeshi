@@ -813,19 +813,19 @@ function getSourceString(fileName, func, funcInfo, startLine, endLine) {
 // isEnumArgumentOptions,
 // isEnumObject,
 // isObjectArgumentOptions,
-const validate = {
-    stringArgument,
-    multipleStringArguments,
-    numericStringArgument,
-    booleanArgument,
-    numberArgument,
-    arrayArgument,
-    enumArgument,
-    objectArgument,
-    functionArgument,
-    existingPathArgument,
-    existingDirectoryArgument,
-    existingFileArgument,
-    multipleExistingFileArguments
-};
-exports.default = validate;
+// const validate = {
+//     stringArgument,
+//     multipleStringArguments,
+//     numericStringArgument,
+//     booleanArgument,
+//     numberArgument,
+//     arrayArgument,
+//     enumArgument,
+//     objectArgument,
+//     functionArgument,
+//     existingPathArgument,
+//     existingDirectoryArgument,
+//     existingFileArgument,
+//     multipleExistingFileArguments
+// }
+// export default validate;

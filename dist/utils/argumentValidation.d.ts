@@ -176,19 +176,4 @@ export declare function existingPathArgument(source: string, arg2: string | {
  * @returns **`bracketedString`** `string`
  */
 export declare const bracketed: (s: string) => string;
-declare const validate: {
-    stringArgument: typeof stringArgument;
-    multipleStringArguments: typeof multipleStringArguments;
-    numericStringArgument: typeof numericStringArgument;
-    booleanArgument: typeof booleanArgument;
-    numberArgument: typeof numberArgument;
-    arrayArgument: typeof arrayArgument;
-    enumArgument: typeof enumArgument;
-    objectArgument: typeof objectArgument;
-    functionArgument: typeof functionArgument;
-    existingPathArgument: typeof existingPathArgument;
-    existingDirectoryArgument: typeof existingDirectoryArgument;
-    existingFileArgument: typeof existingFileArgument;
-    multipleExistingFileArguments: typeof multipleExistingFileArguments;
-};
-export default validate;
+export {};

@@ -1014,20 +1014,20 @@ function getSourceString(
     // isEnumArgumentOptions,
     // isEnumObject,
     // isObjectArgumentOptions,
-const validate = {
-    stringArgument,
-    multipleStringArguments,
-    numericStringArgument,
-    booleanArgument,
-    numberArgument,
-    arrayArgument,
-    enumArgument,
-    objectArgument,
-    functionArgument,
-    existingPathArgument,
-    existingDirectoryArgument,
-    existingFileArgument,
-    multipleExistingFileArguments
-}
+// const validate = {
+//     stringArgument,
+//     multipleStringArguments,
+//     numericStringArgument,
+//     booleanArgument,
+//     numberArgument,
+//     arrayArgument,
+//     enumArgument,
+//     objectArgument,
+//     functionArgument,
+//     existingPathArgument,
+//     existingDirectoryArgument,
+//     existingFileArgument,
+//     multipleExistingFileArguments
+// }
 
-export default validate;
+// export default validate;
