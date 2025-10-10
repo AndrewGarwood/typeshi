@@ -9,11 +9,11 @@
  * @property {string} UNIX - Unix format (milliseconds since epoch)
  */
 export declare enum DateFormatEnum {
-    /**ISO format (YYYY-MM-DDTHH:mm:ss.sssZ) */
+    /**ISO format (e.g., "2025-04-16T00:00:00.000Z") */
     ISO = "ISO",
-    /**UTC format (YYYY-MM-DDTHH:mm:ss.sssZ) */
+    /**UTC format (e.g., "Sun, 31 Dec 1899 00:00:00 GMT") */
     UTC = "UTC",
-    /**Local format (YYYY-MM-DDTHH:mm:ss.sssZ) */
+    /**Locale format (e.g., "4/21/2025, 4:22:45 PM") */
     LOCALE = "LOCALE",
     /** ```/\d{13}/``` if milliseconds, ```/\d{10}/``` if seconds */
     UNIX = "UNIX"
@@ -34,20 +34,31 @@ export declare enum TimeUnitEnum {
     DAYS = "days"
 }
 /**
- * `re = /^\d{4}-\d{2}-\d{2}$/`
- * @description Regular expression pattern for ISO date format (YYYY-MM-DD)
+ * `re = /\d{4}(-|\/)\d{2}(-|\/)\d{2}(T\d{2}:\d{2}:\d{2}(.\d{3})Z)?/`
+ * @description Regular expression pattern for ISO date format (YYYY-MM-DD or YYYY/MM/DD) + optional time (THH:mm:ss.sssZ)
  * @example "2025-04-16"
  * */
 export declare const ISO_PATTERN: RegExp;
 /**
+ * `re = /(Mon|Tue|Wed|Thu|Fri|Sat|Sun), \d{2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4}( \d{2}:\d{2}:\d{2} GMT)?/`
+ * @description Regular expression pattern for UTC date format (e.g., "Sun, 31 Dec 1899 00:00:00 GMT")
+ */
+export declare const UTC_PATTERN: RegExp;
+/**
+ * `re = /\d{1,2}[-/]\d{1,2}[-/]\d{4}(, \d{1,2}:\d{2}:\d{2} (AM|PM))?/`
+ * @description Regular expression pattern for Locale date format (M/D/YYYY or M-D-YYYY) + optional time (hh:mm:ss AM/PM)
+ * @example "4/21/2025, 4:22:45 PM"
+ */
+export declare const LOCALE_PATTERN: RegExp;
+/**
  * - defaultValue: string = `"en-US"`
- * @description set as first param, locales, in {@link Date}.toLocaleString(locales?: Intl.LocalesArgument, options?: Intl.DateTimeFormatOptions)
+ * @description set as first param, locales, in {@link Date}`.toLocaleString(locales?: Intl.LocalesArgument, options?: Intl.DateTimeFormatOptions)`
  * @reference ~\node_modules\typescript\lib\lib.es2020.date.d.ts @see {@link Date}
  */
 export declare const DEFAULT_LOCALE = "en-US";
 /**
  * - defaultValue: string = `"America/Los_Angeles"`
- * @description set as second param, options, in {@link Date}.toLocaleString(locales?: Intl.LocalesArgument, options?: Intl.DateTimeFormatOptions)
+ * @description set as second param, options, in {@link Date}`.toLocaleString(locales?: Intl.LocalesArgument, options?: Intl.DateTimeFormatOptions)`
  * @reference ~\node_modules\typescript\lib\lib.es2020.date.d.ts @see {@link Date}
  */
 export declare const DEFAULT_TIMEZONE = "America/Los_Angeles";
@@ -81,7 +92,7 @@ export declare function getUnixTimestampFromISO(dateString: string): number | nu
  * @param dateStr Date string in locale format (e.g., '4/21/2025, 4:22:45 PM')
  * @returns {Date} **`date`** {@link Date} object
  */
-export declare function parseLocaleStringToDate(dateStr: string): Date;
+export declare function localeStringToDate(dateStr: string): Date;
 /**
  * @description Gets the current date and time in Pacific Time in Locale format
  * @returns {string} The current date and time in Pacific Time in Locale format
@@ -96,19 +107,57 @@ export declare function getCurrentPacificTime(): string;
 export declare function toPacificTime(initialDateString: string): string;
 export declare const Milliseconds: {
     readonly from: {
+        /**
+         * @param n `number`
+         * @returns `n * (1000 * 60 * 60 * 24)` number of milliseconds in `n` days
+         */
+        readonly days: (n: number) => number;
+        /**
+         * @param n `number`
+         * @returns `n * (1000 * 60 * 60)` number of milliseconds in `n` hours
+         */
         readonly hours: (n: number) => number;
+        /**
+         * @param n `number`
+         * @returns `n * (1000 * 60)` number of milliseconds in `n` minutes
+         */
         readonly minutes: (n: number) => number;
+        /**
+         * @param n `number`
+         * @returns `n * (1000)` number of milliseconds in `n` seconds
+         */
         readonly seconds: (n: number) => number;
         /**
          * @param d `Date` object
-         * @returns `number` milliseconds since epoch
+         * @returns `number` = `d.getTime()` = milliseconds since epoch
          */
         readonly date: (d: Date) => number;
-        readonly localeString: (s: string) => number | null;
+        /**
+         * @param s `string` date string to pass into Date Constructor (e.g. ISO, UTC, Locale, etc.)
+         * @returns `number` milliseconds since epoch or `null` if invalid (i.e. Date constructor can't parse it)
+         */
+        readonly string: (s: string) => number | null;
     };
     readonly to: {
+        /**
+         * @param n `number`
+         * @returns `number` days in `n` milliseconds
+         */
+        readonly days: (n: number) => number;
+        /**
+         * @param n `number`
+         * @returns `number` hours in `n` milliseconds
+         */
         readonly hours: (n: number) => number;
+        /**
+         * @param n `number`
+         * @returns `number` minutes in `n` milliseconds
+         */
         readonly minutes: (n: number) => number;
+        /**
+         * @param n `number`
+         * @returns `number` seconds in `n` milliseconds
+         */
         readonly seconds: (n: number) => number;
         /**
          * interprets `n` as milliseconds since epoch
@@ -117,11 +166,12 @@ export declare const Milliseconds: {
          */
         readonly date: (n: number) => Date;
         /**
-         * @param n `number` milliseconds since epoch
-         * @param locale `string` default = `'en-US'`
-         * @param timeZone `string` default = `'America/Los_Angeles'`
-         * @returns `string` locale date string
+         * @param n `number`
+         * @param format {@link DateFormatEnum} default = {@link DateFormatEnum.ISO}
+         * @param locale `string` default = `'en-US'` (only used if format = {@link DateFormatEnum.LOCALE})
+         * @param timeZone `string` default = `'America/Los_Angeles'` (only used if format = {@link DateFormatEnum.LOCALE})
+         * @returns `string` formatted date string or empty string if error
          */
-        readonly localeString: (n: number, locale?: string, timeZone?: string) => string;
+        readonly string: (n: number, format?: DateFormatEnum, locale?: string, timeZone?: string) => string;
     };
 };

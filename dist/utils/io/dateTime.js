@@ -3,11 +3,11 @@
  * @file src/utils/io/dateTime.ts
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Milliseconds = exports.DEFAULT_TIMEZONE = exports.DEFAULT_LOCALE = exports.ISO_PATTERN = exports.TimeUnitEnum = exports.DateFormatEnum = void 0;
+exports.Milliseconds = exports.DEFAULT_TIMEZONE = exports.DEFAULT_LOCALE = exports.LOCALE_PATTERN = exports.UTC_PATTERN = exports.ISO_PATTERN = exports.TimeUnitEnum = exports.DateFormatEnum = void 0;
 exports.getDateFromUnixTimestamp = getDateFromUnixTimestamp;
 exports.calculateDifferenceOfDateStrings = calculateDifferenceOfDateStrings;
 exports.getUnixTimestampFromISO = getUnixTimestampFromISO;
-exports.parseLocaleStringToDate = parseLocaleStringToDate;
+exports.localeStringToDate = localeStringToDate;
 exports.getCurrentPacificTime = getCurrentPacificTime;
 exports.toPacificTime = toPacificTime;
 /**
@@ -19,11 +19,11 @@ exports.toPacificTime = toPacificTime;
  */
 var DateFormatEnum;
 (function (DateFormatEnum) {
-    /**ISO format (YYYY-MM-DDTHH:mm:ss.sssZ) */
+    /**ISO format (e.g., "2025-04-16T00:00:00.000Z") */
     DateFormatEnum["ISO"] = "ISO";
-    /**UTC format (YYYY-MM-DDTHH:mm:ss.sssZ) */
+    /**UTC format (e.g., "Sun, 31 Dec 1899 00:00:00 GMT") */
     DateFormatEnum["UTC"] = "UTC";
-    /**Local format (YYYY-MM-DDTHH:mm:ss.sssZ) */
+    /**Locale format (e.g., "4/21/2025, 4:22:45 PM") */
     DateFormatEnum["LOCALE"] = "LOCALE";
     /** ```/\d{13}/``` if milliseconds, ```/\d{10}/``` if seconds */
     DateFormatEnum["UNIX"] = "UNIX";
@@ -46,20 +46,31 @@ var TimeUnitEnum;
     TimeUnitEnum["DAYS"] = "days";
 })(TimeUnitEnum || (exports.TimeUnitEnum = TimeUnitEnum = {}));
 /**
- * `re = /^\d{4}-\d{2}-\d{2}$/`
- * @description Regular expression pattern for ISO date format (YYYY-MM-DD)
+ * `re = /\d{4}(-|\/)\d{2}(-|\/)\d{2}(T\d{2}:\d{2}:\d{2}(.\d{3})Z)?/`
+ * @description Regular expression pattern for ISO date format (YYYY-MM-DD or YYYY/MM/DD) + optional time (THH:mm:ss.sssZ)
  * @example "2025-04-16"
  * */
-exports.ISO_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+exports.ISO_PATTERN = /\d{4}[-/]\d{2}[-/]\d{2}(T\d{2}:\d{2}:\d{2}(.\d{3})Z)?/;
+/**
+ * `re = /(Mon|Tue|Wed|Thu|Fri|Sat|Sun), \d{2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4}( \d{2}:\d{2}:\d{2} GMT)?/`
+ * @description Regular expression pattern for UTC date format (e.g., "Sun, 31 Dec 1899 00:00:00 GMT")
+ */
+exports.UTC_PATTERN = /(Mon|Tue|Wed|Thu|Fri|Sat|Sun), \d{2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4}( \d{2}:\d{2}:\d{2} GMT)?/;
+/**
+ * `re = /\d{1,2}[-/]\d{1,2}[-/]\d{4}(, \d{1,2}:\d{2}:\d{2} (AM|PM))?/`
+ * @description Regular expression pattern for Locale date format (M/D/YYYY or M-D-YYYY) + optional time (hh:mm:ss AM/PM)
+ * @example "4/21/2025, 4:22:45 PM"
+ */
+exports.LOCALE_PATTERN = /\d{1,2}[-/]\d{1,2}[-/]\d{4}(, \d{1,2}:\d{2}:\d{2} (AM|PM))?/; // e.g., 4/21/2025, 4:22:45 PM
 /**
  * - defaultValue: string = `"en-US"`
- * @description set as first param, locales, in {@link Date}.toLocaleString(locales?: Intl.LocalesArgument, options?: Intl.DateTimeFormatOptions)
+ * @description set as first param, locales, in {@link Date}`.toLocaleString(locales?: Intl.LocalesArgument, options?: Intl.DateTimeFormatOptions)`
  * @reference ~\node_modules\typescript\lib\lib.es2020.date.d.ts @see {@link Date}
  */
 exports.DEFAULT_LOCALE = 'en-US';
 /**
  * - defaultValue: string = `"America/Los_Angeles"`
- * @description set as second param, options, in {@link Date}.toLocaleString(locales?: Intl.LocalesArgument, options?: Intl.DateTimeFormatOptions)
+ * @description set as second param, options, in {@link Date}`.toLocaleString(locales?: Intl.LocalesArgument, options?: Intl.DateTimeFormatOptions)`
  * @reference ~\node_modules\typescript\lib\lib.es2020.date.d.ts @see {@link Date}
  */
 exports.DEFAULT_TIMEZONE = 'America/Los_Angeles';
@@ -119,13 +130,13 @@ function calculateDifferenceOfDateStrings(ds1, ds2 = getCurrentPacificTime(), un
         case TimeUnitEnum.MILLISECONDS:
             return diffInMs;
         case TimeUnitEnum.SECONDS:
-            return Math.floor(diffInMs / 1000);
+            return exports.Milliseconds.from.seconds(diffInMs);
         case TimeUnitEnum.MINUTES:
-            return Math.floor(diffInMs / (1000 * 60));
+            return exports.Milliseconds.from.minutes(diffInMs);
         case TimeUnitEnum.HOURS:
-            return Math.floor(diffInMs / (1000 * 60 * 60));
+            return exports.Milliseconds.from.hours(diffInMs);
         case TimeUnitEnum.DAYS:
-            return Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+            return exports.Milliseconds.from.days(diffInMs);
         default:
             console.error('Invalid time unit specified. Use TimeUnitEnum.MILLISECONDS, TimeUnitEnum.SECONDS, TimeUnitEnum.MINUTES, TimeUnitEnum.HOURS, or TimeUnitEnum.DAYS');
             return null;
@@ -160,7 +171,7 @@ function getUnixTimestampFromISO(dateString) {
  * @param dateStr Date string in locale format (e.g., '4/21/2025, 4:22:45 PM')
  * @returns {Date} **`date`** {@link Date} object
  */
-function parseLocaleStringToDate(dateStr) {
+function localeStringToDate(dateStr) {
     try {
         const [datePart, timeWithPeriod] = dateStr.split(', ');
         const [month, day, year] = datePart.split('/').map(Number);
@@ -177,7 +188,7 @@ function parseLocaleStringToDate(dateStr) {
         return new Date(year, month - 1, day, hours, minutes, seconds);
     }
     catch (error) {
-        throw new Error(`Failed to parse date string: ${dateStr}. Expected format: 'M/D/YYYY, h:mm:ss AM/PM'`);
+        throw new Error(`Failed to parse date string: '${dateStr}'. Expected format: 'MM/DD/YYYY, hh:mm:ss AM/PM'`);
     }
 }
 /**
@@ -202,40 +213,85 @@ function toPacificTime(initialDateString) {
 }
 exports.Milliseconds = {
     from: {
+        /**
+         * @param n `number`
+         * @returns `n * (1000 * 60 * 60 * 24)` number of milliseconds in `n` days
+         */
+        days: (n) => {
+            return n * (1000 * 60 * 60 * 24);
+        },
+        /**
+         * @param n `number`
+         * @returns `n * (1000 * 60 * 60)` number of milliseconds in `n` hours
+         */
         hours: (n) => {
             return n * (1000 * 60 * 60);
         },
+        /**
+         * @param n `number`
+         * @returns `n * (1000 * 60)` number of milliseconds in `n` minutes
+         */
         minutes: (n) => {
             return n * (1000 * 60);
         },
+        /**
+         * @param n `number`
+         * @returns `n * (1000)` number of milliseconds in `n` seconds
+         */
         seconds: (n) => {
             return n * (1000);
         },
         /**
          * @param d `Date` object
-         * @returns `number` milliseconds since epoch
+         * @returns `number` = `d.getTime()` = milliseconds since epoch
          */
         date: (d) => {
             return d.getTime();
         },
-        localeString: (s) => {
+        /**
+         * @param s `string` date string to pass into Date Constructor (e.g. ISO, UTC, Locale, etc.)
+         * @returns `number` milliseconds since epoch or `null` if invalid (i.e. Date constructor can't parse it)
+         */
+        string: (s) => {
             try {
-                const date = parseLocaleStringToDate(s);
+                const date = new Date(s);
+                if (isNaN(date.getTime())) {
+                    throw new Error(`Invalid date string: '${s}'`);
+                }
                 return date.getTime();
             }
             catch (error) {
-                console.error(error);
+                console.error(`Failed to parse date string: '${s}'`, error);
                 return null;
             }
-        }
+        },
     },
     to: {
+        /**
+         * @param n `number`
+         * @returns `number` days in `n` milliseconds
+         */
+        days: (n) => {
+            return n / (1000 * 60 * 60 * 24);
+        },
+        /**
+         * @param n `number`
+         * @returns `number` hours in `n` milliseconds
+         */
         hours: (n) => {
             return n / (1000 * 60 * 60);
         },
+        /**
+         * @param n `number`
+         * @returns `number` minutes in `n` milliseconds
+         */
         minutes: (n) => {
             return n / (1000 * 60);
         },
+        /**
+         * @param n `number`
+         * @returns `number` seconds in `n` milliseconds
+         */
         seconds: (n) => {
             return n / (1000);
         },
@@ -248,14 +304,29 @@ exports.Milliseconds = {
             return new Date(n);
         },
         /**
-         * @param n `number` milliseconds since epoch
-         * @param locale `string` default = `'en-US'`
-         * @param timeZone `string` default = `'America/Los_Angeles'`
-         * @returns `string` locale date string
+         * @param n `number`
+         * @param format {@link DateFormatEnum} default = {@link DateFormatEnum.ISO}
+         * @param locale `string` default = `'en-US'` (only used if format = {@link DateFormatEnum.LOCALE})
+         * @param timeZone `string` default = `'America/Los_Angeles'` (only used if format = {@link DateFormatEnum.LOCALE})
+         * @returns `string` formatted date string or empty string if error
          */
-        localeString: (n, locale = exports.DEFAULT_LOCALE, timeZone = exports.DEFAULT_TIMEZONE) => {
+        string: (n, format = DateFormatEnum.ISO, locale = exports.DEFAULT_LOCALE, timeZone = exports.DEFAULT_TIMEZONE) => {
             const date = new Date(n);
-            return date.toLocaleString(locale, { timeZone });
-        }
+            if (isNaN(date.getTime())) {
+                console.error(`Invalid milliseconds value: '${n}'`);
+                return ``;
+            }
+            switch (format) {
+                case DateFormatEnum.ISO:
+                    return date.toISOString();
+                case DateFormatEnum.UTC:
+                    return date.toUTCString();
+                case DateFormatEnum.LOCALE:
+                    return date.toLocaleString(locale, { timeZone });
+                default:
+                    console.error(`Invalid date format specified: '${format}'.`, `Use DateFormatEnum.ISO, DateFormatEnum.UTC, or DateFormatEnum.LOCALE`);
+                    return ``;
+            }
+        },
     },
 };
