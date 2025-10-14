@@ -137,11 +137,29 @@ export declare function isInteger(value: any, requireNonNegative?: boolean): val
  * @returns **`isObject`** `boolean` `value is Record<string, any>`
  */
 export declare function isObject(value: any, requireNonEmpty?: boolean, requireNonArray?: boolean): value is Record<string, any>;
+export declare const isOptional: {
+    string: (value: any) => value is string | undefined;
+    stringArray: (value: any) => value is string[] | undefined;
+    numeric: (value: any, requireInteger?: boolean, requireNonNegative?: boolean) => value is string | number | undefined;
+    number: (value: any, requireInteger?: boolean, requireNonNegative?: boolean) => value is number | undefined;
+    integerArray: (value: any, requireNonNegative?: boolean) => value is number[] | undefined;
+};
 /**
- * isBoolean is may be unnecessary, but added for completeness
+ * these may be unnecessary, but added for completeness
  */
 /**
  * @param value `any`
  * @returns **`isBoolean`** `boolean`
  */
 export declare function isBoolean(value: any): value is boolean;
+/**
+ * @param value `any`
+ * @returns **`isFunction`** `boolean`
+ */
+export declare function isFunction(value: any): value is Function;
+/**
+ * - passing in `null` returns `false`
+ * @param value `any`
+ * @returns **`isUndefined`** `boolean` `return value === undefined`
+ */
+export declare function isUndefined(value: any): value is undefined;

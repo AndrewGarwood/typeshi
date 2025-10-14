@@ -10,16 +10,17 @@
  * @property {string} LOCALE - Local format (YYYY-MM-DDTHH:mm:ss.sssZ)
  * @property {string} UNIX - Unix format (milliseconds since epoch)
  */
-export enum DateFormatEnum {
+export const DateFormatEnum = {
     /**ISO format (e.g., "2025-04-16T00:00:00.000Z") */
-    ISO = 'ISO',
+    ISO: 'ISO',
     /**UTC format (e.g., "Sun, 31 Dec 1899 00:00:00 GMT") */
-    UTC = 'UTC',
+    UTC: 'UTC',
     /**Locale format (e.g., "4/21/2025, 4:22:45 PM") */
-    LOCALE = 'LOCALE',
+    LOCALE: 'LOCALE',
     /** ```/\d{13}/``` if milliseconds, ```/\d{10}/``` if seconds */
-    UNIX = 'UNIX'
-};
+    UNIX: 'UNIX'
+} as const;
+export type DateFormatEnum = (typeof DateFormatEnum)[keyof typeof DateFormatEnum];
 
 /**
  * @enum {string} **`TimeUnitEnum`**
@@ -29,13 +30,15 @@ export enum DateFormatEnum {
  * @property {string} HOURS - hours
  * @property {string} DAYS - days
  */
-export enum TimeUnitEnum {
-    MILLISECONDS = 'milliseconds',
-    SECONDS = 'seconds',
-    MINUTES = 'minutes',
-    HOURS = 'hours',
-    DAYS = 'days'
-}
+export const TimeUnitEnum = {
+    MILLISECONDS: 'milliseconds',
+    SECONDS: 'seconds',
+    MINUTES: 'minutes',
+    HOURS: 'hours',
+    DAYS: 'days'
+} as const;
+export type TimeUnitEnum = (typeof TimeUnitEnum)[keyof typeof TimeUnitEnum];
+
 
 /** 
  * `re = /\d{4}(-|\/)\d{2}(-|\/)\d{2}(T\d{2}:\d{2}:\d{2}(.\d{3})Z)?/`

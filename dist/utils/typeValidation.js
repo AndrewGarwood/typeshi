@@ -3,7 +3,7 @@
  * @file src/utils/typeValidation.ts
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isEmpty = void 0;
+exports.isOptional = exports.isEmpty = void 0;
 exports.isNullLike = isNullLike;
 exports.anyNull = anyNull;
 exports.isNonEmptyArray = isNonEmptyArray;
@@ -19,6 +19,8 @@ exports.isPrimitiveValue = isPrimitiveValue;
 exports.isInteger = isInteger;
 exports.isObject = isObject;
 exports.isBoolean = isBoolean;
+exports.isFunction = isFunction;
+exports.isUndefined = isUndefined;
 const index_1 = require("./regex/index");
 /**
  * - alias for {@link isNullLike}
@@ -279,8 +281,26 @@ function isObject(value, requireNonEmpty = true, requireNonArray = true) {
         && (requireNonArray ? !Array.isArray(value) : true)
         && (requireNonEmpty ? Object.keys(value).length > 0 : true));
 }
+exports.isOptional = {
+    string: (value) => {
+        return isUndefined(value) || typeof value === 'string';
+    },
+    stringArray: (value) => {
+        return isUndefined(value) || isStringArray(value);
+    },
+    numeric: (value, requireInteger = false, requireNonNegative = false) => {
+        return isUndefined(value) || isNumeric(value, requireInteger, requireNonNegative);
+    },
+    number: (value, requireInteger = false, requireNonNegative = false) => {
+        return isUndefined(value) || (isNumeric(value, requireInteger, requireNonNegative)
+            && typeof value === 'number');
+    },
+    integerArray: (value, requireNonNegative = false) => {
+        return isUndefined(value) || isIntegerArray(value, requireNonNegative);
+    }
+};
 /**
- * isBoolean is may be unnecessary, but added for completeness
+ * these may be unnecessary, but added for completeness
  */
 /**
  * @param value `any`
@@ -288,4 +308,19 @@ function isObject(value, requireNonEmpty = true, requireNonArray = true) {
  */
 function isBoolean(value) {
     return (typeof value === 'boolean');
+}
+/**
+ * @param value `any`
+ * @returns **`isFunction`** `boolean`
+ */
+function isFunction(value) {
+    return (typeof value === 'function');
+}
+/**
+ * - passing in `null` returns `false`
+ * @param value `any`
+ * @returns **`isUndefined`** `boolean` `return value === undefined`
+ */
+function isUndefined(value) {
+    return value === undefined;
 }

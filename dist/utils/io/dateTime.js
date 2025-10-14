@@ -17,18 +17,16 @@ exports.toPacificTime = toPacificTime;
  * @property {string} LOCALE - Local format (YYYY-MM-DDTHH:mm:ss.sssZ)
  * @property {string} UNIX - Unix format (milliseconds since epoch)
  */
-var DateFormatEnum;
-(function (DateFormatEnum) {
+exports.DateFormatEnum = {
     /**ISO format (e.g., "2025-04-16T00:00:00.000Z") */
-    DateFormatEnum["ISO"] = "ISO";
+    ISO: 'ISO',
     /**UTC format (e.g., "Sun, 31 Dec 1899 00:00:00 GMT") */
-    DateFormatEnum["UTC"] = "UTC";
+    UTC: 'UTC',
     /**Locale format (e.g., "4/21/2025, 4:22:45 PM") */
-    DateFormatEnum["LOCALE"] = "LOCALE";
+    LOCALE: 'LOCALE',
     /** ```/\d{13}/``` if milliseconds, ```/\d{10}/``` if seconds */
-    DateFormatEnum["UNIX"] = "UNIX";
-})(DateFormatEnum || (exports.DateFormatEnum = DateFormatEnum = {}));
-;
+    UNIX: 'UNIX'
+};
 /**
  * @enum {string} **`TimeUnitEnum`**
  * @property {string} MILLISECONDS - milliseconds
@@ -37,14 +35,13 @@ var DateFormatEnum;
  * @property {string} HOURS - hours
  * @property {string} DAYS - days
  */
-var TimeUnitEnum;
-(function (TimeUnitEnum) {
-    TimeUnitEnum["MILLISECONDS"] = "milliseconds";
-    TimeUnitEnum["SECONDS"] = "seconds";
-    TimeUnitEnum["MINUTES"] = "minutes";
-    TimeUnitEnum["HOURS"] = "hours";
-    TimeUnitEnum["DAYS"] = "days";
-})(TimeUnitEnum || (exports.TimeUnitEnum = TimeUnitEnum = {}));
+exports.TimeUnitEnum = {
+    MILLISECONDS: 'milliseconds',
+    SECONDS: 'seconds',
+    MINUTES: 'minutes',
+    HOURS: 'hours',
+    DAYS: 'days'
+};
 /**
  * `re = /\d{4}(-|\/)\d{2}(-|\/)\d{2}(T\d{2}:\d{2}:\d{2}(.\d{3})Z)?/`
  * @description Regular expression pattern for ISO date format (YYYY-MM-DD or YYYY/MM/DD) + optional time (THH:mm:ss.sssZ)
@@ -99,13 +96,13 @@ function getDateFromUnixTimestamp(unixTimestamp, dateFormat) {
         return null;
     }
     const date = new Date(unixTimestamp);
-    if (dateFormat === DateFormatEnum.ISO) {
+    if (dateFormat === exports.DateFormatEnum.ISO) {
         return date.toISOString();
     }
-    else if (dateFormat === DateFormatEnum.UTC) {
+    else if (dateFormat === exports.DateFormatEnum.UTC) {
         return date.toUTCString();
     }
-    else if (dateFormat === DateFormatEnum.LOCALE) {
+    else if (dateFormat === exports.DateFormatEnum.LOCALE) {
         return date.toLocaleString(exports.DEFAULT_LOCALE, { timeZone: exports.DEFAULT_TIMEZONE });
     }
     console.error('Invalid date format specified. Use DateFormatEnum.ISO, DateFormatEnum.UTC, or DateFormatEnum.LOCALE');
@@ -120,22 +117,22 @@ function getDateFromUnixTimestamp(unixTimestamp, dateFormat) {
  * @description Calculates the difference between two date strings in the specified unit of time. Subtracts ds1 from ds2.
  * @returns **`difference`** `number | null` The difference between the two date strings in the specified {@link TimeUnitEnum} unit, or `null` if an error occurs
  */
-function calculateDifferenceOfDateStrings(ds1, ds2 = getCurrentPacificTime(), unit = TimeUnitEnum.MILLISECONDS, absoluteDifference = true) {
+function calculateDifferenceOfDateStrings(ds1, ds2 = getCurrentPacificTime(), unit = exports.TimeUnitEnum.MILLISECONDS, absoluteDifference = true) {
     const date1 = new Date(ds1);
     const date2 = new Date(ds2);
     const diffInMs = absoluteDifference
         ? Math.abs(date2.getTime() - date1.getTime())
         : date2.getTime() - date1.getTime();
     switch (unit) {
-        case TimeUnitEnum.MILLISECONDS:
+        case exports.TimeUnitEnum.MILLISECONDS:
             return diffInMs;
-        case TimeUnitEnum.SECONDS:
+        case exports.TimeUnitEnum.SECONDS:
             return exports.Milliseconds.from.seconds(diffInMs);
-        case TimeUnitEnum.MINUTES:
+        case exports.TimeUnitEnum.MINUTES:
             return exports.Milliseconds.from.minutes(diffInMs);
-        case TimeUnitEnum.HOURS:
+        case exports.TimeUnitEnum.HOURS:
             return exports.Milliseconds.from.hours(diffInMs);
-        case TimeUnitEnum.DAYS:
+        case exports.TimeUnitEnum.DAYS:
             return exports.Milliseconds.from.days(diffInMs);
         default:
             console.error('Invalid time unit specified. Use TimeUnitEnum.MILLISECONDS, TimeUnitEnum.SECONDS, TimeUnitEnum.MINUTES, TimeUnitEnum.HOURS, or TimeUnitEnum.DAYS');
@@ -310,18 +307,18 @@ exports.Milliseconds = {
          * @param timeZone `string` default = `'America/Los_Angeles'` (only used if format = {@link DateFormatEnum.LOCALE})
          * @returns `string` formatted date string or empty string if error
          */
-        string: (n, format = DateFormatEnum.ISO, locale = exports.DEFAULT_LOCALE, timeZone = exports.DEFAULT_TIMEZONE) => {
+        string: (n, format = exports.DateFormatEnum.ISO, locale = exports.DEFAULT_LOCALE, timeZone = exports.DEFAULT_TIMEZONE) => {
             const date = new Date(n);
             if (isNaN(date.getTime())) {
                 console.error(`Invalid milliseconds value: '${n}'`);
                 return ``;
             }
             switch (format) {
-                case DateFormatEnum.ISO:
+                case exports.DateFormatEnum.ISO:
                     return date.toISOString();
-                case DateFormatEnum.UTC:
+                case exports.DateFormatEnum.UTC:
                     return date.toUTCString();
-                case DateFormatEnum.LOCALE:
+                case exports.DateFormatEnum.LOCALE:
                     return date.toLocaleString(locale, { timeZone });
                 default:
                     console.error(`Invalid date format specified: '${format}'.`, `Use DateFormatEnum.ISO, DateFormatEnum.UTC, or DateFormatEnum.LOCALE`);

@@ -307,8 +307,37 @@ export function isObject(
     );
 }
 
+export const isOptional = {
+    string: (value: any): value is string | undefined => {
+        return isUndefined(value) || typeof value === 'string'
+    },
+    stringArray: (value: any): value is string[] | undefined => {
+        return isUndefined(value) || isStringArray(value)
+    },
+    numeric: (
+        value: any, 
+        requireInteger: boolean = false, 
+        requireNonNegative: boolean = false
+    ): value is string | number | undefined => {
+        return isUndefined(value) || isNumeric(value, requireInteger, requireNonNegative)
+    },
+    number: (
+        value: any,
+        requireInteger: boolean = false, 
+        requireNonNegative: boolean = false
+    ): value is number | undefined => {
+        return isUndefined(value) || (
+            isNumeric(value, requireInteger, requireNonNegative) 
+            && typeof value === 'number'
+        )
+    },
+    integerArray: (value: any, requireNonNegative: boolean = false): value is number[] | undefined => {
+        return isUndefined(value) || isIntegerArray(value, requireNonNegative)
+    }
+};
+
 /**
- * isBoolean is may be unnecessary, but added for completeness
+ * these may be unnecessary, but added for completeness
  */
 /**
  * @param value `any`
@@ -316,4 +345,21 @@ export function isObject(
  */
 export function isBoolean(value: any): value is boolean {
     return (typeof value === 'boolean');
+}
+
+/**
+ * @param value `any`
+ * @returns **`isFunction`** `boolean`
+ */
+export function isFunction(value: any): value is Function {
+    return (typeof value === 'function')
+}
+
+/**
+ * - passing in `null` returns `false`
+ * @param value `any`
+ * @returns **`isUndefined`** `boolean` `return value === undefined`
+ */
+export function isUndefined(value: any): value is undefined {
+    return value === undefined;
 }
