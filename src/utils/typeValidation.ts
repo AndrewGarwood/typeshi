@@ -307,7 +307,14 @@ export function isObject(
     );
 }
 
+export const isType = <T>(value: any, guard: (v: any, ...args: any[]) => v is T, ...args: any[]): value is T => {
+    return guard(value, ...args);
+}
+
 export const isOptional = {
+    type: <T>(value: any, guard: (v: any, ...args: any[]) => v is T, ...args: any[]): value is T | undefined => {
+        return isUndefined(value) || isType<T>(value, guard, ...args)
+    },
     string: (value: any): value is string | undefined => {
         return isUndefined(value) || typeof value === 'string'
     },
@@ -333,7 +340,10 @@ export const isOptional = {
     },
     integerArray: (value: any, requireNonNegative: boolean = false): value is number[] | undefined => {
         return isUndefined(value) || isIntegerArray(value, requireNonNegative)
-    }
+    },
+    // enum: <T>(value: any, guard: (v: any, ...args: any[]) => v is T, ...args: any[]): value is T | undefined => {
+    //     return isUndefined(value) || isType<T>(value, guard, ...args)
+    // },
 };
 
 /**

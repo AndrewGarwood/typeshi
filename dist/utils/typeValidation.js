@@ -3,7 +3,7 @@
  * @file src/utils/typeValidation.ts
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isOptional = exports.isEmpty = void 0;
+exports.isOptional = exports.isType = exports.isEmpty = void 0;
 exports.isNullLike = isNullLike;
 exports.anyNull = anyNull;
 exports.isNonEmptyArray = isNonEmptyArray;
@@ -281,7 +281,14 @@ function isObject(value, requireNonEmpty = true, requireNonArray = true) {
         && (requireNonArray ? !Array.isArray(value) : true)
         && (requireNonEmpty ? Object.keys(value).length > 0 : true));
 }
+const isType = (value, guard, ...args) => {
+    return guard(value, ...args);
+};
+exports.isType = isType;
 exports.isOptional = {
+    type: (value, guard, ...args) => {
+        return isUndefined(value) || (0, exports.isType)(value, guard, ...args);
+    },
     string: (value) => {
         return isUndefined(value) || typeof value === 'string';
     },
@@ -297,7 +304,10 @@ exports.isOptional = {
     },
     integerArray: (value, requireNonNegative = false) => {
         return isUndefined(value) || isIntegerArray(value, requireNonNegative);
-    }
+    },
+    // enum: <T>(value: any, guard: (v: any, ...args: any[]) => v is T, ...args: any[]): value is T | undefined => {
+    //     return isUndefined(value) || isType<T>(value, guard, ...args)
+    // },
 };
 /**
  * these may be unnecessary, but added for completeness

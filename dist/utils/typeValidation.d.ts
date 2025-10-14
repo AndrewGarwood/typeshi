@@ -137,7 +137,9 @@ export declare function isInteger(value: any, requireNonNegative?: boolean): val
  * @returns **`isObject`** `boolean` `value is Record<string, any>`
  */
 export declare function isObject(value: any, requireNonEmpty?: boolean, requireNonArray?: boolean): value is Record<string, any>;
+export declare const isType: <T>(value: any, guard: (v: any, ...args: any[]) => v is T, ...args: any[]) => value is T;
 export declare const isOptional: {
+    type: <T>(value: any, guard: (v: any, ...args: any[]) => v is T, ...args: any[]) => value is T | undefined;
     string: (value: any) => value is string | undefined;
     stringArray: (value: any) => value is string[] | undefined;
     numeric: (value: any, requireInteger?: boolean, requireNonNegative?: boolean) => value is string | number | undefined;
