@@ -311,24 +311,70 @@ export const isType = <T>(value: any, guard: (v: any, ...args: any[]) => v is T,
     return guard(value, ...args);
 }
 
-export const isOptional = {
-    type: <T>(value: any, guard: (v: any, ...args: any[]) => v is T, ...args: any[]): value is T | undefined => {
+/**
+ * - calls {@link isUndefinedOrNull}`(value)` which allows for value to be `undefined` or `null`
+ * - use {@link isUndefinedOr} if you want value is `T | undefined`
+ */
+export class isOptional {
+    static type = <T>(value: any, guard: (v: any, ...args: any[]) => v is T, ...args: any[]): value is T | undefined | null => {
+        return isUndefinedOrNull(value) || isType<T>(value, guard, ...args)
+    }
+    /**
+     * @param value 
+     * @param requireNonEmpty `bolean` `default` = `true`
+     * @returns 
+     */
+    static string = (value: any, requireNonEmpty: boolean = true): value is string | undefined | null => {
+        return isUndefinedOrNull(value) || requireNonEmpty ? isNonEmptyString(value) : typeof value === "string"
+    }
+    static stringArray = (value: any): value is string[] | undefined | null => {
+        return isUndefinedOrNull(value) || isStringArray(value)
+    }
+    static numeric = (
+        value: any, 
+        requireInteger: boolean = false, 
+        requireNonNegative: boolean = false
+    ): value is string | number | undefined | null => {
+        return isUndefinedOrNull(value) || isNumeric(value, requireInteger, requireNonNegative)
+    }
+    static number = (
+        value: any,
+        requireInteger: boolean = false, 
+        requireNonNegative: boolean = false
+    ): value is number | undefined | null => {
+        return isUndefinedOrNull(value) || (
+            isNumeric(value, requireInteger, requireNonNegative) 
+            && typeof value === 'number'
+        )
+    }
+    static integerArray = (value: any, requireNonNegative: boolean = false): value is number[] | undefined | null => {
+        return isUndefinedOrNull(value) || isIntegerArray(value, requireNonNegative)
+    }
+}
+
+export class isUndefinedOr {
+    static type = <T>(value: any, guard: (v: any, ...args: any[]) => v is T, ...args: any[]): value is T | undefined => {
         return isUndefined(value) || isType<T>(value, guard, ...args)
-    },
-    string: (value: any): value is string | undefined => {
-        return isUndefined(value) || typeof value === 'string'
-    },
-    stringArray: (value: any): value is string[] | undefined => {
+    }
+    /**
+     * @param value 
+     * @param requireNonEmpty `bolean` `default` = `true`
+     * @returns 
+     */
+    static string = (value: any, requireNonEmpty: boolean = true): value is string | undefined => {
+        return isUndefined(value) || requireNonEmpty ? isNonEmptyString(value) : typeof value === "string"
+    }
+    static stringArray = (value: any): value is string[] | undefined => {
         return isUndefined(value) || isStringArray(value)
-    },
-    numeric: (
+    }
+    static numeric = (
         value: any, 
         requireInteger: boolean = false, 
         requireNonNegative: boolean = false
     ): value is string | number | undefined => {
         return isUndefined(value) || isNumeric(value, requireInteger, requireNonNegative)
-    },
-    number: (
+    }
+    static number = (
         value: any,
         requireInteger: boolean = false, 
         requireNonNegative: boolean = false
@@ -337,15 +383,11 @@ export const isOptional = {
             isNumeric(value, requireInteger, requireNonNegative) 
             && typeof value === 'number'
         )
-    },
-    integerArray: (value: any, requireNonNegative: boolean = false): value is number[] | undefined => {
+    }
+    static integerArray = (value: any, requireNonNegative: boolean = false): value is number[] | undefined => {
         return isUndefined(value) || isIntegerArray(value, requireNonNegative)
-    },
-    // enum: <T>(value: any, guard: (v: any, ...args: any[]) => v is T, ...args: any[]): value is T | undefined => {
-    //     return isUndefined(value) || isType<T>(value, guard, ...args)
-    // },
-};
-
+    }
+}
 /**
  * these may be unnecessary, but added for completeness
  */
@@ -372,4 +414,8 @@ export function isFunction(value: any): value is Function {
  */
 export function isUndefined(value: any): value is undefined {
     return value === undefined;
+}
+
+export function isUndefinedOrNull(value: unknown): value is undefined | null {
+    return value === undefined || value === null;
 }

@@ -138,14 +138,36 @@ export declare function isInteger(value: any, requireNonNegative?: boolean): val
  */
 export declare function isObject(value: any, requireNonEmpty?: boolean, requireNonArray?: boolean): value is Record<string, any>;
 export declare const isType: <T>(value: any, guard: (v: any, ...args: any[]) => v is T, ...args: any[]) => value is T;
-export declare const isOptional: {
-    type: <T>(value: any, guard: (v: any, ...args: any[]) => v is T, ...args: any[]) => value is T | undefined;
-    string: (value: any) => value is string | undefined;
-    stringArray: (value: any) => value is string[] | undefined;
-    numeric: (value: any, requireInteger?: boolean, requireNonNegative?: boolean) => value is string | number | undefined;
-    number: (value: any, requireInteger?: boolean, requireNonNegative?: boolean) => value is number | undefined;
-    integerArray: (value: any, requireNonNegative?: boolean) => value is number[] | undefined;
-};
+/**
+ * - calls {@link isUndefinedOrNull}`(value)` which allows for value to be `undefined` or `null`
+ * - use {@link isUndefinedOr} if you want value is `T | undefined`
+ */
+export declare class isOptional {
+    static type: <T>(value: any, guard: (v: any, ...args: any[]) => v is T, ...args: any[]) => value is T | undefined | null;
+    /**
+     * @param value
+     * @param requireNonEmpty `bolean` `default` = `true`
+     * @returns
+     */
+    static string: (value: any, requireNonEmpty?: boolean) => value is string | undefined | null;
+    static stringArray: (value: any) => value is string[] | undefined | null;
+    static numeric: (value: any, requireInteger?: boolean, requireNonNegative?: boolean) => value is string | number | undefined | null;
+    static number: (value: any, requireInteger?: boolean, requireNonNegative?: boolean) => value is number | undefined | null;
+    static integerArray: (value: any, requireNonNegative?: boolean) => value is number[] | undefined | null;
+}
+export declare class isUndefinedOr {
+    static type: <T>(value: any, guard: (v: any, ...args: any[]) => v is T, ...args: any[]) => value is T | undefined;
+    /**
+     * @param value
+     * @param requireNonEmpty `bolean` `default` = `true`
+     * @returns
+     */
+    static string: (value: any, requireNonEmpty?: boolean) => value is string | undefined;
+    static stringArray: (value: any) => value is string[] | undefined;
+    static numeric: (value: any, requireInteger?: boolean, requireNonNegative?: boolean) => value is string | number | undefined;
+    static number: (value: any, requireInteger?: boolean, requireNonNegative?: boolean) => value is number | undefined;
+    static integerArray: (value: any, requireNonNegative?: boolean) => value is number[] | undefined;
+}
 /**
  * these may be unnecessary, but added for completeness
  */
@@ -165,3 +187,4 @@ export declare function isFunction(value: any): value is Function;
  * @returns **`isUndefined`** `boolean` `return value === undefined`
  */
 export declare function isUndefined(value: any): value is undefined;
+export declare function isUndefinedOrNull(value: unknown): value is undefined | null;

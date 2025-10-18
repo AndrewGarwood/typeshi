@@ -3,7 +3,7 @@
  * @file src/utils/typeValidation.ts
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isOptional = exports.isType = exports.isEmpty = void 0;
+exports.isUndefinedOr = exports.isOptional = exports.isType = exports.isEmpty = void 0;
 exports.isNullLike = isNullLike;
 exports.anyNull = anyNull;
 exports.isNonEmptyArray = isNonEmptyArray;
@@ -21,6 +21,7 @@ exports.isObject = isObject;
 exports.isBoolean = isBoolean;
 exports.isFunction = isFunction;
 exports.isUndefined = isUndefined;
+exports.isUndefinedOrNull = isUndefinedOrNull;
 const index_1 = require("./regex/index");
 /**
  * - alias for {@link isNullLike}
@@ -285,29 +286,63 @@ const isType = (value, guard, ...args) => {
     return guard(value, ...args);
 };
 exports.isType = isType;
-exports.isOptional = {
-    type: (value, guard, ...args) => {
-        return isUndefined(value) || (0, exports.isType)(value, guard, ...args);
-    },
-    string: (value) => {
-        return isUndefined(value) || typeof value === 'string';
-    },
-    stringArray: (value) => {
-        return isUndefined(value) || isStringArray(value);
-    },
-    numeric: (value, requireInteger = false, requireNonNegative = false) => {
-        return isUndefined(value) || isNumeric(value, requireInteger, requireNonNegative);
-    },
-    number: (value, requireInteger = false, requireNonNegative = false) => {
-        return isUndefined(value) || (isNumeric(value, requireInteger, requireNonNegative)
-            && typeof value === 'number');
-    },
-    integerArray: (value, requireNonNegative = false) => {
-        return isUndefined(value) || isIntegerArray(value, requireNonNegative);
-    },
-    // enum: <T>(value: any, guard: (v: any, ...args: any[]) => v is T, ...args: any[]): value is T | undefined => {
-    //     return isUndefined(value) || isType<T>(value, guard, ...args)
-    // },
+/**
+ * - calls {@link isUndefinedOrNull}`(value)` which allows for value to be `undefined` or `null`
+ * - use {@link isUndefinedOr} if you want value is `T | undefined`
+ */
+class isOptional {
+}
+exports.isOptional = isOptional;
+isOptional.type = (value, guard, ...args) => {
+    return isUndefinedOrNull(value) || (0, exports.isType)(value, guard, ...args);
+};
+/**
+ * @param value
+ * @param requireNonEmpty `bolean` `default` = `true`
+ * @returns
+ */
+isOptional.string = (value, requireNonEmpty = true) => {
+    return isUndefinedOrNull(value) || requireNonEmpty ? isNonEmptyString(value) : typeof value === "string";
+};
+isOptional.stringArray = (value) => {
+    return isUndefinedOrNull(value) || isStringArray(value);
+};
+isOptional.numeric = (value, requireInteger = false, requireNonNegative = false) => {
+    return isUndefinedOrNull(value) || isNumeric(value, requireInteger, requireNonNegative);
+};
+isOptional.number = (value, requireInteger = false, requireNonNegative = false) => {
+    return isUndefinedOrNull(value) || (isNumeric(value, requireInteger, requireNonNegative)
+        && typeof value === 'number');
+};
+isOptional.integerArray = (value, requireNonNegative = false) => {
+    return isUndefinedOrNull(value) || isIntegerArray(value, requireNonNegative);
+};
+class isUndefinedOr {
+}
+exports.isUndefinedOr = isUndefinedOr;
+isUndefinedOr.type = (value, guard, ...args) => {
+    return isUndefined(value) || (0, exports.isType)(value, guard, ...args);
+};
+/**
+ * @param value
+ * @param requireNonEmpty `bolean` `default` = `true`
+ * @returns
+ */
+isUndefinedOr.string = (value, requireNonEmpty = true) => {
+    return isUndefined(value) || requireNonEmpty ? isNonEmptyString(value) : typeof value === "string";
+};
+isUndefinedOr.stringArray = (value) => {
+    return isUndefined(value) || isStringArray(value);
+};
+isUndefinedOr.numeric = (value, requireInteger = false, requireNonNegative = false) => {
+    return isUndefined(value) || isNumeric(value, requireInteger, requireNonNegative);
+};
+isUndefinedOr.number = (value, requireInteger = false, requireNonNegative = false) => {
+    return isUndefined(value) || (isNumeric(value, requireInteger, requireNonNegative)
+        && typeof value === 'number');
+};
+isUndefinedOr.integerArray = (value, requireNonNegative = false) => {
+    return isUndefined(value) || isIntegerArray(value, requireNonNegative);
 };
 /**
  * these may be unnecessary, but added for completeness
@@ -333,4 +368,7 @@ function isFunction(value) {
  */
 function isUndefined(value) {
     return value === undefined;
+}
+function isUndefinedOrNull(value) {
+    return value === undefined || value === null;
 }
