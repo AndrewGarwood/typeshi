@@ -18,6 +18,7 @@ exports.isNonEmptyString = isNonEmptyString;
 exports.isPrimitiveValue = isPrimitiveValue;
 exports.isInteger = isInteger;
 exports.isObject = isObject;
+exports.isPositveInteger = isPositveInteger;
 exports.isBoolean = isBoolean;
 exports.isFunction = isFunction;
 exports.isUndefined = isUndefined;
@@ -282,6 +283,10 @@ function isObject(value, requireNonEmpty = true, requireNonArray = true) {
         && (requireNonArray ? !Array.isArray(value) : true)
         && (requireNonEmpty ? Object.keys(value).length > 0 : true));
 }
+// isPosInt
+function isPositveInteger(value) {
+    return (isInteger(value) && value > 0);
+}
 const isType = (value, guard, ...args) => {
     return guard(value, ...args);
 };
@@ -314,6 +319,9 @@ isOptional.number = (value, requireInteger = false, requireNonNegative = false) 
     return isUndefinedOrNull(value) || (isNumeric(value, requireInteger, requireNonNegative)
         && typeof value === 'number');
 };
+isOptional.positiveInteger = (value) => {
+    return (isUndefinedOrNull(value) || isPositveInteger(value));
+};
 isOptional.integerArray = (value, requireNonNegative = false) => {
     return isUndefinedOrNull(value) || isIntegerArray(value, requireNonNegative);
 };
@@ -340,6 +348,9 @@ isUndefinedOr.numeric = (value, requireInteger = false, requireNonNegative = fal
 isUndefinedOr.number = (value, requireInteger = false, requireNonNegative = false) => {
     return isUndefined(value) || (isNumeric(value, requireInteger, requireNonNegative)
         && typeof value === 'number');
+};
+isUndefinedOr.positiveInteger = (value) => {
+    return (isUndefined(value) || isPositveInteger(value));
 };
 isUndefinedOr.integerArray = (value, requireNonNegative = false) => {
     return isUndefined(value) || isIntegerArray(value, requireNonNegative);

@@ -137,6 +137,7 @@ export declare function isInteger(value: any, requireNonNegative?: boolean): val
  * @returns **`isObject`** `boolean` `value is Record<string, any>`
  */
 export declare function isObject(value: any, requireNonEmpty?: boolean, requireNonArray?: boolean): value is Record<string, any>;
+export declare function isPositveInteger(value: any): value is number;
 export declare const isType: <T>(value: any, guard: (v: any, ...args: any[]) => v is T, ...args: any[]) => value is T;
 /**
  * - calls {@link isUndefinedOrNull}`(value)` which allows for value to be `undefined` or `null`
@@ -153,6 +154,7 @@ export declare class isOptional {
     static stringArray: (value: any) => value is string[] | undefined | null;
     static numeric: (value: any, requireInteger?: boolean, requireNonNegative?: boolean) => value is string | number | undefined | null;
     static number: (value: any, requireInteger?: boolean, requireNonNegative?: boolean) => value is number | undefined | null;
+    static positiveInteger: (value: any) => value is number | undefined | null;
     static integerArray: (value: any, requireNonNegative?: boolean) => value is number[] | undefined | null;
 }
 export declare class isUndefinedOr {
@@ -166,6 +168,7 @@ export declare class isUndefinedOr {
     static stringArray: (value: any) => value is string[] | undefined;
     static numeric: (value: any, requireInteger?: boolean, requireNonNegative?: boolean) => value is string | number | undefined;
     static number: (value: any, requireInteger?: boolean, requireNonNegative?: boolean) => value is number | undefined;
+    static positiveInteger: (value: any) => value is number | undefined;
     static integerArray: (value: any, requireNonNegative?: boolean) => value is number[] | undefined;
 }
 /**

@@ -306,6 +306,10 @@ export function isObject(
         && (requireNonEmpty ? Object.keys(value).length > 0 : true)
     );
 }
+// isPosInt
+export function isPositveInteger(value: any): value is number {
+    return (isInteger(value) && value > 0);
+}
 
 export const isType = <T>(value: any, guard: (v: any, ...args: any[]) => v is T, ...args: any[]): value is T => {
     return guard(value, ...args);
@@ -347,6 +351,9 @@ export class isOptional {
             && typeof value === 'number'
         )
     }
+    static positiveInteger = (value: any): value is number | undefined | null => {
+        return (isUndefinedOrNull(value) || isPositveInteger(value))
+    }
     static integerArray = (value: any, requireNonNegative: boolean = false): value is number[] | undefined | null => {
         return isUndefinedOrNull(value) || isIntegerArray(value, requireNonNegative)
     }
@@ -383,6 +390,9 @@ export class isUndefinedOr {
             isNumeric(value, requireInteger, requireNonNegative) 
             && typeof value === 'number'
         )
+    }
+    static positiveInteger = (value: any): value is number | undefined => {
+        return (isUndefined(value) || isPositveInteger(value))
     }
     static integerArray = (value: any, requireNonNegative: boolean = false): value is number[] | undefined => {
         return isUndefined(value) || isIntegerArray(value, requireNonNegative)
