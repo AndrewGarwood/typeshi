@@ -308,7 +308,10 @@ export function isObject(
 }
 // isPosInt
 export function isPositveInteger(value: any): value is number {
-    return (isInteger(value) && value > 0);
+    return (typeof value === 'number' 
+        && Number.isInteger(value) 
+        && value > 0
+    );
 }
 
 export const isType = <T>(value: any, guard: (v: any, ...args: any[]) => v is T, ...args: any[]): value is T => {
@@ -429,3 +432,37 @@ export function isUndefined(value: any): value is undefined {
 export function isUndefinedOrNull(value: unknown): value is undefined | null {
     return value === undefined || value === null;
 }
+
+// ============================================================================
+// Utility Types
+// ============================================================================
+
+export type NumberKeys<T> = {
+    [K in keyof T]: T[K] extends number | undefined ? K : never
+}[keyof T];
+
+export type ArrayKeys<T> = {
+    [K in keyof T]: T[K] extends Array<any> | undefined ? K : never
+}[keyof T];
+
+export type ArrayOfTypeKeys<T, U> = {
+    [K in keyof T]: T[K] extends Array<U> | undefined ? K : never
+}[keyof T];
+
+export type StringKeys<T> = {
+    [K in keyof T]: T[K] extends string | undefined ? K : never
+}[keyof T];
+
+export type PrimitiveKeys<T> = {
+    [K in keyof T]: T[K] extends string | number | boolean | null | undefined ? K : never
+}[keyof T];
+
+export type Primitive = string | number | boolean | null | undefined;
+
+/** Get the union of all values of `T` (like `valueof T`) */
+export type ValueOf<T> = T[keyof T];
+
+/** Keys of `T` whose values extend a given type `U` */
+export type KeysOfType<T, U> = {
+    [K in keyof T]: T[K] extends U ? K : never
+}[keyof T];

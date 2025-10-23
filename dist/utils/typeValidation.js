@@ -285,7 +285,9 @@ function isObject(value, requireNonEmpty = true, requireNonArray = true) {
 }
 // isPosInt
 function isPositveInteger(value) {
-    return (isInteger(value) && value > 0);
+    return (typeof value === 'number'
+        && Number.isInteger(value)
+        && value > 0);
 }
 const isType = (value, guard, ...args) => {
     return guard(value, ...args);
