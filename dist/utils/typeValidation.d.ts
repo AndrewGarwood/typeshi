@@ -156,6 +156,8 @@ export declare class isOptional {
     static number: (value: any, requireInteger?: boolean, requireNonNegative?: boolean) => value is number | undefined | null;
     static positiveInteger: (value: any) => value is number | undefined | null;
     static integerArray: (value: any, requireNonNegative?: boolean) => value is number[] | undefined | null;
+    static boolean: (value: any) => value is boolean | undefined | null;
+    static function: (value: any) => value is Function | undefined | null;
 }
 export declare class isUndefinedOr {
     static type: <T>(value: any, guard: (v: any, ...args: any[]) => v is T, ...args: any[]) => value is T | undefined;
@@ -170,6 +172,8 @@ export declare class isUndefinedOr {
     static number: (value: any, requireInteger?: boolean, requireNonNegative?: boolean) => value is number | undefined;
     static positiveInteger: (value: any) => value is number | undefined;
     static integerArray: (value: any, requireNonNegative?: boolean) => value is number[] | undefined;
+    static boolean: (value: any) => value is boolean | undefined;
+    static function: (value: any) => value is Function | undefined;
 }
 /**
  * these may be unnecessary, but added for completeness

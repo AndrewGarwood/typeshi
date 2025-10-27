@@ -360,6 +360,12 @@ export class isOptional {
     static integerArray = (value: any, requireNonNegative: boolean = false): value is number[] | undefined | null => {
         return isUndefinedOrNull(value) || isIntegerArray(value, requireNonNegative)
     }
+    static boolean = (value: any): value is boolean | undefined | null => {
+        return isUndefinedOrNull(value) || isBoolean(value);
+    }
+    static function = (value: any): value is Function | undefined | null => {
+        return isUndefinedOrNull(value) || isFunction(value);
+    }
 }
 
 export class isUndefinedOr {
@@ -400,6 +406,12 @@ export class isUndefinedOr {
     static integerArray = (value: any, requireNonNegative: boolean = false): value is number[] | undefined => {
         return isUndefined(value) || isIntegerArray(value, requireNonNegative)
     }
+    static boolean = (value: any): value is boolean | undefined => {
+        return isUndefined(value) || isBoolean(value);
+    }
+    static function = (value: any): value is Function | undefined => {
+        return isUndefined(value) || isFunction(value);
+    }
 }
 /**
  * these may be unnecessary, but added for completeness
@@ -417,7 +429,7 @@ export function isBoolean(value: any): value is boolean {
  * @returns **`isFunction`** `boolean`
  */
 export function isFunction(value: any): value is Function {
-    return (typeof value === 'function')
+    return (typeof value === 'function');
 }
 
 /**

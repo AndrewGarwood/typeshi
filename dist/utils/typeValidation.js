@@ -327,6 +327,12 @@ isOptional.positiveInteger = (value) => {
 isOptional.integerArray = (value, requireNonNegative = false) => {
     return isUndefinedOrNull(value) || isIntegerArray(value, requireNonNegative);
 };
+isOptional.boolean = (value) => {
+    return isUndefinedOrNull(value) || isBoolean(value);
+};
+isOptional.function = (value) => {
+    return isUndefinedOrNull(value) || isFunction(value);
+};
 class isUndefinedOr {
 }
 exports.isUndefinedOr = isUndefinedOr;
@@ -356,6 +362,12 @@ isUndefinedOr.positiveInteger = (value) => {
 };
 isUndefinedOr.integerArray = (value, requireNonNegative = false) => {
     return isUndefined(value) || isIntegerArray(value, requireNonNegative);
+};
+isUndefinedOr.boolean = (value) => {
+    return isUndefined(value) || isBoolean(value);
+};
+isUndefinedOr.function = (value) => {
+    return isUndefined(value) || isFunction(value);
 };
 /**
  * these may be unnecessary, but added for completeness
