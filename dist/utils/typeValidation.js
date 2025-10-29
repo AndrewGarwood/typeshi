@@ -92,25 +92,29 @@ function isEmptyArray(value) {
 }
 /**
  * @param value `any`
+ * @param requireNonNegative `boolean` `default = false`
+ * @param requireNonEmpty `boolean` `default = true`
+ * - `if` `true` then `value` must be array with at least 1 element
+ * - `if` `false` then `value` can be empty array
  * @returns **`isIntegerArray`** `boolean` = `value is Array<number> & { length: number }`
- * - **`true`** if `value` is an array with `length > 0` and each of its elements is an `integer`
- * - **`false`** `otherwise`
  */
-function isIntegerArray(value, requireNonNegative = false) {
-    return (value
-        && isNonEmptyArray(value)
-        && value.every(arrElement => isInteger(arrElement, requireNonNegative)));
+function isIntegerArray(value, requireNonNegative = false, requireNonEmpty = true) {
+    return (requireNonEmpty
+        ? isNonEmptyArray(value) && value.every(el => isInteger(el, requireNonNegative))
+        : isEmptyArray(value));
 }
 /**
  * @consideration add param to allow for empty strings?
  * @param value `any`
+ * @param requireNonEmpty `boolean` `default = true`
+ * - `if` `true` then `value` must be array with at least 1 element
+ * - `if` `false` then `value` can be empty array
  * @returns **`isStringArray`** `boolean` = `value is Array<string> & { length: number }`
- * - **`true`** if `value` is an array with `length > 0` and each of its elements is a **non-empty** `string`
- * - **`false`** `otherwise`
  */
-function isStringArray(value) {
-    return (isNonEmptyArray(value)
-        && value.every(el => isNonEmptyString(el)));
+function isStringArray(value, requireNonEmpty = true) {
+    return (requireNonEmpty
+        ? isNonEmptyArray(value) && value.every(el => isNonEmptyString(el))
+        : isEmptyArray(value));
 }
 /**
  * @note **passing in an array will return `false`.**
@@ -305,14 +309,19 @@ isOptional.type = (value, guard, ...args) => {
 };
 /**
  * @param value
- * @param requireNonEmpty `bolean` `default` = `true`
+ * @param requireNonEmpty `boolean` `default` = `true` (if `true`, require that string have at least 1 non-whitespace character)
  * @returns
  */
 isOptional.string = (value, requireNonEmpty = true) => {
     return isUndefinedOrNull(value) || requireNonEmpty ? isNonEmptyString(value) : typeof value === "string";
 };
-isOptional.stringArray = (value) => {
-    return isUndefinedOrNull(value) || isStringArray(value);
+/**
+ * @param value
+ * @param requireNonEmpty `boolean` `default` = `true` (if `true`, require that array have at least 1 element)
+ * @returns
+ */
+isOptional.stringArray = (value, requireNonEmpty = true) => {
+    return isUndefinedOrNull(value) || isStringArray(value, requireNonEmpty);
 };
 isOptional.numeric = (value, requireInteger = false, requireNonNegative = false) => {
     return isUndefinedOrNull(value) || isNumeric(value, requireInteger, requireNonNegative);
@@ -324,8 +333,8 @@ isOptional.number = (value, requireInteger = false, requireNonNegative = false) 
 isOptional.positiveInteger = (value) => {
     return (isUndefinedOrNull(value) || isPositveInteger(value));
 };
-isOptional.integerArray = (value, requireNonNegative = false) => {
-    return isUndefinedOrNull(value) || isIntegerArray(value, requireNonNegative);
+isOptional.integerArray = (value, requireNonNegative = false, requireNonEmpty = true) => {
+    return isUndefinedOrNull(value) || isIntegerArray(value, requireNonNegative, requireNonEmpty);
 };
 isOptional.boolean = (value) => {
     return isUndefinedOrNull(value) || isBoolean(value);
@@ -341,14 +350,19 @@ isUndefinedOr.type = (value, guard, ...args) => {
 };
 /**
  * @param value
- * @param requireNonEmpty `bolean` `default` = `true`
+ * @param requireNonEmpty `boolean` `default` = `true` (if `true`, require that string have at least 1 non-whitespace character)
  * @returns
  */
 isUndefinedOr.string = (value, requireNonEmpty = true) => {
     return isUndefined(value) || requireNonEmpty ? isNonEmptyString(value) : typeof value === "string";
 };
-isUndefinedOr.stringArray = (value) => {
-    return isUndefined(value) || isStringArray(value);
+/**
+ * @param value
+ * @param requireNonEmpty `boolean` `default` = `true` (if `true`, require that array have at least 1 element)
+ * @returns
+ */
+isUndefinedOr.stringArray = (value, requireNonEmpty = true) => {
+    return isUndefined(value) || isStringArray(value, requireNonEmpty);
 };
 isUndefinedOr.numeric = (value, requireInteger = false, requireNonNegative = false) => {
     return isUndefined(value) || isNumeric(value, requireInteger, requireNonNegative);
@@ -360,8 +374,8 @@ isUndefinedOr.number = (value, requireInteger = false, requireNonNegative = fals
 isUndefinedOr.positiveInteger = (value) => {
     return (isUndefined(value) || isPositveInteger(value));
 };
-isUndefinedOr.integerArray = (value, requireNonNegative = false) => {
-    return isUndefined(value) || isIntegerArray(value, requireNonNegative);
+isUndefinedOr.integerArray = (value, requireNonNegative = false, requireNonEmpty = true) => {
+    return isUndefined(value) || isIntegerArray(value, requireNonNegative, requireNonEmpty);
 };
 isUndefinedOr.boolean = (value) => {
     return isUndefined(value) || isBoolean(value);

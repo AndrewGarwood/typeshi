@@ -79,33 +79,39 @@ export function isEmptyArray(value: any): value is Array<any> & { length: 0 } {
 
 /**
  * @param value `any`
+ * @param requireNonNegative `boolean` `default = false`
+ * @param requireNonEmpty `boolean` `default = true`
+ * - `if` `true` then `value` must be array with at least 1 element
+ * - `if` `false` then `value` can be empty array
  * @returns **`isIntegerArray`** `boolean` = `value is Array<number> & { length: number }`
- * - **`true`** if `value` is an array with `length > 0` and each of its elements is an `integer`
- * - **`false`** `otherwise`
  */
 export function isIntegerArray(
     value: any, 
-    requireNonNegative: boolean = false
+    requireNonNegative: boolean = false, 
+    requireNonEmpty: boolean = true
 ): value is Array<number> & { length: number } {
-    return (value 
-        && isNonEmptyArray(value) 
-        && value.every(arrElement => isInteger(arrElement, requireNonNegative)
-    ))
+    return (requireNonEmpty 
+        ? isNonEmptyArray(value) && value.every(el=>isInteger(el, requireNonNegative))
+        : isEmptyArray(value)
+    );
 }
 
 
 /**
  * @consideration add param to allow for empty strings?
  * @param value `any`
+ * @param requireNonEmpty `boolean` `default = true`
+ * - `if` `true` then `value` must be array with at least 1 element
+ * - `if` `false` then `value` can be empty array
  * @returns **`isStringArray`** `boolean` = `value is Array<string> & { length: number }`
- * - **`true`** if `value` is an array with `length > 0` and each of its elements is a **non-empty** `string`
- * - **`false`** `otherwise`
  */
 export function isStringArray(
-    value: any
+    value: any,
+    requireNonEmpty: boolean = true
 ): value is Array<string> & { length: number } {
-    return (isNonEmptyArray(value) 
-        && value.every(el => isNonEmptyString(el))
+    return (requireNonEmpty 
+        ? isNonEmptyArray(value) && value.every(el => isNonEmptyString(el)) 
+        : isEmptyArray(value)
     );
 }
 
@@ -328,14 +334,19 @@ export class isOptional {
     }
     /**
      * @param value 
-     * @param requireNonEmpty `bolean` `default` = `true`
+     * @param requireNonEmpty `boolean` `default` = `true` (if `true`, require that string have at least 1 non-whitespace character)
      * @returns 
      */
     static string = (value: any, requireNonEmpty: boolean = true): value is string | undefined | null => {
         return isUndefinedOrNull(value) || requireNonEmpty ? isNonEmptyString(value) : typeof value === "string"
     }
-    static stringArray = (value: any): value is string[] | undefined | null => {
-        return isUndefinedOrNull(value) || isStringArray(value)
+    /**
+     * @param value 
+     * @param requireNonEmpty `boolean` `default` = `true` (if `true`, require that array have at least 1 element)
+     * @returns 
+     */
+    static stringArray = (value: any, requireNonEmpty: boolean = true): value is string[] | undefined | null => {
+        return isUndefinedOrNull(value) || isStringArray(value, requireNonEmpty)
     }
     static numeric = (
         value: any, 
@@ -357,8 +368,12 @@ export class isOptional {
     static positiveInteger = (value: any): value is number | undefined | null => {
         return (isUndefinedOrNull(value) || isPositveInteger(value))
     }
-    static integerArray = (value: any, requireNonNegative: boolean = false): value is number[] | undefined | null => {
-        return isUndefinedOrNull(value) || isIntegerArray(value, requireNonNegative)
+    static integerArray = (
+        value: any, 
+        requireNonNegative: boolean = false, 
+        requireNonEmpty: boolean = true
+    ): value is number[] | undefined | null => {
+        return isUndefinedOrNull(value) || isIntegerArray(value, requireNonNegative, requireNonEmpty)
     }
     static boolean = (value: any): value is boolean | undefined | null => {
         return isUndefinedOrNull(value) || isBoolean(value);
@@ -374,14 +389,19 @@ export class isUndefinedOr {
     }
     /**
      * @param value 
-     * @param requireNonEmpty `bolean` `default` = `true`
+     * @param requireNonEmpty `boolean` `default` = `true` (if `true`, require that string have at least 1 non-whitespace character)
      * @returns 
      */
     static string = (value: any, requireNonEmpty: boolean = true): value is string | undefined => {
         return isUndefined(value) || requireNonEmpty ? isNonEmptyString(value) : typeof value === "string"
     }
-    static stringArray = (value: any): value is string[] | undefined => {
-        return isUndefined(value) || isStringArray(value)
+    /**
+     * @param value 
+     * @param requireNonEmpty `boolean` `default` = `true` (if `true`, require that array have at least 1 element)
+     * @returns 
+     */
+    static stringArray = (value: any, requireNonEmpty: boolean = true): value is string[] | undefined => {
+        return isUndefined(value) || isStringArray(value, requireNonEmpty)
     }
     static numeric = (
         value: any, 
@@ -403,8 +423,12 @@ export class isUndefinedOr {
     static positiveInteger = (value: any): value is number | undefined => {
         return (isUndefined(value) || isPositveInteger(value))
     }
-    static integerArray = (value: any, requireNonNegative: boolean = false): value is number[] | undefined => {
-        return isUndefined(value) || isIntegerArray(value, requireNonNegative)
+    static integerArray = (
+        value: any, 
+        requireNonNegative: boolean = false, 
+        requireNonEmpty: boolean = true
+    ): value is number[] | undefined => {
+        return isUndefined(value) || isIntegerArray(value, requireNonNegative, requireNonEmpty)
     }
     static boolean = (value: any): value is boolean | undefined => {
         return isUndefined(value) || isBoolean(value);
@@ -446,28 +470,32 @@ export function isUndefinedOrNull(value: unknown): value is undefined | null {
 }
 
 // ============================================================================
-// Utility Types
+// Utility Types ... useful for auto-completion
 // ============================================================================
 
+/** key of `T` whose value is a `number` or `undefined`  */
 export type NumberKeys<T> = {
     [K in keyof T]: T[K] extends number | undefined ? K : never
-}[keyof T];
+}[keyof T][];
 
+/** key of `T` whose value is an `array` or `undefined`  */
 export type ArrayKeys<T> = {
     [K in keyof T]: T[K] extends Array<any> | undefined ? K : never
-}[keyof T];
+}[keyof T][];
 
 export type ArrayOfTypeKeys<T, U> = {
     [K in keyof T]: T[K] extends Array<U> | undefined ? K : never
-}[keyof T];
+}[keyof T][];
 
+/** key of `T` whose value is a `string` or `undefined`  */
 export type StringKeys<T> = {
     [K in keyof T]: T[K] extends string | undefined ? K : never
-}[keyof T];
+}[keyof T][];
 
+/** key of `T` whose value is a `primitive` or `undefined`  */
 export type PrimitiveKeys<T> = {
     [K in keyof T]: T[K] extends string | number | boolean | null | undefined ? K : never
-}[keyof T];
+}[keyof T][];
 
 export type Primitive = string | number | boolean | null | undefined;
 
@@ -477,4 +505,4 @@ export type ValueOf<T> = T[keyof T];
 /** Keys of `T` whose values extend a given type `U` */
 export type KeysOfType<T, U> = {
     [K in keyof T]: T[K] extends U ? K : never
-}[keyof T];
+}[keyof T][];

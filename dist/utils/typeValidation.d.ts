@@ -47,21 +47,24 @@ export declare function isEmptyArray(value: any): value is Array<any> & {
 };
 /**
  * @param value `any`
+ * @param requireNonNegative `boolean` `default = false`
+ * @param requireNonEmpty `boolean` `default = true`
+ * - `if` `true` then `value` must be array with at least 1 element
+ * - `if` `false` then `value` can be empty array
  * @returns **`isIntegerArray`** `boolean` = `value is Array<number> & { length: number }`
- * - **`true`** if `value` is an array with `length > 0` and each of its elements is an `integer`
- * - **`false`** `otherwise`
  */
-export declare function isIntegerArray(value: any, requireNonNegative?: boolean): value is Array<number> & {
+export declare function isIntegerArray(value: any, requireNonNegative?: boolean, requireNonEmpty?: boolean): value is Array<number> & {
     length: number;
 };
 /**
  * @consideration add param to allow for empty strings?
  * @param value `any`
+ * @param requireNonEmpty `boolean` `default = true`
+ * - `if` `true` then `value` must be array with at least 1 element
+ * - `if` `false` then `value` can be empty array
  * @returns **`isStringArray`** `boolean` = `value is Array<string> & { length: number }`
- * - **`true`** if `value` is an array with `length > 0` and each of its elements is a **non-empty** `string`
- * - **`false`** `otherwise`
  */
-export declare function isStringArray(value: any): value is Array<string> & {
+export declare function isStringArray(value: any, requireNonEmpty?: boolean): value is Array<string> & {
     length: number;
 };
 /**
@@ -147,15 +150,20 @@ export declare class isOptional {
     static type: <T>(value: any, guard: (v: any, ...args: any[]) => v is T, ...args: any[]) => value is T | undefined | null;
     /**
      * @param value
-     * @param requireNonEmpty `bolean` `default` = `true`
+     * @param requireNonEmpty `boolean` `default` = `true` (if `true`, require that string have at least 1 non-whitespace character)
      * @returns
      */
     static string: (value: any, requireNonEmpty?: boolean) => value is string | undefined | null;
-    static stringArray: (value: any) => value is string[] | undefined | null;
+    /**
+     * @param value
+     * @param requireNonEmpty `boolean` `default` = `true` (if `true`, require that array have at least 1 element)
+     * @returns
+     */
+    static stringArray: (value: any, requireNonEmpty?: boolean) => value is string[] | undefined | null;
     static numeric: (value: any, requireInteger?: boolean, requireNonNegative?: boolean) => value is string | number | undefined | null;
     static number: (value: any, requireInteger?: boolean, requireNonNegative?: boolean) => value is number | undefined | null;
     static positiveInteger: (value: any) => value is number | undefined | null;
-    static integerArray: (value: any, requireNonNegative?: boolean) => value is number[] | undefined | null;
+    static integerArray: (value: any, requireNonNegative?: boolean, requireNonEmpty?: boolean) => value is number[] | undefined | null;
     static boolean: (value: any) => value is boolean | undefined | null;
     static function: (value: any) => value is Function | undefined | null;
 }
@@ -163,15 +171,20 @@ export declare class isUndefinedOr {
     static type: <T>(value: any, guard: (v: any, ...args: any[]) => v is T, ...args: any[]) => value is T | undefined;
     /**
      * @param value
-     * @param requireNonEmpty `bolean` `default` = `true`
+     * @param requireNonEmpty `boolean` `default` = `true` (if `true`, require that string have at least 1 non-whitespace character)
      * @returns
      */
     static string: (value: any, requireNonEmpty?: boolean) => value is string | undefined;
-    static stringArray: (value: any) => value is string[] | undefined;
+    /**
+     * @param value
+     * @param requireNonEmpty `boolean` `default` = `true` (if `true`, require that array have at least 1 element)
+     * @returns
+     */
+    static stringArray: (value: any, requireNonEmpty?: boolean) => value is string[] | undefined;
     static numeric: (value: any, requireInteger?: boolean, requireNonNegative?: boolean) => value is string | number | undefined;
     static number: (value: any, requireInteger?: boolean, requireNonNegative?: boolean) => value is number | undefined;
     static positiveInteger: (value: any) => value is number | undefined;
-    static integerArray: (value: any, requireNonNegative?: boolean) => value is number[] | undefined;
+    static integerArray: (value: any, requireNonNegative?: boolean, requireNonEmpty?: boolean) => value is number[] | undefined;
     static boolean: (value: any) => value is boolean | undefined;
     static function: (value: any) => value is Function | undefined;
 }
@@ -195,25 +208,29 @@ export declare function isFunction(value: any): value is Function;
  */
 export declare function isUndefined(value: any): value is undefined;
 export declare function isUndefinedOrNull(value: unknown): value is undefined | null;
+/** key of `T` whose value is a `number` or `undefined`  */
 export type NumberKeys<T> = {
     [K in keyof T]: T[K] extends number | undefined ? K : never;
-}[keyof T];
+}[keyof T][];
+/** key of `T` whose value is an `array` or `undefined`  */
 export type ArrayKeys<T> = {
     [K in keyof T]: T[K] extends Array<any> | undefined ? K : never;
-}[keyof T];
+}[keyof T][];
 export type ArrayOfTypeKeys<T, U> = {
     [K in keyof T]: T[K] extends Array<U> | undefined ? K : never;
-}[keyof T];
+}[keyof T][];
+/** key of `T` whose value is a `string` or `undefined`  */
 export type StringKeys<T> = {
     [K in keyof T]: T[K] extends string | undefined ? K : never;
-}[keyof T];
+}[keyof T][];
+/** key of `T` whose value is a `primitive` or `undefined`  */
 export type PrimitiveKeys<T> = {
     [K in keyof T]: T[K] extends string | number | boolean | null | undefined ? K : never;
-}[keyof T];
+}[keyof T][];
 export type Primitive = string | number | boolean | null | undefined;
 /** Get the union of all values of `T` (like `valueof T`) */
 export type ValueOf<T> = T[keyof T];
 /** Keys of `T` whose values extend a given type `U` */
 export type KeysOfType<T, U> = {
     [K in keyof T]: T[K] extends U ? K : never;
-}[keyof T];
+}[keyof T][];
