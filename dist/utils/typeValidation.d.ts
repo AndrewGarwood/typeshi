@@ -208,24 +208,20 @@ export declare function isFunction(value: any): value is Function;
  */
 export declare function isUndefined(value: any): value is undefined;
 export declare function isUndefinedOrNull(value: unknown): value is undefined | null;
-/** key of `T` whose value is a `number` or `undefined`  */
-export type NumberKeys<T> = {
-    [K in keyof T]: T[K] extends number | undefined ? K : never;
+export type NumberKeys<T, Required extends true | false = false> = {
+    [K in keyof T]: Required extends true ? (T[K] extends number ? K : never) : (T[K] extends number | undefined ? K : never);
 }[keyof T][];
-/** key of `T` whose value is an `array` or `undefined`  */
-export type ArrayKeys<T> = {
-    [K in keyof T]: T[K] extends Array<any> | undefined ? K : never;
+export type ArrayKeys<T, Required extends true | false = false> = {
+    [K in keyof T]: Required extends true ? (T[K] extends Array<any> ? K : never) : (T[K] extends Array<any> | undefined ? K : never);
 }[keyof T][];
-export type ArrayOfTypeKeys<T, U> = {
-    [K in keyof T]: T[K] extends Array<U> | undefined ? K : never;
+export type ArrayOfTypeKeys<T, U, Required extends true | false = false> = {
+    [K in keyof T]: Required extends true ? (T[K] extends Array<U> ? K : never) : (T[K] extends Array<U> | undefined ? K : never);
 }[keyof T][];
-/** key of `T` whose value is a `string` or `undefined`  */
-export type StringKeys<T> = {
-    [K in keyof T]: T[K] extends string | undefined ? K : never;
+export type StringKeys<T, Required extends true | false = false> = {
+    [K in keyof T]: Required extends true ? (T[K] extends string ? K : never) : (T[K] extends string | undefined ? K : never);
 }[keyof T][];
-/** key of `T` whose value is a `primitive` or `undefined`  */
-export type PrimitiveKeys<T> = {
-    [K in keyof T]: T[K] extends string | number | boolean | null | undefined ? K : never;
+export type PrimitiveKeys<T, Required extends true | false = false> = {
+    [K in keyof T]: Required extends true ? (T[K] extends string | number | boolean | null ? K : never) : (T[K] extends string | number | boolean | null | undefined ? K : never);
 }[keyof T][];
 export type Primitive = string | number | boolean | null | undefined;
 /** Get the union of all values of `T` (like `valueof T`) */
