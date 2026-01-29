@@ -56,3 +56,7 @@ export type ParseOneToManyOptions = {
     keyPadOptions?: StringPadOptions,
     valuePadOptions?: StringPadOptions
 }
+/**
+ * common file extensions handled as input/output
+ */
+export type FileExtension = '.csv' | '.tsv' | '.txt' | '.json' | '.xlsx' | '.xls' | '.xml' | '.yaml' | '.yml' ;

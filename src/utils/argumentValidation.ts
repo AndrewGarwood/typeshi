@@ -87,7 +87,7 @@ export function multipleStringArguments(
 
 export function multipleExistingFileArguments(
     source: string,
-    extension: string | string[],
+    extension: FileExtension | FileExtension[] | string | string[],
     labeledFilePaths: Record<string, string>
 ): void {
     for (const [label, value] of Object.entries(labeledFilePaths)) {
@@ -95,9 +95,14 @@ export function multipleExistingFileArguments(
     }
 }
 
+/**
+ * common file extensions handled as input/output
+ */
+type FileExtension = '.csv' | '.tsv' | '.txt' | '.json' | '.xlsx' | '.xls' | '.xml' | '.yaml' | '.yml' ;
+
 export function existingFileArgument(
     source: string,
-    extension: string | string[],
+    extension: FileExtension | FileExtension[] | string | string[],
     arg3: string | { [label: string]: any },
     value?: any,
 ): void {

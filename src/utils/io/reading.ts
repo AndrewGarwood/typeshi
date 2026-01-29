@@ -11,7 +11,7 @@ import { RegExpFlagsEnum, StringCaseOptions, stringEndsWithAnyOf,
     CleanStringOptions,
     isCleanStringOptions
 } from "../regex";
-import { FileData,} from "./types/Io";
+import { FileData, FileExtension } from "./types/Io";
 import { 
     typeshiLogger as mlog, 
     INDENT_LOG_LINE as TAB, 
@@ -28,14 +28,14 @@ import {
 import * as validate from "../argumentValidation";
 import { getSourceString } from "./logging";
 
-/** for testing if `pathString (value)` points to an existing directory */
+/** checks if `pathString (value)` points to an existing directory */
 export function isDirectory(value: any): value is string {
     return (isNonEmptyString(value) 
         && fs.existsSync(value) 
         && fs.statSync(value).isDirectory()
     );
 }
-/** for testing if `pathString (value)` points to an existing file */
+/** checks if `pathString (value)` points to an existing file */
 export function isFile(value: string): value is string {
     return (isNonEmptyString(value) 
         && fs.existsSync(value) 
@@ -69,33 +69,82 @@ export function getDelimiterFromFilePath(
  */
 export const readJsonSync = readJsonFileAsObject;
 /**
+ * a.k.a. `readJsonSync`
  * @param filePath `string`
- * @returns **`jsonData`** — `Record<string, any>` 
- * - JSON data as an object
+ * @returns **`jsonData`** — `T extends Record<string, any>` - JSON data as an object
+ * @note returns empty object if error occurred while reading `filepath` or parsing json
+ * - use {@link readJsonSyncOrThrow} if throwing error is desired behavior
  */
-export function readJsonFileAsObject(filePath: string): Record<string, any> {
+export function readJsonFileAsObject<T extends Record<string, any> = {}>(filePath: string): T {
     const source = getSourceString(__filename, readJsonFileAsObject.name);
     try {
         filePath = coerceFileExtension(filePath, 'json');
         const data = fs.readFileSync(filePath, 'utf8');
-        const jsonData = JSON.parse(data);
+        const jsonData = JSON.parse(data) as T;
+        return jsonData;
+    } catch (error: any) {
+        mlog.error([`${source} Error reading JSON file, returning empty object`,
+            `Given filePath: '${filePath}'`,
+            `caught error: ${error}`,
+        ].join(TAB));
+        return {} as T;
+    }
+}
+
+/**
+ * @param filePath `string`
+ * @returns **`jsonData`** — `T extends Record<string, any>`
+ * @throws {Error} if error occurred while reading `filepath` or parsing json
+ */
+export function readJsonSyncOrThrow<T extends Record<string, any> = {}>(filePath: string): T {
+    const source = getSourceString(__filename, readJsonSyncOrThrow.name);
+    try {
+        filePath = coerceFileExtension(filePath, 'json');
+        const data = fs.readFileSync(filePath, 'utf8');
+        const jsonData = JSON.parse(data) as T;
         return jsonData;
     } catch (error: any) {
         mlog.error([`${source} Error reading JSON file`,
             `Given filePath: '${filePath}'`,
-            `error: `, JSON.stringify(error, null, 4)
-        ].join(TAB));
-        throw new Error(JSON.stringify(error))
+            `caught error: ${error}`,
+        ].join(TAB));        
+        throw new Error(JSON.stringify(error));
+    }
+}
+
+/**
+ * @param filePath `string`
+ * @param separator `string | RegExp` `default` = `/\r?\n/` (i.e. each line is an individual element in the array)
+ * @param encoding {@link BufferEncoding} `default` = `'utf8'` 
+ * @returns **`arr`** `string[]` - the file content separated by specified param value
+ * - returns empty array if error occurs while reading file.
+ */
+export function readFileToArraySync(
+    filePath: string, 
+    separator: string | RegExp = /\r?\n/, 
+    encoding: BufferEncoding = 'utf8'
+): string[] {
+    const source = getSourceString(__filename, readFileToArraySync.name);
+    try {
+        const content: string = fs.readFileSync(filePath, { encoding });
+        return content.split(separator);
+    } catch (error: any) {
+        mlog.error([`${source} Error reading file, returning empty array`,
+            `Given filePath: '${filePath}'`,
+            `caught error: ${error}`,
+        ].join(TAB));        
+        return [];
     }
 }
 
 
 /**
+ * @description adds `'.${expectedExtension}'` to end of `filePath` if not already present
  * @param filePath `string`
- * @param expectedExtension `string`
+ * @param expectedExtension `string | `{@link FileExtension}
  * @returns **`validatedFilePath`** `string` 
  */
-export function coerceFileExtension(filePath: string, expectedExtension: string): string {
+export function coerceFileExtension(filePath: string, expectedExtension: string | FileExtension): string {
     validate.multipleStringArguments(getSourceString(__filename, coerceFileExtension.name), 
         {filePath, expectedExtension}
     );
