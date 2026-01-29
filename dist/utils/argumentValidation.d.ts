@@ -18,8 +18,12 @@ export declare function stringArgument(source: string, arg2: string | {
  * @param labeledStrings `Record<string, any>` - map name of string param to value passed in for it
  */
 export declare function multipleStringArguments(source: string, labeledStrings: Record<string, any>): void;
-export declare function multipleExistingFileArguments(source: string, extension: string | string[], labeledFilePaths: Record<string, string>): void;
-export declare function existingFileArgument(source: string, extension: string | string[], arg3: string | {
+export declare function multipleExistingFileArguments(source: string, extension: FileExtension | FileExtension[] | string | string[], labeledFilePaths: Record<string, string>): void;
+/**
+ * common file extensions handled as input/output
+ */
+type FileExtension = '.csv' | '.tsv' | '.txt' | '.json' | '.xlsx' | '.xls' | '.xml' | '.yaml' | '.yml';
+export declare function existingFileArgument(source: string, extension: FileExtension | FileExtension[] | string | string[], arg3: string | {
     [label: string]: any;
 }, value?: any): void;
 export declare function existingDirectoryArgument(source: string, arg2: string | {

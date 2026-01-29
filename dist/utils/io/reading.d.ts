@@ -1,9 +1,9 @@
 import { StringCaseOptions, StringPadOptions, StringStripOptions, CleanStringOptions } from "../regex";
-import { FileData } from "./types/Io";
+import { FileData, FileExtension } from "./types/Io";
 import { DelimiterCharacterEnum } from "./types";
-/** for testing if `pathString (value)` points to an existing directory */
+/** checks if `pathString (value)` points to an existing directory */
 export declare function isDirectory(value: any): value is string;
-/** for testing if `pathString (value)` points to an existing file */
+/** checks if `pathString (value)` points to an existing file */
 export declare function isFile(value: string): value is string;
 /**
  * Determines the proper delimiter based on file type or extension
@@ -19,17 +19,34 @@ export declare function getDelimiterFromFilePath(filePath: string): DelimiterCha
  */
 export declare const readJsonSync: typeof readJsonFileAsObject;
 /**
+ * a.k.a. `readJsonSync`
  * @param filePath `string`
- * @returns **`jsonData`** — `Record<string, any>`
- * - JSON data as an object
+ * @returns **`jsonData`** — `T extends Record<string, any>` - JSON data as an object
+ * @note returns empty object if error occurred while reading `filepath` or parsing json
+ * - use {@link readJsonSyncOrThrow} if throwing error is desired behavior
  */
-export declare function readJsonFileAsObject(filePath: string): Record<string, any>;
+export declare function readJsonFileAsObject<T extends Record<string, any> = {}>(filePath: string): T;
 /**
  * @param filePath `string`
- * @param expectedExtension `string`
+ * @returns **`jsonData`** — `T extends Record<string, any>`
+ * @throws {Error} if error occurred while reading `filepath` or parsing json
+ */
+export declare function readJsonSyncOrThrow<T extends Record<string, any> = {}>(filePath: string): T;
+/**
+ * @param filePath `string`
+ * @param separator `string | RegExp` `default` = `/\r?\n/` (i.e. each line is an individual element in the array)
+ * @param encoding {@link BufferEncoding} `default` = `'utf8'`
+ * @returns **`arr`** `string[]` - the file content separated by specified param value
+ * - returns empty array if error occurs while reading file.
+ */
+export declare function readFileToArraySync(filePath: string, separator?: string | RegExp, encoding?: BufferEncoding): string[];
+/**
+ * @description adds `'.${expectedExtension}'` to end of `filePath` if not already present
+ * @param filePath `string`
+ * @param expectedExtension `string | `{@link FileExtension}
  * @returns **`validatedFilePath`** `string`
  */
-export declare function coerceFileExtension(filePath: string, expectedExtension: string): string;
+export declare function coerceFileExtension(filePath: string, expectedExtension: string | FileExtension): string;
 /**
  * - {@link getDirectoryFiles}
  * @param arg1 `Array<`{@link FileData}` | string> | string`

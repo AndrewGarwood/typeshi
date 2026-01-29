@@ -12,7 +12,7 @@ export type RowSourceMetaData = {
  * @enum {string} **`DelimitedFileTypeEnum`**
  * @property {string} CSV = `'csv'` Comma-separated values -> `.csv` file.
  * @property {string} TSV = `'tsv'` Tab-separated values -> `.tsv` file.
- * @property {string} AUTO = `'auto'`- call {@link getDelimiterFromFilePath}(filePath, fileType) to detect file type based on file extension.
+ * @property {string} AUTO = `'auto'`- call `getDelimiterFromFilePath(filePath, fileType)` to detect file type based on file extension.
  */
 export declare enum DelimitedFileTypeEnum {
     CSV = "csv",

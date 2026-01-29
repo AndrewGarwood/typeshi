@@ -208,19 +208,19 @@ export declare function isFunction(value: any): value is Function;
  */
 export declare function isUndefined(value: any): value is undefined;
 export declare function isUndefinedOrNull(value: unknown): value is undefined | null;
-export type NumberKeys<T, Required extends true | false = false> = {
+export type NumberKeys<T, Required extends boolean = false> = {
     [K in keyof T]: Required extends true ? (T[K] extends number ? K : never) : (T[K] extends number | undefined ? K : never);
 }[keyof T][];
-export type ArrayKeys<T, Required extends true | false = false> = {
+export type ArrayKeys<T, Required extends boolean = false> = {
     [K in keyof T]: Required extends true ? (T[K] extends Array<any> ? K : never) : (T[K] extends Array<any> | undefined ? K : never);
 }[keyof T][];
-export type ArrayOfTypeKeys<T, U, Required extends true | false = false> = {
+export type ArrayOfTypeKeys<T, U, Required extends boolean = false> = {
     [K in keyof T]: Required extends true ? (T[K] extends Array<U> ? K : never) : (T[K] extends Array<U> | undefined ? K : never);
 }[keyof T][];
-export type StringKeys<T, Required extends true | false = false> = {
+export type StringKeys<T, Required extends boolean = false> = {
     [K in keyof T]: Required extends true ? (T[K] extends string ? K : never) : (T[K] extends string | undefined ? K : never);
 }[keyof T][];
-export type PrimitiveKeys<T, Required extends true | false = false> = {
+export type PrimitiveKeys<T, Required extends boolean = false> = {
     [K in keyof T]: Required extends true ? (T[K] extends string | number | boolean | null ? K : never) : (T[K] extends string | number | boolean | null | undefined ? K : never);
 }[keyof T][];
 export type Primitive = string | number | boolean | null | undefined;
