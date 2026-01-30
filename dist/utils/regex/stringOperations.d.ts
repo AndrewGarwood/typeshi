@@ -40,14 +40,14 @@ export declare function stringContainsAnyOf(s: string, substrings: string | stri
  * - **`false`** `otherwise`.
  */
 export declare function equivalentAlphanumericStrings(s1: string, s2: string, tolerance?: number): boolean;
-export declare class StringOperation {
+export declare namespace Str {
     /**
      * @param s `string`
      * @param prefixes `string | string[] | RegExp` possible starting string(s).
      * @param flags `RegExpFlagsEnum[] (Optional)` regex flags to use when creating the {@link RegExp} object. see {@link RegExpFlagsEnum}
      * @returns **`true`** if the string starts with any of the prefixes, **`false`** otherwise.
      */
-    static startsWith: typeof stringStartsWithAnyOf;
+    const startsWith: typeof stringStartsWithAnyOf;
     /**
      * Checks if a string ends with any of the specified suffixes.
      * @param s `string`
@@ -55,14 +55,14 @@ export declare class StringOperation {
      * @param flags `RegExpFlagsEnum[] (Optional)` regex flags to use when creating the {@link RegExp} object. see {@link RegExpFlagsEnum}
      * @returns **`true`** if the string ends with any of the suffixes, **`false`** otherwise.
      */
-    static endsWith: typeof stringEndsWithAnyOf;
+    const endsWith: typeof stringEndsWithAnyOf;
     /**
-     * @param s `string` to check.
-     * @param substrings `string | string[] | RegExp`.
+     * @param s `string`
+     * @param substrings `string | string[] | RegExp`
      * @param flags `RegExpFlagsEnum[] (Optional)` regex flags to use when creating the {@link RegExp} object. see {@link RegExpFlagsEnum}
      * @returns **`true`** if the string contains any of the substrings, **`false`** otherwise.
      */
-    static contains: typeof stringContainsAnyOf;
+    const contains: typeof stringContainsAnyOf;
     /**
      * Ignores case by default:
      * - converts `s1` & `s2` to lowercase and removes all non-alphanumeric characters from both strings,
@@ -75,7 +75,7 @@ export declare class StringOperation {
      * - **`true`** `if` the two alphanumeric strings are equivalent,
      * - **`false`** `otherwise`.
      */
-    static equivalentAlphanumeric: typeof equivalentAlphanumericStrings;
+    const equivalentAlphanumeric: typeof equivalentAlphanumericStrings;
 }
 /** for simple regular expressions...
  * so like not ones that have parentheses, pipes, or curly braced numbers */

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.StringOperation = void 0;
+exports.Str = void 0;
 exports.stringEndsWithAnyOf = stringEndsWithAnyOf;
 exports.stringStartsWithAnyOf = stringStartsWithAnyOf;
 exports.stringContainsAnyOf = stringContainsAnyOf;
@@ -173,44 +173,44 @@ function equivalentAlphanumericStrings(s1, s2, tolerance = 0.90) {
     }
     return false;
 }
-class StringOperation {
-}
-exports.StringOperation = StringOperation;
-/**
- * @param s `string`
- * @param prefixes `string | string[] | RegExp` possible starting string(s).
- * @param flags `RegExpFlagsEnum[] (Optional)` regex flags to use when creating the {@link RegExp} object. see {@link RegExpFlagsEnum}
- * @returns **`true`** if the string starts with any of the prefixes, **`false`** otherwise.
- */
-StringOperation.startsWith = stringStartsWithAnyOf;
-/**
- * Checks if a string ends with any of the specified suffixes.
- * @param s `string`
- * @param suffixes `string | string[] | RegExp` possible ending strings.
- * @param flags `RegExpFlagsEnum[] (Optional)` regex flags to use when creating the {@link RegExp} object. see {@link RegExpFlagsEnum}
- * @returns **`true`** if the string ends with any of the suffixes, **`false`** otherwise.
- */
-StringOperation.endsWith = stringEndsWithAnyOf;
-/**
- * @param s `string` to check.
- * @param substrings `string | string[] | RegExp`.
- * @param flags `RegExpFlagsEnum[] (Optional)` regex flags to use when creating the {@link RegExp} object. see {@link RegExpFlagsEnum}
- * @returns **`true`** if the string contains any of the substrings, **`false`** otherwise.
- */
-StringOperation.contains = stringContainsAnyOf;
-/**
- * Ignores case by default:
- * - converts `s1` & `s2` to lowercase and removes all non-alphanumeric characters from both strings,
- * - sorts the characters in both strings,
- * - then compares the two strings for equivalence.
- * @param s1 `string`
- * @param s2 `string`
- * @param tolerance `number` - a number between 0 and 1, default is `0.90`
- * @returns **`boolean`**
- * - **`true`** `if` the two alphanumeric strings are equivalent,
- * - **`false`** `otherwise`.
- */
-StringOperation.equivalentAlphanumeric = equivalentAlphanumericStrings;
+var Str;
+(function (Str) {
+    /**
+     * @param s `string`
+     * @param prefixes `string | string[] | RegExp` possible starting string(s).
+     * @param flags `RegExpFlagsEnum[] (Optional)` regex flags to use when creating the {@link RegExp} object. see {@link RegExpFlagsEnum}
+     * @returns **`true`** if the string starts with any of the prefixes, **`false`** otherwise.
+     */
+    Str.startsWith = stringStartsWithAnyOf;
+    /**
+     * Checks if a string ends with any of the specified suffixes.
+     * @param s `string`
+     * @param suffixes `string | string[] | RegExp` possible ending strings.
+     * @param flags `RegExpFlagsEnum[] (Optional)` regex flags to use when creating the {@link RegExp} object. see {@link RegExpFlagsEnum}
+     * @returns **`true`** if the string ends with any of the suffixes, **`false`** otherwise.
+     */
+    Str.endsWith = stringEndsWithAnyOf;
+    /**
+     * @param s `string`
+     * @param substrings `string | string[] | RegExp`
+     * @param flags `RegExpFlagsEnum[] (Optional)` regex flags to use when creating the {@link RegExp} object. see {@link RegExpFlagsEnum}
+     * @returns **`true`** if the string contains any of the substrings, **`false`** otherwise.
+     */
+    Str.contains = stringContainsAnyOf;
+    /**
+     * Ignores case by default:
+     * - converts `s1` & `s2` to lowercase and removes all non-alphanumeric characters from both strings,
+     * - sorts the characters in both strings,
+     * - then compares the two strings for equivalence.
+     * @param s1 `string`
+     * @param s2 `string`
+     * @param tolerance `number` - a number between 0 and 1, default is `0.90`
+     * @returns **`boolean`**
+     * - **`true`** `if` the two alphanumeric strings are equivalent,
+     * - **`false`** `otherwise`.
+     */
+    Str.equivalentAlphanumeric = equivalentAlphanumericStrings;
+})(Str || (exports.Str = Str = {}));
 /** for simple regular expressions...
  * so like not ones that have parentheses, pipes, or curly braced numbers */
 function extractSource(regex) {
