@@ -224,8 +224,8 @@ export namespace Str {
      */
     export const endsWith = stringEndsWithAnyOf;
     /**
-     * @param s `string` to check.
-     * @param substrings `string | string[] | RegExp`.
+     * @param s `string`
+     * @param substrings `string | string[] | RegExp`
      * @param flags `RegExpFlagsEnum[] (Optional)` regex flags to use when creating the {@link RegExp} object. see {@link RegExpFlagsEnum}
      * @returns **`true`** if the string contains any of the substrings, **`false`** otherwise.
      */
