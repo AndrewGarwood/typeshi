@@ -572,25 +572,41 @@ async function handleFileArgument(arg1, invocationSource, requiredHeaders = [], 
 }
 /**
  * @param dir `string` path to target directory
- * @param targetExtensions `string[] optional` - array of file extensions to filter files by.
+ * @param arg2 `boolean (optional)` `default` = `false`
+ * - `if true`,  returned array elements are of form: `path.basename(file)`
+ * - `if false`, returned array elements are of form: `path.join(dir, file)`
+ * @param targetExtensions `string[] (optional)` - array of file extensions to filter files by.
  * - `If` not provided, all files in the directory will be returned.
  * - `If` provided, only files with extensions matching the array will be returned.
- * @returns **`targetFiles`** `string[]` array of full file paths
+ * @returns **`targetFiles`** `string[]` array of file paths
  */
-function getDirectoryFiles(dir, ...targetExtensions) {
+function getDirectoryFiles(dir, arg2, ...targetExtensions) {
     const source = (0, logging_1.getSourceString)(__filename, getDirectoryFiles.name);
-    validate.existingPathArgument(source, { dir });
-    validate.arrayArgument(source, { targetExtensions, isNonEmptyString: typeValidation_1.isNonEmptyString }, true);
-    // ensure all target extensions start with period
-    for (let i = 0; i < targetExtensions.length; i++) {
-        const ext = targetExtensions[i];
-        if (!ext.startsWith('.')) {
-            targetExtensions[i] = `.${ext}`;
-        }
+    let basenameOnly = false;
+    if ((0, typeValidation_1.isBoolean)(arg2)) {
+        basenameOnly = arg2;
     }
-    const targetFiles = fs_1.default.readdirSync(dir).filter(f => (0, typeValidation_1.isNonEmptyArray)(targetExtensions)
-        ? true // get all files in dir, regardless of extension
-        : (0, regex_1.stringEndsWithAnyOf)(f, targetExtensions, regex_1.RegExpFlagsEnum.IGNORE_CASE)).map(file => node_path_1.default.join(dir, file));
+    else if ((0, typeValidation_1.isNonEmptyString)(arg2)) {
+        targetExtensions = [arg2, ...targetExtensions];
+    }
+    const targetFiles = [];
+    try {
+        validate.existingDirectoryArgument(source, { dir });
+        validate.arrayArgument(source, { targetExtensions, isNonEmptyString: typeValidation_1.isNonEmptyString }, true);
+        // ensure all target extensions start with period
+        for (let i = 0; i < targetExtensions.length; i++) {
+            const ext = targetExtensions[i];
+            if (!ext.startsWith('.')) {
+                targetExtensions[i] = `.${ext}`;
+            }
+        }
+        targetFiles.push(...fs_1.default.readdirSync(dir)
+            .filter(f => (0, typeValidation_1.isNonEmptyArray)(targetExtensions)
+            ? true // get all files in dir, regardless of extension
+            : (0, regex_1.stringEndsWithAnyOf)(f, targetExtensions, regex_1.RegExpFlagsEnum.IGNORE_CASE)).map(f => basenameOnly ? f : node_path_1.default.join(dir, f)));
+    }
+    catch (error) {
+    }
     return targetFiles;
 }
 /**
@@ -625,7 +641,7 @@ async function getOneToManyDictionary(dataSource, keyColumn, valueColumn, keyOpt
     return dict;
 }
 /**
- * @deprecated -> use {@link getOneToManyDictionary}
+ * @deprecated `use `{@link getOneToManyDictionary}
  * @param filePath `string`
  * @param sheetName `string`
  * @param keyColumn `string`

@@ -23,7 +23,8 @@ import { DelimiterCharacterEnum, DelimitedFileTypeEnum, isFileData } from "./typ
 import { 
     isNonEmptyArray, isNullLike as isNull, hasKeys, isNonEmptyString, 
     isEmptyArray, 
-    isObject
+    isObject,
+    isBoolean
 } from "../typeValidation";
 import * as validate from "../argumentValidation";
 import { getSourceString } from "./logging";
@@ -576,33 +577,78 @@ export async function handleFileArgument(
 }
 
 
+// overloads for backwards compatibility (I hope)
+
 /**
  * @param dir `string` path to target directory
- * @param targetExtensions `string[] optional` - array of file extensions to filter files by.
+ * @param basenameOnly `boolean (optional)` `default` = `false`
+ * - `if true`,  returned array elements are of form: `path.basename(file)`
+ * - `if false`, returned array elements are of form: `path.join(dir, file)`
+ * @param targetExtensions `string[] (optional)` - array of file extensions to filter files by.
  * - `If` not provided, all files in the directory will be returned.
  * - `If` provided, only files with extensions matching the array will be returned.
- * @returns **`targetFiles`** `string[]` array of full file paths
+ * @returns **`targetFiles`** `string[]` array of file paths
+ */
+export function getDirectoryFiles(
+    dir: string,
+    basenameOnly: boolean,
+    ...targetExtensions: string[]
+): string[]
+
+/**
+ * @param dir `string` path to target directory
+ * @param targetExtensions `string[] (optional)` - array of file extensions to filter files by.
+ * - `If` not provided, all files in the directory will be returned.
+ * - `If` provided, only files with extensions matching the array will be returned.
+ * @returns **`targetFiles`** `string[]` array of `full` file paths
  */
 export function getDirectoryFiles(
     dir: string,
     ...targetExtensions: string[]
+): string[]
+
+/**
+ * @param dir `string` path to target directory
+ * @param arg2 `boolean (optional)` `default` = `false`
+ * - `if true`,  returned array elements are of form: `path.basename(file)`
+ * - `if false`, returned array elements are of form: `path.join(dir, file)`
+ * @param targetExtensions `string[] (optional)` - array of file extensions to filter files by.
+ * - `If` not provided, all files in the directory will be returned.
+ * - `If` provided, only files with extensions matching the array will be returned.
+ * @returns **`targetFiles`** `string[]` array of file paths
+ */
+export function getDirectoryFiles(
+    dir: string,
+    arg2?: any,
+    ...targetExtensions: string[]
 ): string[] {
     const source = getSourceString(__filename, getDirectoryFiles.name);
-    validate.existingPathArgument(source, {dir});
-    validate.arrayArgument(source, {targetExtensions, isNonEmptyString}, true);
-    // ensure all target extensions start with period
-    for (let i = 0; i < targetExtensions.length; i++) {
-        const ext = targetExtensions[i];
-        if (!ext.startsWith('.')) { 
-            targetExtensions[i] = `.${ext}`;
-        }
+    let basenameOnly = false;
+    if (isBoolean(arg2)) {
+        basenameOnly = arg2;
+    } else if (isNonEmptyString(arg2)) {
+        targetExtensions = [arg2, ...targetExtensions];
     }
-    const targetFiles: string[] = fs.readdirSync(dir).filter(
-        f => isNonEmptyArray(targetExtensions) 
-            ? true // get all files in dir, regardless of extension
-            : stringEndsWithAnyOf(f, targetExtensions, RegExpFlagsEnum.IGNORE_CASE)
+    const targetFiles: string[] = [];
+    try {
+        validate.existingDirectoryArgument(source, {dir});
+        validate.arrayArgument(source, {targetExtensions, isNonEmptyString}, true);
+        // ensure all target extensions start with period
+        for (let i = 0; i < targetExtensions.length; i++) {
+            const ext = targetExtensions[i];
+            if (!ext.startsWith('.')) { 
+                targetExtensions[i] = `.${ext}`;
+            }
+        }
+        targetFiles.push(...fs.readdirSync(dir)
+            .filter(f => isNonEmptyArray(targetExtensions) 
+                ? true // get all files in dir, regardless of extension
+                : stringEndsWithAnyOf(f, targetExtensions, RegExpFlagsEnum.IGNORE_CASE)
+            ).map(f => basenameOnly ? f : path.join(dir, f))
+        );
+    } catch (error: any) {
         
-    ).map(file => path.join(dir, file));
+    }
     return targetFiles;
 }
 
@@ -644,7 +690,7 @@ export async function getOneToManyDictionary(
 }
 
 /**
- * @deprecated -> use {@link getOneToManyDictionary}
+ * @deprecated `use `{@link getOneToManyDictionary}
  * @param filePath `string`
  * @param sheetName `string`
  * @param keyColumn `string`

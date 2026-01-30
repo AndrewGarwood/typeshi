@@ -119,10 +119,21 @@ export declare function getIndexedColumnValues(arg1: string | FileData | Record<
 export declare function handleFileArgument(arg1: string | FileData | Record<string, any>[], invocationSource: string, requiredHeaders?: string[], sheetName?: string): Promise<Record<string, any>[]>;
 /**
  * @param dir `string` path to target directory
- * @param targetExtensions `string[] optional` - array of file extensions to filter files by.
+ * @param basenameOnly `boolean (optional)` `default` = `false`
+ * - `if true`,  returned array elements are of form: `path.basename(file)`
+ * - `if false`, returned array elements are of form: `path.join(dir, file)`
+ * @param targetExtensions `string[] (optional)` - array of file extensions to filter files by.
  * - `If` not provided, all files in the directory will be returned.
  * - `If` provided, only files with extensions matching the array will be returned.
- * @returns **`targetFiles`** `string[]` array of full file paths
+ * @returns **`targetFiles`** `string[]` array of file paths
+ */
+export declare function getDirectoryFiles(dir: string, basenameOnly: boolean, ...targetExtensions: string[]): string[];
+/**
+ * @param dir `string` path to target directory
+ * @param targetExtensions `string[] (optional)` - array of file extensions to filter files by.
+ * - `If` not provided, all files in the directory will be returned.
+ * - `If` provided, only files with extensions matching the array will be returned.
+ * @returns **`targetFiles`** `string[]` array of `full` file paths
  */
 export declare function getDirectoryFiles(dir: string, ...targetExtensions: string[]): string[];
 /**
@@ -136,7 +147,7 @@ export declare function getDirectoryFiles(dir: string, ...targetExtensions: stri
  */
 export declare function getOneToManyDictionary(dataSource: string | FileData | Record<string, any>[], keyColumn: string, valueColumn: string, keyOptions?: CleanStringOptions, valueOptions?: CleanStringOptions, sheetName?: string): Promise<Record<string, string[]>>;
 /**
- * @deprecated -> use {@link getOneToManyDictionary}
+ * @deprecated `use `{@link getOneToManyDictionary}
  * @param filePath `string`
  * @param sheetName `string`
  * @param keyColumn `string`
