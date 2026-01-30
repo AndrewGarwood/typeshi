@@ -109,8 +109,9 @@ function getDelimiterFromFilePath(filePath) {
 }
 /**
  * @param filePath `string`
- * @returns **`jsonData`** — `Record<string, any>`
- * - JSON data as an object
+ * @returns **`jsonData`** — `T extends Record<string, any>` - JSON data as an object
+ * @note returns empty object if error occurred while reading `filepath` or parsing json
+ * - use {@link readJsonSyncOrThrow} if throwing error is desired behavior
  */
 exports.readJsonSync = readJsonFileAsObject;
 /**

@@ -14,8 +14,9 @@ export declare function isFile(value: string): value is string;
 export declare function getDelimiterFromFilePath(filePath: string): DelimiterCharacterEnum | string;
 /**
  * @param filePath `string`
- * @returns **`jsonData`** — `Record<string, any>`
- * - JSON data as an object
+ * @returns **`jsonData`** — `T extends Record<string, any>` - JSON data as an object
+ * @note returns empty object if error occurred while reading `filepath` or parsing json
+ * - use {@link readJsonSyncOrThrow} if throwing error is desired behavior
  */
 export declare const readJsonSync: typeof readJsonFileAsObject;
 /**

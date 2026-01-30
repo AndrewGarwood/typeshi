@@ -101,23 +101,23 @@ function autoFormatLogsOnExit(filePaths) {
 /**
  * Formats a debug log file from JSON format to a more readable text format.
  * Removes the numeric keys and properly handles escape sequences.
- * @param inputFilePath `string` - path to the input log file (e.g., DEBUG.txt)
- * @param outputFilePath `string` - optional, path to the output formatted file.
- * If not provided, will use inputFilePath with '.FORMATTED' inserted before the extension.
+ * @param inputPath `string` - path to the input log file (e.g., DEBUG.txt)
+ * @param outputPath `string` - optional, path to the output formatted file.
+ * If not provided, will use inputPath with '.FORMATTED' inserted before the extension.
  * @returns `void`
  */
-function formatDebugLogFile(inputFilePath, outputFilePath) {
-    validate.existingPathArgument(`logging.formatDebugLogFile`, { inputFilePath });
+function formatDebugLogFile(inputPath, outputPath) {
+    validate.existingPathArgument(`logging.formatDebugLogFile`, { inputPath });
     // Generate output path if not provided
-    if (!outputFilePath) {
-        const parsedPath = node_path_1.default.parse(inputFilePath);
-        outputFilePath = node_path_1.default.join(parsedPath.dir, `${parsedPath.name}.FORMATTED${parsedPath.ext}`);
+    if (!outputPath) {
+        const parsedPath = node_path_1.default.parse(inputPath);
+        outputPath = node_path_1.default.join(parsedPath.dir, `${parsedPath.name}.FORMATTED${parsedPath.ext}`);
     }
     try {
-        const fileContent = fs.readFileSync(inputFilePath, 'utf-8');
+        const fileContent = fs.readFileSync(inputPath, 'utf-8');
         const formattedContent = formatLogContent(fileContent);
-        fs.writeFileSync(outputFilePath, formattedContent, { encoding: 'utf-8' });
-        // mlog.info(`[formatDebugLogFile()] Formatted log file saved to '${outputFilePath}'`);
+        fs.writeFileSync(outputPath, formattedContent, { encoding: 'utf-8' });
+        // mlog.info(`[formatDebugLogFile()] Formatted log file saved to '${outputPath}'`);
     }
     catch (error) {
         setupLog_1.typeshiLogger.error('[formatDebugLogFile()] Error formatting log file:', error);

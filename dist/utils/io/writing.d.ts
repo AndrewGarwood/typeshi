@@ -1,3 +1,7 @@
+/**
+ * @file src/utils/io/writing.ts
+ */
+import * as fs from "node:fs";
 import { WriteJsonOptions } from "./types";
 /**
  * Output JSON data to a file with `fs.writeFileSync` or `fs.appendFileSync`.
@@ -21,17 +25,7 @@ export declare function writeObjectToJsonSync(options: WriteJsonOptions): void;
  */
 export declare function writeObjectToJsonSync(data: Record<string, any> | string, filePath: string, indent?: number, enableOverwrite?: boolean): void;
 export declare const writeJsonSync: typeof writeObjectToJsonSync;
-/**
- * @param data `Record<string, any> | string` - JSON data to stringify
- * @param indent `number` `optional`, default=`0` - number of additional indents to add to each line
- * @param spaces `number` `optional`, default=`4`
- * @returns **`jsonString`** `string`
- */
-export declare function indentedStringify(data: Record<string, any> | string, indent?: number, spaces?: number): string;
-/**
- * @returns **`timestamp`** `string` = `(${MM}-${DD})_(${HH}.${mm}.${ss}.${ms})`
- */
-export declare function getFileNameTimestamp(): string;
+export declare const writeArraysToCsvSync: typeof writeListsToCsvSync;
 /**
  * @param listData `Record<string, Array<string>>` map col names to col values
  * @param outputPath `string`
@@ -39,6 +33,23 @@ export declare function getFileNameTimestamp(): string;
  * @param columnDelimiter `string` - optional, default=`''`
  */
 export declare function writeListsToCsvSync(listData: Record<string, Array<string>>, outputPath: string, delimiter?: string, columnDelimiter?: string): void;
+/**
+ * @param arr `T[]`
+ * @param outputPath `string`
+ * @param separator `string` `default` = `'\n'`
+ * @param options {@link fs.WriteFileOptions} `default` = `{ encoding: 'utf-8', flag: 'w' }`
+ * - use `flag: 'a'` to append rather than overwrite
+ */
+export declare function writeArrayToFileSync<T>(arr: T[], outputPath: string, separator?: string, options?: fs.WriteFileOptions): void;
+/**
+ * @consideration maybe it would be better to have the delimiter be an explicit param rather
+ * than implicitly determined by `outputPath`
+ * - can write to `tsv` by having `outputPath` end with `'.tsv'`
+ * @param rows `Record<string, any>[]` - array of objects to write to CSV
+ * @param outputPath `string` - path to the output CSV file.
+ * @returns **`void`**
+ */
+export declare function writeRowsToCsvSync(rows: Record<string, any>[], outputPath: string, headers?: string[]): void;
 /**
  * @TODO handle other file extensions
  * @param maxMB - Maximum size in MB to keep in the file, default is `5` -> 5MB.
@@ -57,11 +68,13 @@ export declare function clearFileSync(...filePaths: string[]): void;
  */
 export declare function clearFile(...filePaths: string[]): Promise<void>;
 /**
- * @consideration maybe it would be better to have the delimiter be an explicit param rather
- * than implicitly determined by `outputPath`
- * - can write to `tsv` by having `outputPath` end with `'.tsv'`
- * @param rows `Record<string, any>[]` - array of objects to write to CSV
- * @param outputPath `string` - path to the output CSV file.
- * @returns **`void`**
+ * @param data `Record<string, any> | string` - JSON data to stringify
+ * @param indent `number` `optional`, default=`0` - number of additional indents to add to each line
+ * @param spaces `number` `optional`, default=`4`
+ * @returns **`jsonString`** `string`
  */
-export declare function writeRowsToCsvSync(rows: Record<string, any>[], outputPath: string, headers?: string[]): void;
+export declare function indentedStringify(data: Record<string, any> | string, indent?: number, spaces?: number): string;
+/**
+ * @returns **`timestamp`** `string` = `(${MM}-${DD})_(${HH}.${mm}.${ss}.${ms})`
+ */
+export declare function getFileNameTimestamp(): string;

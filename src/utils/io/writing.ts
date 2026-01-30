@@ -1,17 +1,13 @@
 /**
  * @file src/utils/io/writing.ts
  */
-import * as fs from "fs";
+import * as fs from "node:fs";
 import { DELAY } from "../../config/env";
 import { typeshiLogger as mlog, INDENT_LOG_LINE as TAB } from "../../config/setupLog";
 import { coerceFileExtension, getDelimiterFromFilePath } from "./reading";
 import { DelimiterCharacterEnum, isWriteJsonOptions, WriteJsonOptions } from "./types";
-import { hasKeys, isEmptyArray, isNonEmptyString, isObject, isStringArray, } from "../typeValidation";
-import * as validate from "../argumentValidation";
-import { existsSync, writeFileSync } from "fs";
+import { isEmptyArray, isNonEmptyString, isObject, isStringArray } from "../typeValidation";
 import { getSourceString } from "./logging";
-
-
 
 
 /**
@@ -111,44 +107,8 @@ export function writeObjectToJsonSync(
 
 export const writeJsonSync = writeObjectToJsonSync;
 
-/**
- * @param data `Record<string, any> | string` - JSON data to stringify
- * @param indent `number` `optional`, default=`0` - number of additional indents to add to each line
- * @param spaces `number` `optional`, default=`4`
- * @returns **`jsonString`** `string`
- */
-export function indentedStringify(
-    data: Record<string, any> | string,
-    indent: number=0,
-    spaces: number=4
-): string {
-    if (!data) {
-        return '';
-    }
-    let jsonString = typeof data === 'string' 
-        ? data : JSON.stringify(data, null, spaces);
-    jsonString = jsonString
-        .split('\n')
-        .map(line => TAB + '\t'.repeat(indent) + line)
-        .join('')
-        .replace(/^\n\t. /, '').replace(/•/g, '');
-    return jsonString;
-}
 
-/**
- * @returns **`timestamp`** `string` = `(${MM}-${DD})_(${HH}.${mm}.${ss}.${ms})`
- */
-export function getFileNameTimestamp(): string {
-    const now = new Date();
-    const MM = String(now.getMonth() + 1).padStart(2, '0');
-    const DD = String(now.getDate()).padStart(2, '0');
-    const HH = String(now.getHours()).padStart(2, '0');
-    const mm = String(now.getMinutes()).padStart(2, '0');
-    const ss = String(now.getSeconds()).padStart(2, '0');
-    const ms = String(now.getMilliseconds()).padStart(3, '0');
-    return `(${MM}-${DD})_(${HH}.${mm}.${ss}.${ms})`
-}
-
+export const writeArraysToCsvSync = writeListsToCsvSync;
 /**
  * @param listData `Record<string, Array<string>>` map col names to col values
  * @param outputPath `string`
@@ -181,6 +141,69 @@ export function writeListsToCsvSync(
         } 
         mlog.info(`CSV file has been saved to ${outputPath}`);
     });
+}
+
+/**
+ * @param arr `T[]`
+ * @param outputPath `string` 
+ * @param separator `string` `default` = `'\n'`
+ * @param options {@link fs.WriteFileOptions} `default` = `{ encoding: 'utf-8', flag: 'w' }`
+ * - use `flag: 'a'` to append rather than overwrite
+ */
+export function writeArrayToFileSync<T>(
+    arr: T[],
+    outputPath: string,
+    separator: string = '\n',
+    options: fs.WriteFileOptions = { encoding: 'utf-8', flag: 'w' }
+): void {
+    const source = getSourceString(__filename, writeArrayToFileSync.name);
+    try {
+        const content = arr.map(el=>JSON.stringify(el)).join(separator);
+        fs.writeFileSync(outputPath, content, options);
+    } catch (error: any) {
+        mlog.error([`${source} Error writing array to file`,
+            `intended outputPath: '${outputPath}'`,
+            `caught error: ${error}`
+        ].join(TAB));
+    }
+    return;
+}
+
+/**
+ * @consideration maybe it would be better to have the delimiter be an explicit param rather
+ * than implicitly determined by `outputPath`
+ * - can write to `tsv` by having `outputPath` end with `'.tsv'`
+ * @param rows `Record<string, any>[]` - array of objects to write to CSV 
+ * @param outputPath `string` - path to the output CSV file.
+ * @returns **`void`**
+ */
+export function writeRowsToCsvSync(
+    rows: Record<string, any>[],
+    outputPath: string,
+    headers?: string[]
+): void {
+    const source = getSourceString(__filename, writeRowsToCsvSync.name);
+    try {
+        const delimiter = getDelimiterFromFilePath(outputPath);
+        if (!isStringArray(headers)) {
+            headers = Array.from(
+                new Set(rows.map(r=>Object.keys(r)).flat())
+            );
+        }
+        if (isEmptyArray(headers)) {
+            mlog.error([`${source} No headers found in rows, nothing to write.`,
+                `Intended outputPath: '${outputPath}'`,
+            ].join(TAB));
+            return;
+        }
+        const csvContent: string = [headers.join(delimiter)].concat(
+            rows.map(row => (headers ?? []).map(h => row[h] ?? '').join(delimiter))
+        ).join('\n');
+        fs.writeFileSync(outputPath, csvContent, { encoding: 'utf-8' });
+        mlog.info(`${source} file has been saved to '${outputPath}'`);
+    } catch (error: any) {
+        mlog.error(`${source} Error writing to CSV file`, error);
+    }
 }
 
 /**
@@ -247,18 +270,18 @@ export async function trimFile(maxMB: number=5, ...filePaths: string[]): Promise
  */
 export function clearFileSync(...filePaths: string[]): void {
     for (const filePath of filePaths) {
-        if (!filePath || !existsSync(filePath)) {
+        if (!filePath || !fs.existsSync(filePath)) {
             mlog.warn(`clearFileSync() Log file does not exist: ${filePath}`);
             continue;
         }
         try {
-            writeFileSync(filePath, '', { encoding: 'utf-8', flag: 'w' });
+            fs.writeFileSync(filePath, '', { encoding: 'utf-8', flag: 'w' });
         } catch (error: any) {
             if (error.code === 'EBUSY' || error.code === 'EMFILE') {
                 // File is busy, try again after a short delay
                 setTimeout(() => {
                     try {
-                        writeFileSync(filePath, '', { encoding: 'utf-8', flag: 'w' });
+                        fs.writeFileSync(filePath, '', { encoding: 'utf-8', flag: 'w' });
                     } catch (retryError) {
                         mlog.warn(`clearFileSync() Failed to clear file after retry: ${filePath}`, retryError);
                     }
@@ -276,7 +299,7 @@ export function clearFileSync(...filePaths: string[]): void {
  */
 export async function clearFile(...filePaths: string[]): Promise<void> {
     const promises = filePaths.map(async (filePath) => {
-        if (!filePath || !existsSync(filePath)) {
+        if (!filePath || !fs.existsSync(filePath)) {
             mlog.warn(`clearFile() Log file does not exist: ${filePath}`);
             return;
         }
@@ -284,7 +307,7 @@ export async function clearFile(...filePaths: string[]): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             const tryWrite = (attempt: number = 1) => {
                 try {
-                    writeFileSync(filePath, '', { encoding: 'utf-8', flag: 'w' });
+                    fs.writeFileSync(filePath, '', { encoding: 'utf-8', flag: 'w' });
                     resolve();
                 } catch (error: any) {
                     if ((error.code === 'EBUSY' || error.code === 'EMFILE') && attempt < 3) {
@@ -304,41 +327,39 @@ export async function clearFile(...filePaths: string[]): Promise<void> {
 }
 
 /**
- * @consideration maybe it would be better to have the delimiter be an explicit param rather
- * than implicitly determined by `outputPath`
- * - can write to `tsv` by having `outputPath` end with `'.tsv'`
- * @param rows `Record<string, any>[]` - array of objects to write to CSV 
- * @param outputPath `string` - path to the output CSV file.
- * @returns **`void`**
+ * @param data `Record<string, any> | string` - JSON data to stringify
+ * @param indent `number` `optional`, default=`0` - number of additional indents to add to each line
+ * @param spaces `number` `optional`, default=`4`
+ * @returns **`jsonString`** `string`
  */
-export function writeRowsToCsvSync(
-    rows: Record<string, any>[],
-    outputPath: string,
-    headers?: string[]
-): void {
-    const source = getSourceString(__filename, writeRowsToCsvSync.name);
-    validate.arrayArgument(source, {rows});
-    validate.stringArgument(source, {outputPath});
-    const delimiter = getDelimiterFromFilePath(outputPath);
-    if (!isStringArray(headers)) {
-        headers = Array.from(
-            new Set(rows.map(r=>Object.keys(r)).flat())
-        );
+export function indentedStringify(
+    data: Record<string, any> | string,
+    indent: number=0,
+    spaces: number=4
+): string {
+    if (!data) {
+        return '';
     }
-    if (isEmptyArray(headers)) {
-        mlog.error([`${source} No headers found in rows, nothing to write.`,
-            `Intended outputPath: '${outputPath}'`,
-        ].join(TAB));
-        return;
-    }
-    const csvContent: string = [headers.join(delimiter)].concat(
-        rows.map(row => headers.map(h => row[h] ?? '').join(delimiter))
-    ).join('\n');
-    try {
-        fs.writeFileSync(outputPath, csvContent, { encoding: 'utf-8' });
-        mlog.info(`${source} file has been saved to '${outputPath}'`);
-    } catch (e) {
-        mlog.error('[writeRowsToCsv()] Error writing to CSV file', e);
-        throw e;
-    }
+    let jsonString = typeof data === 'string' 
+        ? data : JSON.stringify(data, null, spaces);
+    jsonString = jsonString
+        .split('\n')
+        .map(line => TAB + '\t'.repeat(indent) + line)
+        .join('')
+        .replace(/^\n\t. /, '').replace(/•/g, '');
+    return jsonString;
+}
+
+/**
+ * @returns **`timestamp`** `string` = `(${MM}-${DD})_(${HH}.${mm}.${ss}.${ms})`
+ */
+export function getFileNameTimestamp(): string {
+    const now = new Date();
+    const MM = String(now.getMonth() + 1).padStart(2, '0');
+    const DD = String(now.getDate()).padStart(2, '0');
+    const HH = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    const ss = String(now.getSeconds()).padStart(2, '0');
+    const ms = String(now.getMilliseconds()).padStart(3, '0');
+    return `(${MM}-${DD})_(${HH}.${mm}.${ss}.${ms})`
 }

@@ -71,29 +71,29 @@ export function autoFormatLogsOnExit(
 /**
  * Formats a debug log file from JSON format to a more readable text format.
  * Removes the numeric keys and properly handles escape sequences.
- * @param inputFilePath `string` - path to the input log file (e.g., DEBUG.txt)
- * @param outputFilePath `string` - optional, path to the output formatted file. 
- * If not provided, will use inputFilePath with '.FORMATTED' inserted before the extension.
+ * @param inputPath `string` - path to the input log file (e.g., DEBUG.txt)
+ * @param outputPath `string` - optional, path to the output formatted file. 
+ * If not provided, will use inputPath with '.FORMATTED' inserted before the extension.
  * @returns `void`
  */
 export function formatDebugLogFile(
-    inputFilePath: string,
-    outputFilePath?: string
+    inputPath: string,
+    outputPath?: string
 ): void {
-    validate.existingPathArgument(`logging.formatDebugLogFile`, {inputFilePath});
+    validate.existingPathArgument(`logging.formatDebugLogFile`, {inputPath});
     // Generate output path if not provided
-    if (!outputFilePath) {
-        const parsedPath = path.parse(inputFilePath);
-        outputFilePath = path.join(
+    if (!outputPath) {
+        const parsedPath = path.parse(inputPath);
+        outputPath = path.join(
             parsedPath.dir, 
             `${parsedPath.name}.FORMATTED${parsedPath.ext}`
         );
     }
     try {
-        const fileContent = fs.readFileSync(inputFilePath, 'utf-8');
+        const fileContent = fs.readFileSync(inputPath, 'utf-8');
         const formattedContent = formatLogContent(fileContent);
-        fs.writeFileSync(outputFilePath, formattedContent, { encoding: 'utf-8' });
-        // mlog.info(`[formatDebugLogFile()] Formatted log file saved to '${outputFilePath}'`);
+        fs.writeFileSync(outputPath, formattedContent, { encoding: 'utf-8' });
+        // mlog.info(`[formatDebugLogFile()] Formatted log file saved to '${outputPath}'`);
     } catch (error) {
         mlog.error('[formatDebugLogFile()] Error formatting log file:', error);
         throw error;

@@ -33,27 +33,26 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.writeJsonSync = void 0;
+exports.writeArraysToCsvSync = exports.writeJsonSync = void 0;
 exports.writeObjectToJsonSync = writeObjectToJsonSync;
-exports.indentedStringify = indentedStringify;
-exports.getFileNameTimestamp = getFileNameTimestamp;
 exports.writeListsToCsvSync = writeListsToCsvSync;
+exports.writeArrayToFileSync = writeArrayToFileSync;
+exports.writeRowsToCsvSync = writeRowsToCsvSync;
 exports.trimFileSync = trimFileSync;
 exports.trimFile = trimFile;
 exports.clearFileSync = clearFileSync;
 exports.clearFile = clearFile;
-exports.writeRowsToCsvSync = writeRowsToCsvSync;
+exports.indentedStringify = indentedStringify;
+exports.getFileNameTimestamp = getFileNameTimestamp;
 /**
  * @file src/utils/io/writing.ts
  */
-const fs = __importStar(require("fs"));
+const fs = __importStar(require("node:fs"));
 const env_1 = require("../../config/env");
 const setupLog_1 = require("../../config/setupLog");
 const reading_1 = require("./reading");
 const types_1 = require("./types");
 const typeValidation_1 = require("../typeValidation");
-const validate = __importStar(require("../argumentValidation"));
-const fs_1 = require("fs");
 const logging_1 = require("./logging");
 function writeObjectToJsonSync(
 /** {@link WriteJsonOptions} `| Record<string, any> | string`, */
@@ -115,38 +114,7 @@ arg1, filePath, indent = 4, enableOverwrite = true) {
     }
 }
 exports.writeJsonSync = writeObjectToJsonSync;
-/**
- * @param data `Record<string, any> | string` - JSON data to stringify
- * @param indent `number` `optional`, default=`0` - number of additional indents to add to each line
- * @param spaces `number` `optional`, default=`4`
- * @returns **`jsonString`** `string`
- */
-function indentedStringify(data, indent = 0, spaces = 4) {
-    if (!data) {
-        return '';
-    }
-    let jsonString = typeof data === 'string'
-        ? data : JSON.stringify(data, null, spaces);
-    jsonString = jsonString
-        .split('\n')
-        .map(line => setupLog_1.INDENT_LOG_LINE + '\t'.repeat(indent) + line)
-        .join('')
-        .replace(/^\n\t. /, '').replace(/•/g, '');
-    return jsonString;
-}
-/**
- * @returns **`timestamp`** `string` = `(${MM}-${DD})_(${HH}.${mm}.${ss}.${ms})`
- */
-function getFileNameTimestamp() {
-    const now = new Date();
-    const MM = String(now.getMonth() + 1).padStart(2, '0');
-    const DD = String(now.getDate()).padStart(2, '0');
-    const HH = String(now.getHours()).padStart(2, '0');
-    const mm = String(now.getMinutes()).padStart(2, '0');
-    const ss = String(now.getSeconds()).padStart(2, '0');
-    const ms = String(now.getMilliseconds()).padStart(3, '0');
-    return `(${MM}-${DD})_(${HH}.${mm}.${ss}.${ms})`;
-}
+exports.writeArraysToCsvSync = writeListsToCsvSync;
 /**
  * @param listData `Record<string, Array<string>>` map col names to col values
  * @param outputPath `string`
@@ -172,6 +140,56 @@ function writeListsToCsvSync(listData, outputPath, delimiter = types_1.Delimiter
         }
         setupLog_1.typeshiLogger.info(`CSV file has been saved to ${outputPath}`);
     });
+}
+/**
+ * @param arr `T[]`
+ * @param outputPath `string`
+ * @param separator `string` `default` = `'\n'`
+ * @param options {@link fs.WriteFileOptions} `default` = `{ encoding: 'utf-8', flag: 'w' }`
+ * - use `flag: 'a'` to append rather than overwrite
+ */
+function writeArrayToFileSync(arr, outputPath, separator = '\n', options = { encoding: 'utf-8', flag: 'w' }) {
+    const source = (0, logging_1.getSourceString)(__filename, writeArrayToFileSync.name);
+    try {
+        const content = arr.map(el => JSON.stringify(el)).join(separator);
+        fs.writeFileSync(outputPath, content, options);
+    }
+    catch (error) {
+        setupLog_1.typeshiLogger.error([`${source} Error writing array to file`,
+            `intended outputPath: '${outputPath}'`,
+            `caught error: ${error}`
+        ].join(setupLog_1.INDENT_LOG_LINE));
+    }
+    return;
+}
+/**
+ * @consideration maybe it would be better to have the delimiter be an explicit param rather
+ * than implicitly determined by `outputPath`
+ * - can write to `tsv` by having `outputPath` end with `'.tsv'`
+ * @param rows `Record<string, any>[]` - array of objects to write to CSV
+ * @param outputPath `string` - path to the output CSV file.
+ * @returns **`void`**
+ */
+function writeRowsToCsvSync(rows, outputPath, headers) {
+    const source = (0, logging_1.getSourceString)(__filename, writeRowsToCsvSync.name);
+    try {
+        const delimiter = (0, reading_1.getDelimiterFromFilePath)(outputPath);
+        if (!(0, typeValidation_1.isStringArray)(headers)) {
+            headers = Array.from(new Set(rows.map(r => Object.keys(r)).flat()));
+        }
+        if ((0, typeValidation_1.isEmptyArray)(headers)) {
+            setupLog_1.typeshiLogger.error([`${source} No headers found in rows, nothing to write.`,
+                `Intended outputPath: '${outputPath}'`,
+            ].join(setupLog_1.INDENT_LOG_LINE));
+            return;
+        }
+        const csvContent = [headers.join(delimiter)].concat(rows.map(row => (headers ?? []).map(h => row[h] ?? '').join(delimiter))).join('\n');
+        fs.writeFileSync(outputPath, csvContent, { encoding: 'utf-8' });
+        setupLog_1.typeshiLogger.info(`${source} file has been saved to '${outputPath}'`);
+    }
+    catch (error) {
+        setupLog_1.typeshiLogger.error(`${source} Error writing to CSV file`, error);
+    }
 }
 /**
  * @TODO handle other file extensions
@@ -241,19 +259,19 @@ async function trimFile(maxMB = 5, ...filePaths) {
  */
 function clearFileSync(...filePaths) {
     for (const filePath of filePaths) {
-        if (!filePath || !(0, fs_1.existsSync)(filePath)) {
+        if (!filePath || !fs.existsSync(filePath)) {
             setupLog_1.typeshiLogger.warn(`clearFileSync() Log file does not exist: ${filePath}`);
             continue;
         }
         try {
-            (0, fs_1.writeFileSync)(filePath, '', { encoding: 'utf-8', flag: 'w' });
+            fs.writeFileSync(filePath, '', { encoding: 'utf-8', flag: 'w' });
         }
         catch (error) {
             if (error.code === 'EBUSY' || error.code === 'EMFILE') {
                 // File is busy, try again after a short delay
                 setTimeout(() => {
                     try {
-                        (0, fs_1.writeFileSync)(filePath, '', { encoding: 'utf-8', flag: 'w' });
+                        fs.writeFileSync(filePath, '', { encoding: 'utf-8', flag: 'w' });
                     }
                     catch (retryError) {
                         setupLog_1.typeshiLogger.warn(`clearFileSync() Failed to clear file after retry: ${filePath}`, retryError);
@@ -272,14 +290,14 @@ function clearFileSync(...filePaths) {
  */
 async function clearFile(...filePaths) {
     const promises = filePaths.map(async (filePath) => {
-        if (!filePath || !(0, fs_1.existsSync)(filePath)) {
+        if (!filePath || !fs.existsSync(filePath)) {
             setupLog_1.typeshiLogger.warn(`clearFile() Log file does not exist: ${filePath}`);
             return;
         }
         return new Promise((resolve, reject) => {
             const tryWrite = (attempt = 1) => {
                 try {
-                    (0, fs_1.writeFileSync)(filePath, '', { encoding: 'utf-8', flag: 'w' });
+                    fs.writeFileSync(filePath, '', { encoding: 'utf-8', flag: 'w' });
                     resolve();
                 }
                 catch (error) {
@@ -299,34 +317,34 @@ async function clearFile(...filePaths) {
     await (0, env_1.DELAY)(1000, ` > [clearFile()] Releasing file handles...`);
 }
 /**
- * @consideration maybe it would be better to have the delimiter be an explicit param rather
- * than implicitly determined by `outputPath`
- * - can write to `tsv` by having `outputPath` end with `'.tsv'`
- * @param rows `Record<string, any>[]` - array of objects to write to CSV
- * @param outputPath `string` - path to the output CSV file.
- * @returns **`void`**
+ * @param data `Record<string, any> | string` - JSON data to stringify
+ * @param indent `number` `optional`, default=`0` - number of additional indents to add to each line
+ * @param spaces `number` `optional`, default=`4`
+ * @returns **`jsonString`** `string`
  */
-function writeRowsToCsvSync(rows, outputPath, headers) {
-    const source = (0, logging_1.getSourceString)(__filename, writeRowsToCsvSync.name);
-    validate.arrayArgument(source, { rows });
-    validate.stringArgument(source, { outputPath });
-    const delimiter = (0, reading_1.getDelimiterFromFilePath)(outputPath);
-    if (!(0, typeValidation_1.isStringArray)(headers)) {
-        headers = Array.from(new Set(rows.map(r => Object.keys(r)).flat()));
+function indentedStringify(data, indent = 0, spaces = 4) {
+    if (!data) {
+        return '';
     }
-    if ((0, typeValidation_1.isEmptyArray)(headers)) {
-        setupLog_1.typeshiLogger.error([`${source} No headers found in rows, nothing to write.`,
-            `Intended outputPath: '${outputPath}'`,
-        ].join(setupLog_1.INDENT_LOG_LINE));
-        return;
-    }
-    const csvContent = [headers.join(delimiter)].concat(rows.map(row => headers.map(h => row[h] ?? '').join(delimiter))).join('\n');
-    try {
-        fs.writeFileSync(outputPath, csvContent, { encoding: 'utf-8' });
-        setupLog_1.typeshiLogger.info(`${source} file has been saved to '${outputPath}'`);
-    }
-    catch (e) {
-        setupLog_1.typeshiLogger.error('[writeRowsToCsv()] Error writing to CSV file', e);
-        throw e;
-    }
+    let jsonString = typeof data === 'string'
+        ? data : JSON.stringify(data, null, spaces);
+    jsonString = jsonString
+        .split('\n')
+        .map(line => setupLog_1.INDENT_LOG_LINE + '\t'.repeat(indent) + line)
+        .join('')
+        .replace(/^\n\t. /, '').replace(/•/g, '');
+    return jsonString;
+}
+/**
+ * @returns **`timestamp`** `string` = `(${MM}-${DD})_(${HH}.${mm}.${ss}.${ms})`
+ */
+function getFileNameTimestamp() {
+    const now = new Date();
+    const MM = String(now.getMonth() + 1).padStart(2, '0');
+    const DD = String(now.getDate()).padStart(2, '0');
+    const HH = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    const ss = String(now.getSeconds()).padStart(2, '0');
+    const ms = String(now.getMilliseconds()).padStart(3, '0');
+    return `(${MM}-${DD})_(${HH}.${mm}.${ss}.${ms})`;
 }

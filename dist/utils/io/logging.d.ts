@@ -19,12 +19,12 @@ export declare function autoFormatLogsOnExit(filePaths?: string[]): void;
 /**
  * Formats a debug log file from JSON format to a more readable text format.
  * Removes the numeric keys and properly handles escape sequences.
- * @param inputFilePath `string` - path to the input log file (e.g., DEBUG.txt)
- * @param outputFilePath `string` - optional, path to the output formatted file.
- * If not provided, will use inputFilePath with '.FORMATTED' inserted before the extension.
+ * @param inputPath `string` - path to the input log file (e.g., DEBUG.txt)
+ * @param outputPath `string` - optional, path to the output formatted file.
+ * If not provided, will use inputPath with '.FORMATTED' inserted before the extension.
  * @returns `void`
  */
-export declare function formatDebugLogFile(inputFilePath: string, outputFilePath?: string): void;
+export declare function formatDebugLogFile(inputPath: string, outputPath?: string): void;
 /**
  * Formats all debug log files in the log directory.
  * Looks for .txt files and creates .FORMATTED.txt versions.
