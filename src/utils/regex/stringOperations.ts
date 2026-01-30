@@ -206,14 +206,14 @@ export function equivalentAlphanumericStrings(
     return false;
 }
 
-export class StringOperation {
+export namespace Str {
     /**
      * @param s `string`
      * @param prefixes `string | string[] | RegExp` possible starting string(s).
      * @param flags `RegExpFlagsEnum[] (Optional)` regex flags to use when creating the {@link RegExp} object. see {@link RegExpFlagsEnum}
      * @returns **`true`** if the string starts with any of the prefixes, **`false`** otherwise.
      */
-    static startsWith = stringStartsWithAnyOf;
+    export const startsWith = stringStartsWithAnyOf;
     
     /**
      * Checks if a string ends with any of the specified suffixes.
@@ -222,14 +222,14 @@ export class StringOperation {
      * @param flags `RegExpFlagsEnum[] (Optional)` regex flags to use when creating the {@link RegExp} object. see {@link RegExpFlagsEnum}
      * @returns **`true`** if the string ends with any of the suffixes, **`false`** otherwise.
      */
-    static endsWith = stringEndsWithAnyOf;
+    export const endsWith = stringEndsWithAnyOf;
     /**
      * @param s `string` to check.
      * @param substrings `string | string[] | RegExp`.
      * @param flags `RegExpFlagsEnum[] (Optional)` regex flags to use when creating the {@link RegExp} object. see {@link RegExpFlagsEnum}
      * @returns **`true`** if the string contains any of the substrings, **`false`** otherwise.
      */
-    static contains = stringContainsAnyOf;
+    export const contains = stringContainsAnyOf;
     /**
      * Ignores case by default:
      * - converts `s1` & `s2` to lowercase and removes all non-alphanumeric characters from both strings,
@@ -242,7 +242,7 @@ export class StringOperation {
      * - **`true`** `if` the two alphanumeric strings are equivalent, 
      * - **`false`** `otherwise`.
      */
-    static equivalentAlphanumeric = equivalentAlphanumericStrings;
+    export const equivalentAlphanumeric = equivalentAlphanumericStrings;
 }
 
 /** for simple regular expressions... 
