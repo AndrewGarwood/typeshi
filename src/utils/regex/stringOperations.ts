@@ -53,8 +53,11 @@ export function stringEndsWithAnyOf(
     }
 
     if (!regex) {
-        mlog.error('endsWithAnyOf() Invalid suffixes type. returning false.', 
-            'Expected string, array of strings, or RegExp but received:', typeof suffixes, suffixes);
+        mlog.error('[endsWithAnyOf()] Invalid suffixes type, returning false.', 
+            'Expected string, array of strings, or RegExp but received:', 
+            typeof suffixes, 
+            JSON.stringify(suffixes)
+        );
         return false; // Invalid suffixes type
     }
     return regex.test(s);

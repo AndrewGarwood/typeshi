@@ -51,7 +51,7 @@ function stringEndsWithAnyOf(s, suffixes, ...flags) {
             : new RegExp(suffixes.source + '\\s*$', flagString));
     }
     if (!regex) {
-        config_1.typeshiLogger.error('endsWithAnyOf() Invalid suffixes type. returning false.', 'Expected string, array of strings, or RegExp but received:', typeof suffixes, suffixes);
+        config_1.typeshiLogger.error('[endsWithAnyOf()] Invalid suffixes type, returning false.', 'Expected string, array of strings, or RegExp but received:', typeof suffixes, JSON.stringify(suffixes));
         return false; // Invalid suffixes type
     }
     return regex.test(s);

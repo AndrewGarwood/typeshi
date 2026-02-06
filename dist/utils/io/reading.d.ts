@@ -118,6 +118,7 @@ export declare function getIndexedColumnValues(arg1: string | FileData | Record<
  */
 export declare function handleFileArgument(arg1: string | FileData | Record<string, any>[], invocationSource: string, requiredHeaders?: string[], sheetName?: string): Promise<Record<string, any>[]>;
 /**
+ * `sync`
  * @param dir `string` path to target directory
  * @param basenameOnly `boolean (optional)` `default` = `false`
  * - `if true`,  returned array elements are of form: `path.basename(file)`
@@ -129,6 +130,7 @@ export declare function handleFileArgument(arg1: string | FileData | Record<stri
  */
 export declare function getDirectoryFiles(dir: string, basenameOnly: boolean, ...targetExtensions: string[]): string[];
 /**
+ * `sync`
  * @param dir `string` path to target directory
  * @param targetExtensions `string[] (optional)` - array of file extensions to filter files by.
  * - `If` not provided, all files in the directory will be returned.

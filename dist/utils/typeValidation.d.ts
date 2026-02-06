@@ -60,7 +60,7 @@ export declare function isIntegerArray(value: any, requireNonNegative?: boolean,
  * @consideration add param to allow for empty strings?
  * @param value `any`
  * @param requireNonEmpty `boolean` `default = true`
- * - `if` `true` then `value` must be array with at least 1 element
+ * - `if` `true` then `value` must be array with at least 1 element and every element `isNonEmptyString`
  * - `if` `false` then `value` can be empty array
  * @returns **`isStringArray`** `boolean` = `value is Array<string> & { length: number }`
  */

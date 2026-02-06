@@ -571,6 +571,7 @@ async function handleFileArgument(arg1, invocationSource, requiredHeaders = [], 
     return rows;
 }
 /**
+ * `sync`
  * @param dir `string` path to target directory
  * @param arg2 `boolean (optional)` `default` = `false`
  * - `if true`,  returned array elements are of form: `path.basename(file)`
@@ -602,10 +603,18 @@ function getDirectoryFiles(dir, arg2, ...targetExtensions) {
         }
         targetFiles.push(...fs_1.default.readdirSync(dir)
             .filter(f => (0, typeValidation_1.isNonEmptyArray)(targetExtensions)
-            ? true // get all files in dir, regardless of extension
-            : (0, regex_1.stringEndsWithAnyOf)(f, targetExtensions, regex_1.RegExpFlagsEnum.IGNORE_CASE)).map(f => basenameOnly ? f : node_path_1.default.join(dir, f)));
+            ? (0, regex_1.stringEndsWithAnyOf)(f, targetExtensions, regex_1.RegExpFlagsEnum.IGNORE_CASE)
+            : true // get all files in dir, regardless of extension
+        ).map(f => basenameOnly ? f : node_path_1.default.join(dir, f)));
     }
     catch (error) {
+        config_1.typeshiLogger.error([`${source} Error retrieving directory files, returning empty array`,
+            `             dir: '${dir}'`,
+            `    basenameOnly: ${basenameOnly}`,
+            `targetExtensions: ${JSON.stringify(targetExtensions)}`,
+            `    caught error: ${error}`
+        ].join(config_1.INDENT_LOG_LINE));
+        return [];
     }
     return targetFiles;
 }

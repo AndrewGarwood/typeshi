@@ -580,6 +580,7 @@ export async function handleFileArgument(
 // overloads for backwards compatibility (I hope)
 
 /**
+ * `sync`
  * @param dir `string` path to target directory
  * @param basenameOnly `boolean (optional)` `default` = `false`
  * - `if true`,  returned array elements are of form: `path.basename(file)`
@@ -596,6 +597,7 @@ export function getDirectoryFiles(
 ): string[]
 
 /**
+ * `sync`
  * @param dir `string` path to target directory
  * @param targetExtensions `string[] (optional)` - array of file extensions to filter files by.
  * - `If` not provided, all files in the directory will be returned.
@@ -608,6 +610,7 @@ export function getDirectoryFiles(
 ): string[]
 
 /**
+ * `sync`
  * @param dir `string` path to target directory
  * @param arg2 `boolean (optional)` `default` = `false`
  * - `if true`,  returned array elements are of form: `path.basename(file)`
@@ -642,12 +645,18 @@ export function getDirectoryFiles(
         }
         targetFiles.push(...fs.readdirSync(dir)
             .filter(f => isNonEmptyArray(targetExtensions) 
-                ? true // get all files in dir, regardless of extension
-                : stringEndsWithAnyOf(f, targetExtensions, RegExpFlagsEnum.IGNORE_CASE)
+                ? stringEndsWithAnyOf(f, targetExtensions, RegExpFlagsEnum.IGNORE_CASE)
+                : true // get all files in dir, regardless of extension
             ).map(f => basenameOnly ? f : path.join(dir, f))
         );
     } catch (error: any) {
-        
+        mlog.error([`${source} Error retrieving directory files, returning empty array`,
+            `             dir: '${dir}'`,
+            `    basenameOnly: ${basenameOnly}`,
+            `targetExtensions: ${JSON.stringify(targetExtensions)}`,
+            `    caught error: ${error}`
+        ].join(TAB));
+        return [];
     }
     return targetFiles;
 }
