@@ -646,7 +646,7 @@ export function getDirectoryFiles(
         targetFiles.push(...fs.readdirSync(dir)
             .filter(f => isNonEmptyArray(targetExtensions) 
                 ? stringEndsWithAnyOf(f, targetExtensions, RegExpFlagsEnum.IGNORE_CASE)
-                : true // get all files in dir, regardless of extension
+                : fs.statSync(path.join(dir, f)).isFile() // get all files in dir, regardless of extension
             ).map(f => basenameOnly ? f : path.join(dir, f))
         );
     } catch (error: any) {

@@ -604,7 +604,7 @@ function getDirectoryFiles(dir, arg2, ...targetExtensions) {
         targetFiles.push(...fs_1.default.readdirSync(dir)
             .filter(f => (0, typeValidation_1.isNonEmptyArray)(targetExtensions)
             ? (0, regex_1.stringEndsWithAnyOf)(f, targetExtensions, regex_1.RegExpFlagsEnum.IGNORE_CASE)
-            : true // get all files in dir, regardless of extension
+            : fs_1.default.statSync(node_path_1.default.join(dir, f)).isFile() // get all files in dir, regardless of extension
         ).map(f => basenameOnly ? f : node_path_1.default.join(dir, f)));
     }
     catch (error) {
