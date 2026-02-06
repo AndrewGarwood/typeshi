@@ -9,6 +9,7 @@ exports.isNodeStructure = isNodeStructure;
 exports.isNodeLeaves = isNodeLeaves;
 exports.isWriteJsonOptions = isWriteJsonOptions;
 exports.isFileData = isFileData;
+exports.isDirectoryFileOptions = isDirectoryFileOptions;
 const typeValidation_1 = require("../../typeValidation");
 /**
  * @param value `any`
@@ -36,26 +37,21 @@ function isRowDictionary(value) {
             && typeof value[key] === 'object' && !Array.isArray(value[key])));
 }
 function isNodeStructure(value) {
-    return (value && typeof value === 'object'
-        && !Array.isArray(value)
-        && Object.keys(value).length > 0
-        && Object.entries(value).every(([key, value]) => typeof key === 'string'
-            && (isNodeStructure(value) || isNodeLeaves(value))));
+    const candidate = value;
+    return ((0, typeValidation_1.isObject)(candidate)
+        && Object.entries(candidate).every(([k, v]) => (0, typeValidation_1.isNonEmptyString)(k) && (isNodeLeaves(v) || isNodeStructure(v))));
 }
 function isNodeLeaves(value) {
     return ((Array.isArray(value) && value.every(v => typeof v === 'number'))
         || isRowDictionary(value));
 }
 function isWriteJsonOptions(value) {
-    return (value && typeof value === 'object'
-        && !Array.isArray(value)
-        && value.data !== undefined
-        && (typeof value.data === 'object' || typeof value.data === 'string')
-        && (0, typeValidation_1.isNonEmptyString)(value.filePath)
-        && (value.indent === undefined
-            || (typeof value.indent === 'number' && value.indent >= 0))
-        && (value.enableOverwrite === undefined
-            || typeof value.enableOverwrite === 'boolean'));
+    const candidate = value;
+    return ((0, typeValidation_1.isObject)(candidate)
+        && (typeof candidate.data === 'string' || (0, typeValidation_1.isObject)(candidate.data))
+        && (0, typeValidation_1.isNonEmptyString)(candidate.filePath)
+        && typeValidation_1.isUndefinedOr.positiveInteger(candidate.indent)
+        && typeValidation_1.isUndefinedOr.boolean(candidate.enableOverwrite));
 }
 /**
  * @consideration `FILE_NAME_WITH_EXTENSION_PATTERN = /^[^/\\:*?"<>|]+(\.[^/\\:*?"<>|]+)$/`
@@ -67,9 +63,15 @@ function isWriteJsonOptions(value) {
  * - **`false`** `otherwise`.
  */
 function isFileData(value) {
-    return (value && typeof value === 'object'
-        && (0, typeValidation_1.hasKeys)(value, ['fileName', 'fileContent'])
-        && (0, typeValidation_1.isNonEmptyString)(value.fileName)
-        // && fileNamePattern.test(value.fileName)
-        && (0, typeValidation_1.isNonEmptyString)(value.fileContent));
+    const candidate = value;
+    return ((0, typeValidation_1.isObject)(candidate)
+        && (0, typeValidation_1.isNonEmptyString)(candidate.fileName)
+        && (0, typeValidation_1.isNonEmptyString)(candidate.fileContent));
+}
+function isDirectoryFileOptions(value) {
+    const candidate = value;
+    return ((0, typeValidation_1.isObject)(candidate, false)
+        && typeValidation_1.isOptional.stringArray(candidate.targetExtensions)
+        && typeValidation_1.isOptional.boolean(candidate.basenameOnly)
+        && typeValidation_1.isOptional.boolean(candidate.recursive));
 }

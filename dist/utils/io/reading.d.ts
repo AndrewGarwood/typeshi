@@ -1,5 +1,5 @@
 import { StringCaseOptions, StringPadOptions, StringStripOptions, CleanStringOptions } from "../regex";
-import { FileData, FileExtension } from "./types/Io";
+import { DirectoryFileOptions, FileData, FileExtension } from "./types/Io";
 import { DelimiterCharacterEnum } from "./types";
 /** checks if `pathString (value)` points to an existing directory */
 export declare function isDirectory(value: any): value is string;
@@ -124,8 +124,8 @@ export declare function handleFileArgument(arg1: string | FileData | Record<stri
  * - `if true`,  returned array elements are of form: `path.basename(file)`
  * - `if false`, returned array elements are of form: `path.join(dir, file)`
  * @param targetExtensions `string[] (optional)` - array of file extensions to filter files by.
- * - `If` not provided, all files in the directory will be returned.
- * - `If` provided, only files with extensions matching the array will be returned.
+ * - `if undefined`, all files in the directory will be returned.
+ * - `if defined`, only files with extensions matching the array will be returned.
  * @returns **`targetFiles`** `string[]` array of file paths
  */
 export declare function getDirectoryFiles(dir: string, basenameOnly: boolean, ...targetExtensions: string[]): string[];
@@ -133,11 +133,28 @@ export declare function getDirectoryFiles(dir: string, basenameOnly: boolean, ..
  * `sync`
  * @param dir `string` path to target directory
  * @param targetExtensions `string[] (optional)` - array of file extensions to filter files by.
- * - `If` not provided, all files in the directory will be returned.
- * - `If` provided, only files with extensions matching the array will be returned.
+ * - `if undefined`, all files in the directory will be returned.
+ * - `if defined`, only files with extensions matching the array will be returned.
  * @returns **`targetFiles`** `string[]` array of `full` file paths
  */
 export declare function getDirectoryFiles(dir: string, ...targetExtensions: string[]): string[];
+/**
+ * `sync`
+ * @param dir `string` path to target directory
+ * @param options {@link DirectoryFileOptions}
+ * = `{ basenameOnly?: boolean, recursive?: boolean, targetExtensions?: string[] }`
+ * @param options.basenameOnly `boolean (optional)` `default` = `false`
+ * - `if true`,  returned array elements are of form: `path.basename(file)`
+ * - `if false`, returned array elements are of form: `path.join(dir, file)`
+ * @param options.recursive `boolean (optional)` `default` = `false`
+ * - `true` - get files from `dir` and all of its subdirectories
+ * - `false` - only get files from `dir` (i.e. direct descendants of `dir`)
+ * @param options.targetExtensions `string[] (optional)` - array of file extensions to filter files by.
+ * - `if undefined`, all files in the directory will be returned.
+ * - `if defined`, only files with extensions matching the array will be returned.
+ * @returns **`targetFiles`** `string[]` array of file paths
+ */
+export declare function getDirectoryFiles(dir: string, options: DirectoryFileOptions): string[];
 /**
  * @param dataSource `string | FileData | Record<string, any>[]`
  * @param keyColumn `string`

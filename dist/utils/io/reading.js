@@ -573,22 +573,28 @@ async function handleFileArgument(arg1, invocationSource, requiredHeaders = [], 
 /**
  * `sync`
  * @param dir `string` path to target directory
- * @param arg2 `boolean (optional)` `default` = `false`
+ * @param arg2 `boolean (optional)` (`basenameOnly`) `default` = `false`
  * - `if true`,  returned array elements are of form: `path.basename(file)`
  * - `if false`, returned array elements are of form: `path.join(dir, file)`
  * @param targetExtensions `string[] (optional)` - array of file extensions to filter files by.
- * - `If` not provided, all files in the directory will be returned.
- * - `If` provided, only files with extensions matching the array will be returned.
+ * - `if undefined`, all files in the directory will be returned.
+ * - `if defined` provided, only files with extensions matching the array will be returned.
  * @returns **`targetFiles`** `string[]` array of file paths
  */
 function getDirectoryFiles(dir, arg2, ...targetExtensions) {
     const source = (0, logging_1.getSourceString)(__filename, getDirectoryFiles.name);
     let basenameOnly = false;
+    let recursive = false;
     if ((0, typeValidation_1.isBoolean)(arg2)) {
         basenameOnly = arg2;
     }
     else if ((0, typeValidation_1.isNonEmptyString)(arg2)) {
         targetExtensions = [arg2, ...targetExtensions];
+    }
+    else if ((0, types_1.isDirectoryFileOptions)(arg2)) {
+        basenameOnly = arg2.basenameOnly ?? basenameOnly;
+        targetExtensions = arg2.targetExtensions ?? [];
+        recursive = arg2.recursive ?? false;
     }
     const targetFiles = [];
     try {
@@ -601,11 +607,23 @@ function getDirectoryFiles(dir, arg2, ...targetExtensions) {
                 targetExtensions[i] = `.${ext}`;
             }
         }
-        targetFiles.push(...fs_1.default.readdirSync(dir)
+        const dirContent = fs_1.default.readdirSync(dir);
+        targetFiles.push(...dirContent
             .filter(f => (0, typeValidation_1.isNonEmptyArray)(targetExtensions)
             ? (0, regex_1.stringEndsWithAnyOf)(f, targetExtensions, regex_1.RegExpFlagsEnum.IGNORE_CASE)
             : fs_1.default.statSync(node_path_1.default.join(dir, f)).isFile() // get all files in dir, regardless of extension
         ).map(f => basenameOnly ? f : node_path_1.default.join(dir, f)));
+        if (recursive) {
+            const childDirs = dirContent
+                .filter(c => isDirectory(node_path_1.default.join(dir, c)))
+                .map(c => node_path_1.default.join(dir, c));
+            for (let childDir of childDirs) {
+                targetFiles.push(...getDirectoryFiles(childDir, {
+                    basenameOnly, recursive, targetExtensions
+                }));
+            }
+        }
+        return targetFiles;
     }
     catch (error) {
         config_1.typeshiLogger.error([`${source} Error retrieving directory files, returning empty array`,
@@ -616,7 +634,6 @@ function getDirectoryFiles(dir, arg2, ...targetExtensions) {
         ].join(config_1.INDENT_LOG_LINE));
         return [];
     }
-    return targetFiles;
 }
 /**
  * @param dataSource `string | FileData | Record<string, any>[]`

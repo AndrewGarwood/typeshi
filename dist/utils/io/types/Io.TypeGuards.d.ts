@@ -1,7 +1,7 @@
 /**
  * @file src/utils/io/types/typeGuards.ts
  */
-import { FileData, NodeLeaves, NodeStructure, RowDictionary, RowSourceMetaData, WriteJsonOptions } from "..";
+import { FileData, NodeLeaves, NodeStructure, DirectoryFileOptions, RowDictionary, RowSourceMetaData, WriteJsonOptions } from ".";
 /**
  * @param value `any`
  * @returns **`isRowSourceMetaData`** `boolean`
@@ -29,3 +29,4 @@ export declare function isWriteJsonOptions(value: any): value is WriteJsonOption
  * - **`false`** `otherwise`.
  */
 export declare function isFileData(value: any): value is FileData;
+export declare function isDirectoryFileOptions(value: unknown): value is DirectoryFileOptions;

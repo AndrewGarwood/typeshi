@@ -3,10 +3,10 @@
  */
 
 import { 
-    FileData, NodeLeaves, NodeStructure, 
-    RowDictionary, RowSourceMetaData, WriteJsonOptions 
-} from "..";
-import { hasKeys, isIntegerArray, isNonEmptyString } from "../../typeValidation";
+    FileData, NodeLeaves, NodeStructure, DirectoryFileOptions,
+    RowDictionary, RowSourceMetaData, WriteJsonOptions
+} from ".";
+import { isIntegerArray, isNonEmptyString, isOptional, isObject, isUndefinedOr } from "../../typeValidation";
 
 
 /**
@@ -45,13 +45,10 @@ export function isRowDictionary(value: any): value is RowDictionary {
 
 
 export function isNodeStructure(value: any): value is NodeStructure {
-    return (value && typeof value === 'object'
-        && !Array.isArray(value)
-        && Object.keys(value).length > 0
-        && Object.entries(value).every(([key, value]) => 
-            typeof key === 'string' 
-            && (isNodeStructure(value) || isNodeLeaves(value))
-        )
+    const candidate = value as NodeStructure;
+    return (isObject(candidate)
+        && Object.entries(candidate).every(([k, v])=>
+            isNonEmptyString(k) && (isNodeLeaves(v) || isNodeStructure(v)))
     );
 }
 
@@ -62,17 +59,12 @@ export function isNodeLeaves(value: any): value is NodeLeaves | number[] | RowDi
 }
 
 export function isWriteJsonOptions(value: any): value is WriteJsonOptions {
-    return (value && typeof value === 'object'
-        && !Array.isArray(value)
-        && value.data !== undefined
-        && (typeof value.data === 'object' || typeof value.data === 'string')
-        && isNonEmptyString(value.filePath)
-        && (value.indent === undefined 
-            || (typeof value.indent === 'number' && value.indent >= 0)
-        )
-        && (value.enableOverwrite === undefined 
-            || typeof value.enableOverwrite === 'boolean'
-        )
+    const candidate = value as  WriteJsonOptions;
+    return (isObject(candidate)
+        && (typeof candidate.data === 'string' || isObject(candidate.data))
+        && isNonEmptyString(candidate.filePath)
+        && isUndefinedOr.positiveInteger(candidate.indent)
+        && isUndefinedOr.boolean(candidate.enableOverwrite)
     );
 }
 
@@ -86,10 +78,18 @@ export function isWriteJsonOptions(value: any): value is WriteJsonOptions {
  * - **`false`** `otherwise`.
  */
 export function isFileData(value: any): value is FileData {
-    return (value && typeof value === 'object'
-        && hasKeys(value, ['fileName', 'fileContent'])
-        && isNonEmptyString(value.fileName)
-        // && fileNamePattern.test(value.fileName)
-        && isNonEmptyString(value.fileContent)
+    const candidate = value as FileData;
+    return (isObject(candidate)
+        && isNonEmptyString(candidate.fileName)
+        && isNonEmptyString(candidate.fileContent)
+    );
+}
+
+export function isDirectoryFileOptions(value: unknown): value is DirectoryFileOptions {
+    const candidate = value as DirectoryFileOptions;
+    return (isObject(candidate, false)
+        && isOptional.stringArray(candidate.targetExtensions)
+        && isOptional.boolean(candidate.basenameOnly)
+        && isOptional.boolean(candidate.recursive)
     );
 }

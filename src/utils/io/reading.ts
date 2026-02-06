@@ -11,7 +11,7 @@ import { RegExpFlagsEnum, StringCaseOptions, stringEndsWithAnyOf,
     CleanStringOptions,
     isCleanStringOptions
 } from "../regex";
-import { FileData, FileExtension } from "./types/Io";
+import { DirectoryFileOptions, FileData, FileExtension } from "./types/Io";
 import { 
     typeshiLogger as mlog, 
     INDENT_LOG_LINE as TAB, 
@@ -19,7 +19,7 @@ import {
     typeshiSimpleLogger as slog, 
     typeshiHiddenLogger as hlog, 
 } from "../../config";
-import { DelimiterCharacterEnum, DelimitedFileTypeEnum, isFileData } from "./types";
+import { DelimiterCharacterEnum, DelimitedFileTypeEnum, isFileData, isDirectoryFileOptions } from "./types";
 import { 
     isNonEmptyArray, isNullLike as isNull, hasKeys, isNonEmptyString, 
     isEmptyArray, 
@@ -586,8 +586,8 @@ export async function handleFileArgument(
  * - `if true`,  returned array elements are of form: `path.basename(file)`
  * - `if false`, returned array elements are of form: `path.join(dir, file)`
  * @param targetExtensions `string[] (optional)` - array of file extensions to filter files by.
- * - `If` not provided, all files in the directory will be returned.
- * - `If` provided, only files with extensions matching the array will be returned.
+ * - `if undefined`, all files in the directory will be returned.
+ * - `if defined`, only files with extensions matching the array will be returned.
  * @returns **`targetFiles`** `string[]` array of file paths
  */
 export function getDirectoryFiles(
@@ -600,8 +600,8 @@ export function getDirectoryFiles(
  * `sync`
  * @param dir `string` path to target directory
  * @param targetExtensions `string[] (optional)` - array of file extensions to filter files by.
- * - `If` not provided, all files in the directory will be returned.
- * - `If` provided, only files with extensions matching the array will be returned.
+ * - `if undefined`, all files in the directory will be returned.
+ * - `if defined`, only files with extensions matching the array will be returned.
  * @returns **`targetFiles`** `string[]` array of `full` file paths
  */
 export function getDirectoryFiles(
@@ -612,12 +612,33 @@ export function getDirectoryFiles(
 /**
  * `sync`
  * @param dir `string` path to target directory
- * @param arg2 `boolean (optional)` `default` = `false`
+ * @param options {@link DirectoryFileOptions} 
+ * = `{ basenameOnly?: boolean, recursive?: boolean, targetExtensions?: string[] }`
+ * @param options.basenameOnly `boolean (optional)` `default` = `false`
+ * - `if true`,  returned array elements are of form: `path.basename(file)`
+ * - `if false`, returned array elements are of form: `path.join(dir, file)`
+ * @param options.recursive `boolean (optional)` `default` = `false`
+ * - `true` - get files from `dir` and all of its subdirectories
+ * - `false` - only get files from `dir` (i.e. direct descendants of `dir`)
+ * @param options.targetExtensions `string[] (optional)` - array of file extensions to filter files by.
+ * - `if undefined`, all files in the directory will be returned.
+ * - `if defined`, only files with extensions matching the array will be returned.
+ * @returns **`targetFiles`** `string[]` array of file paths
+ */
+export function getDirectoryFiles(
+    dir: string,
+    options: DirectoryFileOptions
+): string[];
+
+/**
+ * `sync`
+ * @param dir `string` path to target directory
+ * @param arg2 `boolean (optional)` (`basenameOnly`) `default` = `false`
  * - `if true`,  returned array elements are of form: `path.basename(file)`
  * - `if false`, returned array elements are of form: `path.join(dir, file)`
  * @param targetExtensions `string[] (optional)` - array of file extensions to filter files by.
- * - `If` not provided, all files in the directory will be returned.
- * - `If` provided, only files with extensions matching the array will be returned.
+ * - `if undefined`, all files in the directory will be returned.
+ * - `if defined` provided, only files with extensions matching the array will be returned.
  * @returns **`targetFiles`** `string[]` array of file paths
  */
 export function getDirectoryFiles(
@@ -627,10 +648,15 @@ export function getDirectoryFiles(
 ): string[] {
     const source = getSourceString(__filename, getDirectoryFiles.name);
     let basenameOnly = false;
+    let recursive = false;
     if (isBoolean(arg2)) {
         basenameOnly = arg2;
     } else if (isNonEmptyString(arg2)) {
         targetExtensions = [arg2, ...targetExtensions];
+    } else if (isDirectoryFileOptions(arg2)) {
+        basenameOnly = arg2.basenameOnly ?? basenameOnly;
+        targetExtensions = arg2.targetExtensions ?? [];
+        recursive = arg2.recursive ?? false;
     }
     const targetFiles: string[] = [];
     try {
@@ -643,12 +669,24 @@ export function getDirectoryFiles(
                 targetExtensions[i] = `.${ext}`;
             }
         }
-        targetFiles.push(...fs.readdirSync(dir)
+        const dirContent = fs.readdirSync(dir);
+        targetFiles.push(...dirContent
             .filter(f => isNonEmptyArray(targetExtensions) 
                 ? stringEndsWithAnyOf(f, targetExtensions, RegExpFlagsEnum.IGNORE_CASE)
                 : fs.statSync(path.join(dir, f)).isFile() // get all files in dir, regardless of extension
             ).map(f => basenameOnly ? f : path.join(dir, f))
         );
+        if (recursive) {
+            const childDirs = dirContent
+                .filter(c=>isDirectory(path.join(dir, c)))
+                .map(c=>path.join(dir, c));
+            for (let childDir of childDirs) {
+                targetFiles.push(...getDirectoryFiles(childDir, { 
+                    basenameOnly, recursive, targetExtensions 
+                }));
+            }
+        }
+        return targetFiles;
     } catch (error: any) {
         mlog.error([`${source} Error retrieving directory files, returning empty array`,
             `             dir: '${dir}'`,
@@ -658,7 +696,6 @@ export function getDirectoryFiles(
         ].join(TAB));
         return [];
     }
-    return targetFiles;
 }
 
 /**
