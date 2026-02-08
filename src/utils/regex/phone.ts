@@ -1,8 +1,8 @@
 /**
  * @file src/utils/regex/phone.ts
  */
-import { StringStripOptions } from ".";
-import { clean } from "./cleaning";
+import { DEP_StringStripOptions } from ".";
+import { DEP_clean } from "./cleaning";
 import { RegExpFlagsEnum } from "./types/StringOptions";
 
 
@@ -76,7 +76,7 @@ export function formatPhone(
     if (groupFormat) {
         result = result.replace(re, groupFormat);
     }
-    return clean(result, { char: '-', escape: false} as StringStripOptions)
+    return DEP_clean(result, { char: '-', escape: false} as DEP_StringStripOptions)
         .replace(/([a-zA-Z]+\s*$)/, '').trim();
 }
 

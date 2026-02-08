@@ -9,3 +9,4 @@ export * from "./entity";
 export * from "./misc";
 export * from "./phone";
 export * from "./stringOperations";
+export * from "./Str"

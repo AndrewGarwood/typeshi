@@ -1,6 +1,64 @@
 /**
  * @file src/utils/regex/types/StringOptions.ts
  */
+export declare const StringCaseEnum: {
+    readonly UPPER: "upper";
+    readonly LOWER: "lower";
+    readonly TITLE: "title";
+};
+export type StringCaseEnum = (typeof StringCaseEnum)[keyof typeof StringCaseEnum];
+export declare const StringPadEnum: {
+    readonly LEFT: "left";
+    readonly RIGHT: "right";
+    readonly BOTH: "both";
+};
+export type StringPadEnum = (typeof StringPadEnum)[keyof typeof StringPadEnum];
+export interface StringPadOptions {
+    maxLength: number;
+    /** `default` = `' '` (single space character) */
+    char?: string;
+    /** `default` = `'left'` (pad left side of string) */
+    side?: StringPadEnum;
+}
+export interface StringCondition {
+    condition: (s: string, ...args: any[]) => boolean;
+    args?: any[];
+}
+export type StringStripCondition = StringCondition & {
+    /** max number of times to strip char from one side */
+    max?: number;
+};
+export interface StringStripOptions {
+    /**
+     * `default` = `/\s+/`
+     * - will escape special characters if `char` is `string`
+     * */
+    char?: string | RegExp;
+    left?: StringStripCondition;
+    right?: StringStripCondition;
+}
+export interface StringCleanOptions {
+    strip?: StringStripOptions;
+    case?: StringCaseEnum;
+    pad?: StringPadOptions;
+    replace?: StringReplaceParams[];
+    useDefault?: boolean;
+}
+export type CleanStringOptions = StringCleanOptions;
+/**
+ * @typedefn **`StringReplaceOptions`**
+ * @property {StringReplaceParams[]} replacements - an array of objects containing `searchValue` and `replaceValue` properties
+ */
+export type StringReplaceOptions = StringReplaceParams[];
+/**
+ * @typedefn **`StringReplaceParams`**
+ * @property {string | RegExp} searchValue - the string or regular expression to search for in the string
+ * @property {string} replaceValue - the string to replace the `searchValue` with
+ */
+export type StringReplaceParams = {
+    searchValue: string | RegExp;
+    replaceValue: string;
+};
 /**
  * @reference {@link https://javascript.info/regexp-introduction}
  * @enum {string} **`RegExpFlagsEnum`**
@@ -22,10 +80,10 @@ export declare enum RegExpFlagsEnum {
 /**
  * @typedefn **`CleanStringOptions`**
  */
-export type CleanStringOptions = {
-    strip?: StringStripOptions;
-    case?: StringCaseOptions;
-    pad?: StringPadOptions;
+export type DEP_CleanStringOptions = {
+    strip?: DEP_StringStripOptions;
+    case?: DEP_StringCaseOptions;
+    pad?: DEP_StringPadOptions;
     replace?: StringReplaceOptions;
 };
 /**
@@ -34,7 +92,7 @@ export type CleanStringOptions = {
  * @property {boolean} [toLower] - `true` if the string should be converted to lower case
  * @property {boolean} [toTitle] - `true` if the string should be converted to title case, see {@link toTitleCase}
  */
-export type StringCaseOptions = {
+export type DEP_StringCaseOptions = {
     toUpper?: boolean;
     toLower?: boolean;
     toTitle?: boolean;
@@ -46,7 +104,7 @@ export type StringCaseOptions = {
  * @property {boolean} [padLeft] - `true` if the padding should be added to the left side of the string
  * @property {boolean} [padRight] - `true` if the padding should be added to the right side of the string
  */
-export type StringPadOptions = {
+export type DEP_StringPadOptions = {
     padLength: number;
     padChar?: string;
     padLeft?: boolean;
@@ -63,25 +121,11 @@ export type StringPadOptions = {
  * @property {any[]} [rightArgs] - arguments to pass to the `stripRightCondition` function
  * - if `stripRightCondition(s, rightArgs)` is `true` or `stripRightCondition` is `undefined` (i.e. no conditions need to be met to strip right), the right side of `s` is stripped of `char`
  */
-export type StringStripOptions = {
+export type DEP_StringStripOptions = {
     char: string;
     escape?: boolean;
     stripLeftCondition?: (s: string, ...args: any[]) => boolean;
     leftArgs?: any[];
     stripRightCondition?: (s: string, ...args: any[]) => boolean;
     rightArgs?: any[];
-};
-/**
- * @typedefn **`StringReplaceOptions`**
- * @property {StringReplaceParams[]} replacements - an array of objects containing `searchValue` and `replaceValue` properties
- */
-export type StringReplaceOptions = StringReplaceParams[];
-/**
- * @typedefn **`StringReplaceParams`**
- * @property {string | RegExp} searchValue - the string or regular expression to search for in the string
- * @property {string} replaceValue - the string to replace the `searchValue` with
- */
-export type StringReplaceParams = {
-    searchValue: string | RegExp;
-    replaceValue: string;
 };

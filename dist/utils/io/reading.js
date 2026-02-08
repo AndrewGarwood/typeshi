@@ -446,8 +446,8 @@ async function getOneToOneDictionary(arg1, keyColumn, valueColumn, keyOptions, v
             config_1.typeshiLogger.warn(msg);
             continue;
         }
-        const key = (0, regex_1.clean)(String(row[keyColumn]), keyOptions);
-        const value = (0, regex_1.clean)(String(row[valueColumn]), valueOptions);
+        const key = (0, regex_1.DEP_clean)(String(row[keyColumn]), keyOptions);
+        const value = (0, regex_1.DEP_clean)(String(row[valueColumn]), valueOptions);
         if (!key || !value) {
             let msg = [`${source} Row @ index ${i} missing key or value.`,
                 `  keyColumn: '${keyColumn}' in row ? ${keyColumn in row}`,
@@ -639,8 +639,8 @@ function getDirectoryFiles(dir, arg2, ...targetExtensions) {
  * @param dataSource `string | FileData | Record<string, any>[]`
  * @param keyColumn `string`
  * @param valueColumn `string`
- * @param keyOptions {@link CleanStringOptions} `(optional)`
- * @param valueOptions {@link CleanStringOptions}`(optional)`
+ * @param keyOptions {@link DEP_CleanStringOptions} `(optional)`
+ * @param valueOptions {@link DEP_CleanStringOptions}`(optional)`
  * @param sheetName `string`
  * @returns **`dict`** `Promise<Record<string, string[]>>`
  */
@@ -648,18 +648,18 @@ async function getOneToManyDictionary(dataSource, keyColumn, valueColumn, keyOpt
     const source = (0, logging_1.getSourceString)(__filename, getOneToManyDictionary.name);
     validate.multipleStringArguments(source, { keyColumn, valueColumn });
     if (keyOptions)
-        validate.objectArgument(source, { keyOptions, isCleanStringOptions: regex_1.isCleanStringOptions });
+        validate.objectArgument(source, { keyOptions, DEP_isCleanStringOptions: regex_1.DEP_isCleanStringOptions });
     if (valueOptions)
-        validate.objectArgument(source, { valueOptions, isCleanStringOptions: regex_1.isCleanStringOptions });
+        validate.objectArgument(source, { valueOptions, DEP_isCleanStringOptions: regex_1.DEP_isCleanStringOptions });
     const rows = await handleFileArgument(dataSource, source, [keyColumn, valueColumn], sheetName);
     const dict = {};
     for (let i = 0; i < rows.length; i++) {
         let row = rows[i];
-        let key = (0, regex_1.clean)(row[keyColumn], keyOptions).trim().replace(/\.$/, '');
+        let key = (0, regex_1.DEP_clean)(row[keyColumn], keyOptions).trim().replace(/\.$/, '');
         if (!dict[key]) {
             dict[key] = [];
         }
-        let value = (0, regex_1.clean)(row[valueColumn], valueOptions).trim().replace(/\.$/, '');
+        let value = (0, regex_1.DEP_clean)(row[valueColumn], valueOptions).trim().replace(/\.$/, '');
         if (!dict[key].includes(value)) {
             dict[key].push(value);
         }
@@ -673,9 +673,9 @@ async function getOneToManyDictionary(dataSource, keyColumn, valueColumn, keyOpt
  * @param keyColumn `string`
  * @param valueColumn `string`
  * @param options - {@link ParseOneToManyOptions}
- * = `{ keyStripOptions`?: {@link StringStripOptions}, `valueStripOptions`?: {@link StringStripOptions}, keyCaseOptions`?: {@link StringCaseOptions}, `valueCaseOptions`?: {@link StringCaseOptions}, `keyPadOptions`?: {@link StringPadOptions}, `valuePadOptions`?: {@link StringPadOptions} `}`
- * - {@link StringStripOptions} = `{ char`: `string`, `escape`?: `boolean`, `stripLeftCondition`?: `(s: string, ...args: any[]) => boolean`, `leftArgs`?: `any[]`, `stripRightCondition`?: `(s: string, ...args: any[]) => boolean`, `rightArgs`?: `any[] }`
- * - {@link StringCaseOptions} = `{ toUpper`?: `boolean`, `toLower`?: `boolean`, `toTitle`?: `boolean }`
+ * = `{ keyStripOptions`?: {@link DEP_StringStripOptions}, `valueStripOptions`?: {@link DEP_StringStripOptions}, keyCaseOptions`?: {@link StringCaseOptions}, `valueCaseOptions`?: {@link StringCaseOptions}, `keyPadOptions`?: {@link StringPadOptions}, `valuePadOptions`?: {@link StringPadOptions} `}`
+ * - {@link DEP_StringStripOptions} = `{ char`: `string`, `escape`?: `boolean`, `stripLeftCondition`?: `(s: string, ...args: any[]) => boolean`, `leftArgs`?: `any[]`, `stripRightCondition`?: `(s: string, ...args: any[]) => boolean`, `rightArgs`?: `any[] }`
+ * - {@link DEP_StringCaseOptions} = `{ toUpper`?: `boolean`, `toLower`?: `boolean`, `toTitle`?: `boolean }`
  * - {@link StringPadOptions} = `{ padLength`: `number`, `padChar`?: `string`, `padLeft`?: `boolean`, `padRight`?: `boolean }`
  * @returns **`dict`** `Record<string, Array<string>>` — key-value pairs where key is from `keyColumn` and value is an array of values from `valueColumn`
  */
@@ -689,8 +689,8 @@ function parseExcelForOneToMany(filePath, sheetName, keyColumn, valueColumn, opt
         const jsonData = xlsx_1.default.utils.sheet_to_json(sheet);
         const dict = {};
         jsonData.forEach(row => {
-            let key = (0, regex_1.clean)(String(row[keyColumn]), keyStripOptions, keyCaseOptions, keyPadOptions).trim().replace(/\.$/, '');
-            let val = (0, regex_1.clean)(String(row[valueColumn]), valueStripOptions, valueCaseOptions, valuePadOptions).trim().replace(/\.$/, '');
+            let key = (0, regex_1.DEP_clean)(String(row[keyColumn]), keyStripOptions, keyCaseOptions, keyPadOptions).trim().replace(/\.$/, '');
+            let val = (0, regex_1.DEP_clean)(String(row[valueColumn]), valueStripOptions, valueCaseOptions, valuePadOptions).trim().replace(/\.$/, '');
             if (!dict[key]) {
                 dict[key] = [];
             }
@@ -712,8 +712,8 @@ function parseExcelForOneToMany(filePath, sheetName, keyColumn, valueColumn, opt
  * @param valueColumn `string`
  * @param delimiter {@link DelimiterCharacters} | `string`
  * @param options {@link ParseOneToManyOptions}
- * = `{ keyCaseOptions`?: {@link StringCaseOptions}, `valueCaseOptions`?: {@link StringCaseOptions}, `keyPadOptions`?: {@link StringPadOptions}, `valuePadOptions`?: {@link StringPadOptions} `}`
- * - {@link StringCaseOptions} = `{ toUpper`?: `boolean`, `toLower`?: `boolean`, `toTitle`?: `boolean }`
+ * = `{ keyCaseOptions`?: {@link DEP_StringCaseOptions}, `valueCaseOptions`?: {@link DEP_StringCaseOptions}, `keyPadOptions`?: {@link StringPadOptions}, `valuePadOptions`?: {@link StringPadOptions} `}`
+ * - {@link DEP_StringCaseOptions} = `{ toUpper`?: `boolean`, `toLower`?: `boolean`, `toTitle`?: `boolean }`
  * - {@link StringPadOptions} = `{ padLength`: `number`, `padChar`?: `string`, `padLeft`?: `boolean`, `padRight`?: `boolean }`
  * @returns `Record<string, Array<string>>` - key-value pairs where key is from `keyColumn` and value is an array of values from `valueColumn`
  */
@@ -736,8 +736,8 @@ function parseCsvForOneToMany(filePath, keyColumn, valueColumn, delimiter = type
         for (let i = 1; i < lines.length; i++) {
             const line = lines[i].split(delimiter).map(col => col.trim());
             if (line.length > 1) {
-                let key = (0, regex_1.clean)(line[keyIndex], keyStripOptions, keyCaseOptions, keyPadOptions);
-                let val = (0, regex_1.clean)(line[valueIndex], valueStripOptions, valueCaseOptions, valuePadOptions);
+                let key = (0, regex_1.DEP_clean)(line[keyIndex], keyStripOptions, keyCaseOptions, keyPadOptions);
+                let val = (0, regex_1.DEP_clean)(line[valueIndex], valueStripOptions, valueCaseOptions, valuePadOptions);
                 if (!dict[key]) {
                     dict[key] = [];
                 }

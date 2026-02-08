@@ -6,10 +6,11 @@ import fs from "fs";
 import { Readable } from "stream";
 import csv from "csv-parser";
 import Excel from "xlsx";
-import { RegExpFlagsEnum, StringCaseOptions, stringEndsWithAnyOf, 
-    StringPadOptions, StringReplaceOptions, StringStripOptions, clean, 
-    CleanStringOptions,
-    isCleanStringOptions
+import { RegExpFlagsEnum, DEP_StringCaseOptions, stringEndsWithAnyOf, 
+    StringPadOptions, StringReplaceOptions, DEP_StringStripOptions, DEP_clean, 
+    DEP_CleanStringOptions,
+    DEP_isCleanStringOptions,
+    DEP_StringPadOptions
 } from "../regex";
 import { DirectoryFileOptions, FileData, FileExtension } from "./types/Io";
 import { 
@@ -413,8 +414,8 @@ export async function getOneToOneDictionary(
     arg1: string | Record<string, any>[] | FileData,
     keyColumn: string,
     valueColumn: string,
-    keyOptions?: CleanStringOptions,
-    valueOptions?: CleanStringOptions,
+    keyOptions?: DEP_CleanStringOptions,
+    valueOptions?: DEP_CleanStringOptions,
     requireIncludeAllRows: boolean = false
 ): Promise<Record<string, string>> {
     const source = getSourceString(__filename, getOneToOneDictionary.name);
@@ -434,8 +435,8 @@ export async function getOneToOneDictionary(
             mlog.warn(msg);
             continue;
         }
-        const key = clean(String(row[keyColumn]), keyOptions) 
-        const value = clean(String(row[valueColumn]), valueOptions) 
+        const key = DEP_clean(String(row[keyColumn]), keyOptions) 
+        const value = DEP_clean(String(row[valueColumn]), valueOptions) 
         if (!key || !value) {
             let msg = [`${source} Row @ index ${i} missing key or value.`, 
                 `  keyColumn: '${keyColumn}' in row ? ${keyColumn in row}`,
@@ -702,8 +703,8 @@ export function getDirectoryFiles(
  * @param dataSource `string | FileData | Record<string, any>[]`
  * @param keyColumn `string`
  * @param valueColumn `string`
- * @param keyOptions {@link CleanStringOptions} `(optional)`
- * @param valueOptions {@link CleanStringOptions}`(optional)`
+ * @param keyOptions {@link DEP_CleanStringOptions} `(optional)`
+ * @param valueOptions {@link DEP_CleanStringOptions}`(optional)`
  * @param sheetName `string`
  * @returns **`dict`** `Promise<Record<string, string[]>>`
  */
@@ -711,23 +712,23 @@ export async function getOneToManyDictionary(
     dataSource: string | FileData | Record<string, any>[],
     keyColumn: string,
     valueColumn: string,
-    keyOptions?: CleanStringOptions,
-    valueOptions?: CleanStringOptions,
+    keyOptions?: DEP_CleanStringOptions,
+    valueOptions?: DEP_CleanStringOptions,
     sheetName?: string
 ): Promise<Record<string, string[]>> {
     const source = getSourceString(__filename, getOneToManyDictionary.name);
     validate.multipleStringArguments(source, {keyColumn, valueColumn});
-    if (keyOptions) validate.objectArgument(source, {keyOptions, isCleanStringOptions});
-    if (valueOptions) validate.objectArgument(source, {valueOptions, isCleanStringOptions});
+    if (keyOptions) validate.objectArgument(source, {keyOptions, DEP_isCleanStringOptions});
+    if (valueOptions) validate.objectArgument(source, {valueOptions, DEP_isCleanStringOptions});
     const rows = await handleFileArgument(dataSource, source, [keyColumn, valueColumn], sheetName);
     const dict: Record<string, string[]> = {}
     for (let i = 0; i < rows.length; i++) {
         let row = rows[i];
-        let key = clean(row[keyColumn], keyOptions).trim().replace(/\.$/, '');
+        let key = DEP_clean(row[keyColumn], keyOptions).trim().replace(/\.$/, '');
         if (!dict[key]) {
             dict[key] = [];
         }
-        let value = clean(row[valueColumn], valueOptions).trim().replace(/\.$/, '');
+        let value = DEP_clean(row[valueColumn], valueOptions).trim().replace(/\.$/, '');
         if (!dict[key].includes(value)) {
             dict[key].push(value);
         }
@@ -742,9 +743,9 @@ export async function getOneToManyDictionary(
  * @param keyColumn `string`
  * @param valueColumn `string`
  * @param options - {@link ParseOneToManyOptions}
- * = `{ keyStripOptions`?: {@link StringStripOptions}, `valueStripOptions`?: {@link StringStripOptions}, keyCaseOptions`?: {@link StringCaseOptions}, `valueCaseOptions`?: {@link StringCaseOptions}, `keyPadOptions`?: {@link StringPadOptions}, `valuePadOptions`?: {@link StringPadOptions} `}`
- * - {@link StringStripOptions} = `{ char`: `string`, `escape`?: `boolean`, `stripLeftCondition`?: `(s: string, ...args: any[]) => boolean`, `leftArgs`?: `any[]`, `stripRightCondition`?: `(s: string, ...args: any[]) => boolean`, `rightArgs`?: `any[] }`
- * - {@link StringCaseOptions} = `{ toUpper`?: `boolean`, `toLower`?: `boolean`, `toTitle`?: `boolean }`
+ * = `{ keyStripOptions`?: {@link DEP_StringStripOptions}, `valueStripOptions`?: {@link DEP_StringStripOptions}, keyCaseOptions`?: {@link StringCaseOptions}, `valueCaseOptions`?: {@link StringCaseOptions}, `keyPadOptions`?: {@link StringPadOptions}, `valuePadOptions`?: {@link StringPadOptions} `}`
+ * - {@link DEP_StringStripOptions} = `{ char`: `string`, `escape`?: `boolean`, `stripLeftCondition`?: `(s: string, ...args: any[]) => boolean`, `leftArgs`?: `any[]`, `stripRightCondition`?: `(s: string, ...args: any[]) => boolean`, `rightArgs`?: `any[] }`
+ * - {@link DEP_StringCaseOptions} = `{ toUpper`?: `boolean`, `toLower`?: `boolean`, `toTitle`?: `boolean }`
  * - {@link StringPadOptions} = `{ padLength`: `number`, `padChar`?: `string`, `padLeft`?: `boolean`, `padRight`?: `boolean }`
  * @returns **`dict`** `Record<string, Array<string>>` — key-value pairs where key is from `keyColumn` and value is an array of values from `valueColumn`
  */
@@ -754,12 +755,12 @@ export function parseExcelForOneToMany(
     keyColumn: string, 
     valueColumn: string,
     options: {
-        keyStripOptions?: StringStripOptions;
-        valueStripOptions?: StringStripOptions;
-        keyCaseOptions?: StringCaseOptions;
-        valueCaseOptions?: StringCaseOptions;
-        keyPadOptions?: StringPadOptions;
-        valuePadOptions?: StringPadOptions;
+        keyStripOptions?: DEP_StringStripOptions;
+        valueStripOptions?: DEP_StringStripOptions;
+        keyCaseOptions?: DEP_StringCaseOptions;
+        valueCaseOptions?: DEP_StringCaseOptions;
+        keyPadOptions?: DEP_StringPadOptions;
+        valuePadOptions?: DEP_StringPadOptions;
     } = {},
 ): Record<string, Array<string>> {
     filePath = coerceFileExtension(filePath, 'xlsx');
@@ -775,13 +776,13 @@ export function parseExcelForOneToMany(
         const jsonData: Record<string, any>[] = Excel.utils.sheet_to_json(sheet);
         const dict: Record<string, Array<string>> = {};
         jsonData.forEach(row => {
-            let key: string = clean(
+            let key: string = DEP_clean(
                 String(row[keyColumn]), 
                 keyStripOptions, 
                 keyCaseOptions, 
                 keyPadOptions
             ).trim().replace(/\.$/, '');
-            let val: string = clean(
+            let val: string = DEP_clean(
                 String(row[valueColumn]),
                 valueStripOptions, 
                 valueCaseOptions, 
@@ -809,8 +810,8 @@ export function parseExcelForOneToMany(
  * @param valueColumn `string`
  * @param delimiter {@link DelimiterCharacters} | `string`
  * @param options {@link ParseOneToManyOptions}
- * = `{ keyCaseOptions`?: {@link StringCaseOptions}, `valueCaseOptions`?: {@link StringCaseOptions}, `keyPadOptions`?: {@link StringPadOptions}, `valuePadOptions`?: {@link StringPadOptions} `}`
- * - {@link StringCaseOptions} = `{ toUpper`?: `boolean`, `toLower`?: `boolean`, `toTitle`?: `boolean }`
+ * = `{ keyCaseOptions`?: {@link DEP_StringCaseOptions}, `valueCaseOptions`?: {@link DEP_StringCaseOptions}, `keyPadOptions`?: {@link StringPadOptions}, `valuePadOptions`?: {@link StringPadOptions} `}`
+ * - {@link DEP_StringCaseOptions} = `{ toUpper`?: `boolean`, `toLower`?: `boolean`, `toTitle`?: `boolean }`
  * - {@link StringPadOptions} = `{ padLength`: `number`, `padChar`?: `string`, `padLeft`?: `boolean`, `padRight`?: `boolean }`
  * @returns `Record<string, Array<string>>` - key-value pairs where key is from `keyColumn` and value is an array of values from `valueColumn`
  */
@@ -820,12 +821,12 @@ export function parseCsvForOneToMany(
     valueColumn: string,
     delimiter: DelimiterCharacterEnum | string = DelimiterCharacterEnum.COMMA,
     options: {
-        keyStripOptions?: StringStripOptions;
-        valueStripOptions?: StringStripOptions;
-        keyCaseOptions?: StringCaseOptions;
-        valueCaseOptions?: StringCaseOptions;
-        keyPadOptions?: StringPadOptions;
-        valuePadOptions?: StringPadOptions;
+        keyStripOptions?: DEP_StringStripOptions;
+        valueStripOptions?: DEP_StringStripOptions;
+        keyCaseOptions?: DEP_StringCaseOptions;
+        valueCaseOptions?: DEP_StringCaseOptions;
+        keyPadOptions?: DEP_StringPadOptions;
+        valuePadOptions?: DEP_StringPadOptions;
     } = {},
 ): Record<string, Array<string>> {
     filePath = coerceFileExtension(filePath, 
@@ -852,13 +853,13 @@ export function parseCsvForOneToMany(
         for (let i = 1; i < lines.length; i++) {
             const line = lines[i].split(delimiter).map(col => col.trim());
             if (line.length > 1) {
-                let key = clean(
+                let key = DEP_clean(
                     line[keyIndex],
                     keyStripOptions, 
                     keyCaseOptions, 
                     keyPadOptions
                 );
-                let val = clean(
+                let val = DEP_clean(
                     line[valueIndex],
                     valueStripOptions,
                     valueCaseOptions, 

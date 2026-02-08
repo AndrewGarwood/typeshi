@@ -11,7 +11,7 @@ import { StringReplaceOptions,
     StringReplaceParams, STRIP_DOT_IF_NOT_END_WITH_ABBREVIATION,  
 } from ".";
 import { RegExpFlagsEnum } from "./types/StringOptions";
-import { clean } from "./cleaning";
+import { DEP_clean } from "./cleaning";
 import { stringContainsAnyOf, stringEndsWithAnyOf } from "./stringOperations";
 
 /** `re` = /`^\s*((attention|attn|atn):)?\s*((Mr|Ms|Mrs|Dr|Prof)\.?)*\s*`/`i` */
@@ -88,7 +88,7 @@ export function extractName(
     if (!name || typeof name !== 'string') return { first: '', middle: '', last: '' };
     const originalName = name;
     const jobTitleSuffix = extractJobTitleSuffix(name);
-    name = clean(name, {replace: CLEAN_NAME_REPLACE_OPTIONS})
+    name = DEP_clean(name, {replace: CLEAN_NAME_REPLACE_OPTIONS})
         .replace(JOB_TITLE_SUFFIX_PATTERN, ''); // redundant
     const containsInvalidCharsOrCompanyKeywords = (
         stringContainsAnyOf(name, /[0-9!#&@]/)
@@ -111,7 +111,7 @@ export function extractName(
         // move last name to the end
         nameSplit.push(nameSplit.shift() || ''); 
     }
-    nameSplit.map((namePart) => clean(namePart, {
+    nameSplit.map((namePart) => DEP_clean(namePart, {
         strip: STRIP_DOT_IF_NOT_END_WITH_ABBREVIATION, 
         replace: [{searchValue: /(^[-+])*/g, replaceValue: ''}]
     }));
@@ -187,7 +187,7 @@ export function extractJobTitleSuffix(
     s: string,
 ): string {
     if (!s || typeof s !== 'string') return '';
-    s = clean(s, {replace: [
+    s = DEP_clean(s, {replace: [
         REMOVE_ATTN_SALUTATION_PREFIX, 
         { searchValue: /,$/g, replaceValue: '' }
     ]});

@@ -80,22 +80,22 @@ export function formatDebugLogFile(
     inputPath: string,
     outputPath?: string
 ): void {
-    validate.existingPathArgument(`logging.formatDebugLogFile`, {inputPath});
-    // Generate output path if not provided
-    if (!outputPath) {
-        const parsedPath = path.parse(inputPath);
-        outputPath = path.join(
-            parsedPath.dir, 
-            `${parsedPath.name}.FORMATTED${parsedPath.ext}`
-        );
-    }
+    const source = getSourceString(__filename, formatAllDebugLogs.name);
     try {
+        validate.existingPathArgument(source, {inputPath});
+        if (!outputPath) { // Generate output path if not provided
+            const parsedPath = path.parse(inputPath);
+            outputPath = path.join(
+                parsedPath.dir, 
+                `${parsedPath.name}.FORMATTED${parsedPath.ext}`
+            );
+        }
         const fileContent = fs.readFileSync(inputPath, 'utf-8');
         const formattedContent = formatLogContent(fileContent);
         fs.writeFileSync(outputPath, formattedContent, { encoding: 'utf-8' });
         // mlog.info(`[formatDebugLogFile()] Formatted log file saved to '${outputPath}'`);
     } catch (error) {
-        mlog.error('[formatDebugLogFile()] Error formatting log file:', error);
+        mlog.error(`${source} Error formatting log file:'`, error);
         throw error;
     }
 }
@@ -106,7 +106,7 @@ export function formatDebugLogFile(
  * @returns `string` - the formatted content
  */
 function formatLogContent(content: string): string {
-    const lines = content.split('\n');
+    const lines = content.split('\n');//.map(s=>applyStripOptions(s, {char: `"`}));
     const formattedLines: string[] = [];
     let currentJsonObject = '';
     let insideJsonObject = false;

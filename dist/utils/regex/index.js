@@ -25,3 +25,4 @@ __exportStar(require("./entity"), exports);
 __exportStar(require("./misc"), exports);
 __exportStar(require("./phone"), exports);
 __exportStar(require("./stringOperations"), exports);
+__exportStar(require("./Str"), exports);

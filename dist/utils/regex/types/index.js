@@ -18,4 +18,4 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @file src/utils/regex/types/index.ts
  */
 __exportStar(require("./StringOptions"), exports);
-__exportStar(require("./typeGuards"), exports);
+__exportStar(require("./StringOptions.TypeGuards"), exports);

@@ -2,9 +2,9 @@
  * @file src/utils/regex/stringOperations.ts
  */
 import { typeshiLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL} from "../../config";
-import { CleanStringOptions, StringCaseOptions, StringReplaceOptions } from ".";
+import { DEP_CleanStringOptions, DEP_StringCaseOptions, StringReplaceOptions } from ".";
 import { RegExpFlagsEnum, StringReplaceParams } from "./types/StringOptions";
-import { clean } from "./cleaning";
+import { DEP_clean } from "./cleaning";
 import { distance as levenshteinDistance } from "fastest-levenshtein";
 import { isNonEmptyArray, isNonEmptyString, isStringArray } from "../typeValidation";
 
@@ -42,7 +42,8 @@ export function stringEndsWithAnyOf(
     );
     if (isStringArray(suffixes)) {   
         /** Escape special regex characters in suffixes and join them with '|' (OR) */
-        const escapedSuffixes = suffixes.map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+        const escapedSuffixes = suffixes
+            .map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
         const pattern = `(${escapedSuffixes.join('|')})\\s*$`;
         regex = new RegExp(pattern, flagString);
     } else if (suffixes instanceof RegExp) {
@@ -53,11 +54,10 @@ export function stringEndsWithAnyOf(
     }
 
     if (!regex) {
-        mlog.error('[endsWithAnyOf()] Invalid suffixes type, returning false.', 
+        mlog.error(['[stringEndsWithAnyOf()] Invalid suffixes type, returning false.', 
             'Expected string, array of strings, or RegExp but received:', 
-            typeof suffixes, 
-            JSON.stringify(suffixes)
-        );
+            `suffixes (${typeof suffixes}) ${JSON.stringify(suffixes)}`
+        ].join(TAB));
         return false; // Invalid suffixes type
     }
     return regex.test(s);
@@ -89,7 +89,8 @@ export function stringStartsWithAnyOf(
     ); 
     if (Array.isArray(prefixes)) {   
         /** Escape special regex characters in suffixes and join them with '|' (OR) */
-        const escapedPrefixes = prefixes.map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+        const escapedPrefixes = prefixes
+            .map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
         const pattern = `^\\s*(${escapedPrefixes.join('|')})`;
         regex = new RegExp(pattern, flagString);
     } else if (prefixes instanceof RegExp) {
@@ -100,11 +101,11 @@ export function stringStartsWithAnyOf(
     }
 
     if (!regex) {
-        mlog.warn(
-            'startsWithAnyOf() Invalid prefixes type. returning false.', 
-            TAB + 'Expected string, array of strings, or RegExp, but received:', typeof prefixes, 
-            TAB + 'prefixes', prefixes
-        );
+        mlog.warn([
+            '[stringStartsWithAnyOf()] Invalid prefixes type. returning false.', 
+            'Expected string, array of strings, or RegExp, but received:', 
+            `prefixes (${typeof prefixes}) ${JSON.stringify(prefixes)}`
+        ].join(TAB));
         return false; // Invalid prefixes type
     }
     return regex.test(s);
@@ -171,13 +172,13 @@ export function equivalentAlphanumericStrings(
 ): boolean {
     if (!s1 || !s2) return false;
     const cleanOptions = {
-        case: { toLower: true } as StringCaseOptions, 
+        case: { toLower: true } as DEP_StringCaseOptions, 
         replace: [
             {searchValue: /[^A-Za-z0-9]/g, replaceValue: '' }
         ] as StringReplaceOptions
-    } as CleanStringOptions;
-    let s1Alphabetical = clean(s1, cleanOptions).split('').sort().join('');
-    let s2Alphabetical = clean(s2, cleanOptions).split('').sort().join('');
+    } as DEP_CleanStringOptions;
+    let s1Alphabetical = DEP_clean(s1, cleanOptions).split('').sort().join('');
+    let s2Alphabetical = DEP_clean(s2, cleanOptions).split('').sort().join('');
     if (s1Alphabetical.length === 0 || s2Alphabetical.length === 0) {
         return false;
     }
@@ -209,44 +210,6 @@ export function equivalentAlphanumericStrings(
     return false;
 }
 
-export namespace Str {
-    /**
-     * @param s `string`
-     * @param prefixes `string | string[] | RegExp` possible starting string(s).
-     * @param flags `RegExpFlagsEnum[] (Optional)` regex flags to use when creating the {@link RegExp} object. see {@link RegExpFlagsEnum}
-     * @returns **`true`** if the string starts with any of the prefixes, **`false`** otherwise.
-     */
-    export const startsWith = stringStartsWithAnyOf;
-    
-    /**
-     * Checks if a string ends with any of the specified suffixes.
-     * @param s `string`
-     * @param suffixes `string | string[] | RegExp` possible ending strings.
-     * @param flags `RegExpFlagsEnum[] (Optional)` regex flags to use when creating the {@link RegExp} object. see {@link RegExpFlagsEnum}
-     * @returns **`true`** if the string ends with any of the suffixes, **`false`** otherwise.
-     */
-    export const endsWith = stringEndsWithAnyOf;
-    /**
-     * @param s `string`
-     * @param substrings `string | string[] | RegExp`
-     * @param flags `RegExpFlagsEnum[] (Optional)` regex flags to use when creating the {@link RegExp} object. see {@link RegExpFlagsEnum}
-     * @returns **`true`** if the string contains any of the substrings, **`false`** otherwise.
-     */
-    export const contains = stringContainsAnyOf;
-    /**
-     * Ignores case by default:
-     * - converts `s1` & `s2` to lowercase and removes all non-alphanumeric characters from both strings,
-     * - sorts the characters in both strings,
-     * - then compares the two strings for equivalence.
-     * @param s1 `string`
-     * @param s2 `string`
-     * @param tolerance `number` - a number between 0 and 1, default is `0.90`
-     * @returns **`boolean`** 
-     * - **`true`** `if` the two alphanumeric strings are equivalent, 
-     * - **`false`** `otherwise`.
-     */
-    export const equivalentAlphanumeric = equivalentAlphanumericStrings;
-}
 
 /** for simple regular expressions... 
  * so like not ones that have parentheses, pipes, or curly braced numbers */
@@ -266,7 +229,7 @@ export function extractSource(
     const REMOVE_UNESCAPED_QUESTION_MARK: StringReplaceParams = {
         searchValue: /(?<!\\)\?/g, replaceValue: ''
     }
-    let source = clean(regex.source, {
+    let source = DEP_clean(regex.source, {
         replace: [
             REMOVE_ENDPOINT_CHARS,
             REPLACE_ESCAPED_DOT,

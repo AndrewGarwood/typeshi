@@ -1,4 +1,4 @@
-import { StringCaseOptions, StringPadOptions, StringStripOptions, CleanStringOptions } from "../regex";
+import { DEP_StringCaseOptions, DEP_StringStripOptions, DEP_CleanStringOptions, DEP_StringPadOptions } from "../regex";
 import { DirectoryFileOptions, FileData, FileExtension } from "./types/Io";
 import { DelimiterCharacterEnum } from "./types";
 /** checks if `pathString (value)` points to an existing directory */
@@ -95,7 +95,7 @@ export declare function getCsvRows(arg1: FileData | string): Promise<Record<stri
  * @param valueColumn `string` - the column name whose contents will be used as values in the dictionary.
  * @returns **`dict`** `Record<string, string>`
  */
-export declare function getOneToOneDictionary(arg1: string | Record<string, any>[] | FileData, keyColumn: string, valueColumn: string, keyOptions?: CleanStringOptions, valueOptions?: CleanStringOptions, requireIncludeAllRows?: boolean): Promise<Record<string, string>>;
+export declare function getOneToOneDictionary(arg1: string | Record<string, any>[] | FileData, keyColumn: string, valueColumn: string, keyOptions?: DEP_CleanStringOptions, valueOptions?: DEP_CleanStringOptions, requireIncludeAllRows?: boolean): Promise<Record<string, string>>;
 /**
  * @param arg1 `string | FileData | Record<string, any>[]` - the `filePath` to a CSV file or an array of rows.
  * @param columnName `string` - the column name whose values will be returned.
@@ -159,12 +159,12 @@ export declare function getDirectoryFiles(dir: string, options: DirectoryFileOpt
  * @param dataSource `string | FileData | Record<string, any>[]`
  * @param keyColumn `string`
  * @param valueColumn `string`
- * @param keyOptions {@link CleanStringOptions} `(optional)`
- * @param valueOptions {@link CleanStringOptions}`(optional)`
+ * @param keyOptions {@link DEP_CleanStringOptions} `(optional)`
+ * @param valueOptions {@link DEP_CleanStringOptions}`(optional)`
  * @param sheetName `string`
  * @returns **`dict`** `Promise<Record<string, string[]>>`
  */
-export declare function getOneToManyDictionary(dataSource: string | FileData | Record<string, any>[], keyColumn: string, valueColumn: string, keyOptions?: CleanStringOptions, valueOptions?: CleanStringOptions, sheetName?: string): Promise<Record<string, string[]>>;
+export declare function getOneToManyDictionary(dataSource: string | FileData | Record<string, any>[], keyColumn: string, valueColumn: string, keyOptions?: DEP_CleanStringOptions, valueOptions?: DEP_CleanStringOptions, sheetName?: string): Promise<Record<string, string[]>>;
 /**
  * @deprecated `use `{@link getOneToManyDictionary}
  * @param filePath `string`
@@ -172,19 +172,19 @@ export declare function getOneToManyDictionary(dataSource: string | FileData | R
  * @param keyColumn `string`
  * @param valueColumn `string`
  * @param options - {@link ParseOneToManyOptions}
- * = `{ keyStripOptions`?: {@link StringStripOptions}, `valueStripOptions`?: {@link StringStripOptions}, keyCaseOptions`?: {@link StringCaseOptions}, `valueCaseOptions`?: {@link StringCaseOptions}, `keyPadOptions`?: {@link StringPadOptions}, `valuePadOptions`?: {@link StringPadOptions} `}`
- * - {@link StringStripOptions} = `{ char`: `string`, `escape`?: `boolean`, `stripLeftCondition`?: `(s: string, ...args: any[]) => boolean`, `leftArgs`?: `any[]`, `stripRightCondition`?: `(s: string, ...args: any[]) => boolean`, `rightArgs`?: `any[] }`
- * - {@link StringCaseOptions} = `{ toUpper`?: `boolean`, `toLower`?: `boolean`, `toTitle`?: `boolean }`
+ * = `{ keyStripOptions`?: {@link DEP_StringStripOptions}, `valueStripOptions`?: {@link DEP_StringStripOptions}, keyCaseOptions`?: {@link StringCaseOptions}, `valueCaseOptions`?: {@link StringCaseOptions}, `keyPadOptions`?: {@link StringPadOptions}, `valuePadOptions`?: {@link StringPadOptions} `}`
+ * - {@link DEP_StringStripOptions} = `{ char`: `string`, `escape`?: `boolean`, `stripLeftCondition`?: `(s: string, ...args: any[]) => boolean`, `leftArgs`?: `any[]`, `stripRightCondition`?: `(s: string, ...args: any[]) => boolean`, `rightArgs`?: `any[] }`
+ * - {@link DEP_StringCaseOptions} = `{ toUpper`?: `boolean`, `toLower`?: `boolean`, `toTitle`?: `boolean }`
  * - {@link StringPadOptions} = `{ padLength`: `number`, `padChar`?: `string`, `padLeft`?: `boolean`, `padRight`?: `boolean }`
  * @returns **`dict`** `Record<string, Array<string>>` — key-value pairs where key is from `keyColumn` and value is an array of values from `valueColumn`
  */
 export declare function parseExcelForOneToMany(filePath: string, sheetName: string, keyColumn: string, valueColumn: string, options?: {
-    keyStripOptions?: StringStripOptions;
-    valueStripOptions?: StringStripOptions;
-    keyCaseOptions?: StringCaseOptions;
-    valueCaseOptions?: StringCaseOptions;
-    keyPadOptions?: StringPadOptions;
-    valuePadOptions?: StringPadOptions;
+    keyStripOptions?: DEP_StringStripOptions;
+    valueStripOptions?: DEP_StringStripOptions;
+    keyCaseOptions?: DEP_StringCaseOptions;
+    valueCaseOptions?: DEP_StringCaseOptions;
+    keyPadOptions?: DEP_StringPadOptions;
+    valuePadOptions?: DEP_StringPadOptions;
 }): Record<string, Array<string>>;
 /**
  * @deprecated -> use {@link getOneToManyDictionary}
@@ -193,18 +193,18 @@ export declare function parseExcelForOneToMany(filePath: string, sheetName: stri
  * @param valueColumn `string`
  * @param delimiter {@link DelimiterCharacters} | `string`
  * @param options {@link ParseOneToManyOptions}
- * = `{ keyCaseOptions`?: {@link StringCaseOptions}, `valueCaseOptions`?: {@link StringCaseOptions}, `keyPadOptions`?: {@link StringPadOptions}, `valuePadOptions`?: {@link StringPadOptions} `}`
- * - {@link StringCaseOptions} = `{ toUpper`?: `boolean`, `toLower`?: `boolean`, `toTitle`?: `boolean }`
+ * = `{ keyCaseOptions`?: {@link DEP_StringCaseOptions}, `valueCaseOptions`?: {@link DEP_StringCaseOptions}, `keyPadOptions`?: {@link StringPadOptions}, `valuePadOptions`?: {@link StringPadOptions} `}`
+ * - {@link DEP_StringCaseOptions} = `{ toUpper`?: `boolean`, `toLower`?: `boolean`, `toTitle`?: `boolean }`
  * - {@link StringPadOptions} = `{ padLength`: `number`, `padChar`?: `string`, `padLeft`?: `boolean`, `padRight`?: `boolean }`
  * @returns `Record<string, Array<string>>` - key-value pairs where key is from `keyColumn` and value is an array of values from `valueColumn`
  */
 export declare function parseCsvForOneToMany(filePath: string, keyColumn: string, valueColumn: string, delimiter?: DelimiterCharacterEnum | string, options?: {
-    keyStripOptions?: StringStripOptions;
-    valueStripOptions?: StringStripOptions;
-    keyCaseOptions?: StringCaseOptions;
-    valueCaseOptions?: StringCaseOptions;
-    keyPadOptions?: StringPadOptions;
-    valuePadOptions?: StringPadOptions;
+    keyStripOptions?: DEP_StringStripOptions;
+    valueStripOptions?: DEP_StringStripOptions;
+    keyCaseOptions?: DEP_StringCaseOptions;
+    valueCaseOptions?: DEP_StringCaseOptions;
+    keyPadOptions?: DEP_StringPadOptions;
+    valuePadOptions?: DEP_StringPadOptions;
 }): Record<string, Array<string>>;
 export interface CsvValidationOptions {
     allowEmptyRows?: boolean;

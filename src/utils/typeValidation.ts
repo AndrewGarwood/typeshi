@@ -60,11 +60,11 @@ export function anyNull(...values: any[]): boolean {
 
 /**
  * @param value 
- * @returns **`isNonEmptyArray`** `boolean` = `value is Array<any> & { length: number }`
+ * @returns **`isNonEmptyArray`** `boolean` = `value is Array<T> & { length: number }`
  * - **`true`** if `value` is an array and has at least one element, 
  * - **`false`** otherwise.
  */
-export function isNonEmptyArray(value: any): value is Array<any> & { length: number } {
+export function isNonEmptyArray<T = any>(value: any): value is Array<T> & { length: number } {
     return Array.isArray(value) && value.length > 0;
 }
 /**
@@ -73,7 +73,7 @@ export function isNonEmptyArray(value: any): value is Array<any> & { length: num
  * - **`true`** if `value` is an array and has no elements,
  * - **`false`** `otherwise`
  */
-export function isEmptyArray(value: any): value is Array<any> & { length: 0 } {
+export function isEmptyArray<T = any>(value: any): value is Array<T> & { length: 0 } {
     return Array.isArray(value) && value.length === 0; 
 }
 
@@ -255,14 +255,23 @@ export function isNumeric(
 
 /**
  * @param value `any`
+ * @param requireNonSpace `boolean (optional)` `default` = `false`
+ * - `if true` then `value.trim()` must not result in empty string
+ * - `if false` then allows for `value` to consist solely of whitespace characters
  * @returns **`isNonEmptyString`** `boolean`
- * - `true` `if` `value` is a non-empty string (not just whitespace),
+ * - `true` `if` `value` is a non-empty string
  * - `false` `otherwise`.
  */
 export function isNonEmptyString(
-    value: any
+    value: any,
+    requireNonSpace: boolean = false
 ): value is string & { length: number } {
-    return typeof value === 'string' && value.trim() !== '';
+    return (typeof value === 'string' 
+        && (requireNonSpace 
+            ? value.trim() !== '' 
+            : value.length > 0
+        )
+    );
 }
 
 
@@ -333,21 +342,43 @@ export class isOptional {
         return isUndefinedOrNull(value) || isType<T>(value, guard, ...args)
     }
     /**
+     * - allows for empty array
      * @param value 
-     * @param requireNonEmpty `boolean` `default` = `true` (if `true`, require that string have at least 1 non-whitespace character)
+     * @param elementGuard `function` checks that each element of array, when passed into this function, returns true
+     * - if not provided, then will only check that value is an array
+     * @param args `any[]` arguments that will be passed into `elementGuard` e.g. `elementGuard(value[i], ...args)`
+     */
+    static array = <T>(value: any, elementGuard?: (v: any, ...args: any[]) => v is T, ...args: any[]): value is T[] | undefined | null => {
+        return isUndefinedOrNull(value) || (Array.isArray(value) 
+            && (!elementGuard || value.every(v=>elementGuard(v, ...args)))
+        );
+    }
+    /**
+     * @param value 
+     * @param requireNonSpace `boolean` `default` = `false` 
+     * - `if` `true`, require that string have at least 1 non-whitespace character
      * @returns 
      */
-    static string = (value: any, requireNonEmpty: boolean = true): value is string | undefined | null => {
-        return isUndefinedOrNull(value) || requireNonEmpty ? isNonEmptyString(value) : typeof value === "string"
+    static string = (value: any, requireNonSpace: boolean = false): value is string | undefined | null => {
+        return isUndefinedOrNull(value) || isNonEmptyString(value, requireNonSpace)
     }
     /**
      * @param value 
      * @param requireNonEmpty `boolean` `default` = `true` (if `true`, require that array have at least 1 element)
-     * @returns 
      */
     static stringArray = (value: any, requireNonEmpty: boolean = true): value is string[] | undefined | null => {
         return isUndefinedOrNull(value) || isStringArray(value, requireNonEmpty)
     }
+
+    /**
+     * @param value `any`
+     * @param requireInteger `boolean` `default = false`
+     * @param requireNonNegative `boolean` `default = false`
+     * @returns **`isNumeric`** `value is string | number`
+     * - **`true`** `if` `value` is either a `number` or a `string` that can be casted to a `number`
+     * while also meeting the boolean parameter requirements
+     * - **`false`** `otherwise`
+     */
     static numeric = (
         value: any, 
         requireInteger: boolean = false, 
@@ -385,24 +416,45 @@ export class isOptional {
 
 export class isUndefinedOr {
     static type = <T>(value: any, guard: (v: any, ...args: any[]) => v is T, ...args: any[]): value is T | undefined => {
-        return isUndefined(value) || isType<T>(value, guard, ...args)
+        return isUndefined(value) || isType<T>(value, guard, ...args);
     }
     /**
+     * - allows for empty array
      * @param value 
-     * @param requireNonEmpty `boolean` `default` = `true` (if `true`, require that string have at least 1 non-whitespace character)
-     * @returns 
+     * @param elementGuard `function` checks that each element of array, when passeed into this function, returns true
+     * - if not provided, then will only check that value is an array
+     * @param args `any[]` arguments that will be passed into  `elementGuard` e.g. `elementGuard(value[i], ...args)`
      */
-    static string = (value: any, requireNonEmpty: boolean = true): value is string | undefined => {
-        return isUndefined(value) || requireNonEmpty ? isNonEmptyString(value) : typeof value === "string"
+    static array = <T>(value: any, elementGuard?: (v: any, ...args: any[]) => v is T, ...args: any[]): value is T[] | undefined => {
+        return isUndefined(value) || (Array.isArray(value) 
+            && (!elementGuard || value.every(v=>elementGuard(v, ...args)))
+        );
     }
     /**
      * @param value 
-     * @param requireNonEmpty `boolean` `default` = `true` (if `true`, require that array have at least 1 element)
-     * @returns 
+     * @param requireNonEmpty `boolean` `default` = `false` 
+     * - `if` `true`, require that string have at least 1 non-whitespace character
+     */
+    static string = (value: any, requireNonSpace: boolean = false): value is string | undefined => {
+        return isUndefined(value) || isNonEmptyString(value, requireNonSpace)
+    }
+    /**
+     * @param value 
+     * @param requireNonEmpty `boolean` `default` = `true` 
+     * - `if` `true`, require that array have at least 1 element
      */
     static stringArray = (value: any, requireNonEmpty: boolean = true): value is string[] | undefined => {
         return isUndefined(value) || isStringArray(value, requireNonEmpty)
     }
+    /**
+     * @param value `any`
+     * @param requireInteger `boolean` `default = false`
+     * @param requireNonNegative `boolean` `default = false`
+     * @returns **`isNumeric`** `value is string | number`
+     * - **`true`** `if` `value` is either a `number` or a `string` that can be casted to a `number`
+     * while also meeting the boolean parameter requirements
+     * - **`false`** `otherwise`
+     */
     static numeric = (
         value: any, 
         requireInteger: boolean = false, 

@@ -1015,24 +1015,3 @@ function getSourceString(
     let funcName = typeof func === 'string' ? func : func.name
     return `[${fileName}.${funcName}(${isNonEmptyString(funcInfo) ? ` ${funcInfo} `: ''})${lineNumberText}]`;
 }
-
-    // isEnumArgumentOptions,
-    // isEnumObject,
-    // isObjectArgumentOptions,
-// const validate = {
-//     stringArgument,
-//     multipleStringArguments,
-//     numericStringArgument,
-//     booleanArgument,
-//     numberArgument,
-//     arrayArgument,
-//     enumArgument,
-//     objectArgument,
-//     functionArgument,
-//     existingPathArgument,
-//     existingDirectoryArgument,
-//     existingFileArgument,
-//     multipleExistingFileArguments
-// }
-
-// export default validate;

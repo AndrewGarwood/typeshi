@@ -68,7 +68,7 @@ function formatPhone(phone, re, groupFormat) {
     if (groupFormat) {
         result = result.replace(re, groupFormat);
     }
-    return (0, cleaning_1.clean)(result, { char: '-', escape: false })
+    return (0, cleaning_1.DEP_clean)(result, { char: '-', escape: false })
         .replace(/([a-zA-Z]+\s*$)/, '').trim();
 }
 // https://en.wikipedia.org/wiki/List_of_telephone_country_codes

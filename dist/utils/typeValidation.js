@@ -74,7 +74,7 @@ function anyNull(...values) {
 }
 /**
  * @param value
- * @returns **`isNonEmptyArray`** `boolean` = `value is Array<any> & { length: number }`
+ * @returns **`isNonEmptyArray`** `boolean` = `value is Array<T> & { length: number }`
  * - **`true`** if `value` is an array and has at least one element,
  * - **`false`** otherwise.
  */
@@ -244,12 +244,18 @@ function isNumeric(value, requireInteger = false, requireNonNegative = false) {
 }
 /**
  * @param value `any`
+ * @param requireNonSpace `boolean (optional)` `default` = `false`
+ * - `if true` then `value.trim()` must not result in empty string
+ * - `if false` then allows for `value` to consist solely of whitespace characters
  * @returns **`isNonEmptyString`** `boolean`
- * - `true` `if` `value` is a non-empty string (not just whitespace),
+ * - `true` `if` `value` is a non-empty string
  * - `false` `otherwise`.
  */
-function isNonEmptyString(value) {
-    return typeof value === 'string' && value.trim() !== '';
+function isNonEmptyString(value, requireNonSpace = false) {
+    return (typeof value === 'string'
+        && (requireNonSpace
+            ? value.trim() !== ''
+            : value.length > 0));
 }
 function isPrimitiveValue(value) {
     if (value === null || value === undefined) {
@@ -308,21 +314,41 @@ isOptional.type = (value, guard, ...args) => {
     return isUndefinedOrNull(value) || (0, exports.isType)(value, guard, ...args);
 };
 /**
+ * - allows for empty array
  * @param value
- * @param requireNonEmpty `boolean` `default` = `true` (if `true`, require that string have at least 1 non-whitespace character)
+ * @param elementGuard `function` checks that each element of array, when passed into this function, returns true
+ * - if not provided, then will only check that value is an array
+ * @param args `any[]` arguments that will be passed into `elementGuard` e.g. `elementGuard(value[i], ...args)`
+ */
+isOptional.array = (value, elementGuard, ...args) => {
+    return isUndefinedOrNull(value) || (Array.isArray(value)
+        && (!elementGuard || value.every(v => elementGuard(v, ...args))));
+};
+/**
+ * @param value
+ * @param requireNonSpace `boolean` `default` = `false`
+ * - `if` `true`, require that string have at least 1 non-whitespace character
  * @returns
  */
-isOptional.string = (value, requireNonEmpty = true) => {
-    return isUndefinedOrNull(value) || requireNonEmpty ? isNonEmptyString(value) : typeof value === "string";
+isOptional.string = (value, requireNonSpace = false) => {
+    return isUndefinedOrNull(value) || isNonEmptyString(value, requireNonSpace);
 };
 /**
  * @param value
  * @param requireNonEmpty `boolean` `default` = `true` (if `true`, require that array have at least 1 element)
- * @returns
  */
 isOptional.stringArray = (value, requireNonEmpty = true) => {
     return isUndefinedOrNull(value) || isStringArray(value, requireNonEmpty);
 };
+/**
+ * @param value `any`
+ * @param requireInteger `boolean` `default = false`
+ * @param requireNonNegative `boolean` `default = false`
+ * @returns **`isNumeric`** `value is string | number`
+ * - **`true`** `if` `value` is either a `number` or a `string` that can be casted to a `number`
+ * while also meeting the boolean parameter requirements
+ * - **`false`** `otherwise`
+ */
 isOptional.numeric = (value, requireInteger = false, requireNonNegative = false) => {
     return isUndefinedOrNull(value) || isNumeric(value, requireInteger, requireNonNegative);
 };
@@ -349,21 +375,41 @@ isUndefinedOr.type = (value, guard, ...args) => {
     return isUndefined(value) || (0, exports.isType)(value, guard, ...args);
 };
 /**
+ * - allows for empty array
  * @param value
- * @param requireNonEmpty `boolean` `default` = `true` (if `true`, require that string have at least 1 non-whitespace character)
- * @returns
+ * @param elementGuard `function` checks that each element of array, when passeed into this function, returns true
+ * - if not provided, then will only check that value is an array
+ * @param args `any[]` arguments that will be passed into  `elementGuard` e.g. `elementGuard(value[i], ...args)`
  */
-isUndefinedOr.string = (value, requireNonEmpty = true) => {
-    return isUndefined(value) || requireNonEmpty ? isNonEmptyString(value) : typeof value === "string";
+isUndefinedOr.array = (value, elementGuard, ...args) => {
+    return isUndefined(value) || (Array.isArray(value)
+        && (!elementGuard || value.every(v => elementGuard(v, ...args))));
 };
 /**
  * @param value
- * @param requireNonEmpty `boolean` `default` = `true` (if `true`, require that array have at least 1 element)
- * @returns
+ * @param requireNonEmpty `boolean` `default` = `false`
+ * - `if` `true`, require that string have at least 1 non-whitespace character
+ */
+isUndefinedOr.string = (value, requireNonSpace = false) => {
+    return isUndefined(value) || isNonEmptyString(value, requireNonSpace);
+};
+/**
+ * @param value
+ * @param requireNonEmpty `boolean` `default` = `true`
+ * - `if` `true`, require that array have at least 1 element
  */
 isUndefinedOr.stringArray = (value, requireNonEmpty = true) => {
     return isUndefined(value) || isStringArray(value, requireNonEmpty);
 };
+/**
+ * @param value `any`
+ * @param requireInteger `boolean` `default = false`
+ * @param requireNonNegative `boolean` `default = false`
+ * @returns **`isNumeric`** `value is string | number`
+ * - **`true`** `if` `value` is either a `number` or a `string` that can be casted to a `number`
+ * while also meeting the boolean parameter requirements
+ * - **`false`** `otherwise`
+ */
 isUndefinedOr.numeric = (value, requireInteger = false, requireNonNegative = false) => {
     return isUndefined(value) || isNumeric(value, requireInteger, requireNonNegative);
 };

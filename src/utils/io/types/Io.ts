@@ -2,7 +2,7 @@
  * @file src/utils/io/Io.ts
  */
 import {
-    StringCaseOptions, StringPadOptions, StringStripOptions
+    DEP_StringCaseOptions, StringPadOptions, DEP_StringStripOptions
 } from "../../regex/index"
 
 export type WriteJsonOptions = {
@@ -35,7 +35,7 @@ export type RowDictionary = {
 }
 
 /**
- * @deprecated use `CleanStringOptions` instead
+ * @deprecated
  * @typedefn **`ParseOneToManyOptions`**
  * @property {StringStripOptions} keyStripOptions - options for stripping characters from the key
  * @property {StringStripOptions} valueStripOptions - options for stripping characters from the value
@@ -44,15 +44,15 @@ export type RowDictionary = {
  * @property {StringPadOptions} keyPadOptions - options for padding values read from the `keyColumn`
  * @property {StringPadOptions} valuePadOptions - options for padding values read from the `valueColumn`
  * 
- * - {@link StringStripOptions} = `{ char: string, escape?: boolean, stripLeftCondition?: (s: string, ...args: any[]) => boolean, leftArgs?: any[], stripRightCondition?: (s: string, ...args: any[]) => boolean, rightArgs?: any[] }`
- * - {@link StringCaseOptions}  = `{ toUpper: boolean, toLower: boolean, toTitle: boolean }`
+ * - {@link DEP_StringStripOptions} = `{ char: string, escape?: boolean, stripLeftCondition?: (s: string, ...args: any[]) => boolean, leftArgs?: any[], stripRightCondition?: (s: string, ...args: any[]) => boolean, rightArgs?: any[] }`
+ * - {@link DEP_StringCaseOptions}  = `{ toUpper: boolean, toLower: boolean, toTitle: boolean }`
  * - {@link StringPadOptions} = `{ padLength: number, padChar: string, padLeft: boolean, padRight: boolean }`
  */
 export type ParseOneToManyOptions = {
-    keyStripOptions?: StringStripOptions,
-    valueStripOptions?: StringStripOptions,
-    keyCaseOptions?: StringCaseOptions,
-    valueCaseOptions?: StringCaseOptions,
+    keyStripOptions?: DEP_StringStripOptions,
+    valueStripOptions?: DEP_StringStripOptions,
+    keyCaseOptions?: DEP_StringCaseOptions,
+    valueCaseOptions?: DEP_StringCaseOptions,
     keyPadOptions?: StringPadOptions,
     valuePadOptions?: StringPadOptions
 }

@@ -2,7 +2,7 @@
  * @file src/utils/regex/configureParameters.ts
  */
 import { 
-    StringStripOptions, StringReplaceParams,
+    DEP_StringStripOptions, StringReplaceParams,
     JOB_TITLE_SUFFIX_PATTERN,
     COMPANY_ABBREVIATION_PATTERN,
     stringEndsWithAnyOf,
@@ -26,7 +26,7 @@ export function doesNotEndWithKnownAbbreviation(s: string): boolean {
 }
 
 /** strip leading `.` and (trailing `.` if satisfy stripRightCondition: {@link doesNotEndWithKnownAbbreviation}) */
-export const STRIP_DOT_IF_NOT_END_WITH_ABBREVIATION: StringStripOptions = {
+export const STRIP_DOT_IF_NOT_END_WITH_ABBREVIATION: DEP_StringStripOptions = {
     char: '.',
     escape: true,
     stripLeftCondition: undefined,
@@ -35,7 +35,7 @@ export const STRIP_DOT_IF_NOT_END_WITH_ABBREVIATION: StringStripOptions = {
 }
 
 /** always strip leading and trailing `.` from a `string` */
-export const UNCONDITIONAL_STRIP_DOT_OPTIONS: StringStripOptions = {
+export const UNCONDITIONAL_STRIP_DOT_OPTIONS: DEP_StringStripOptions = {
     char: '.',
     escape: true,
     stripLeftCondition: undefined,

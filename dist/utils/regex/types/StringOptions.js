@@ -3,7 +3,17 @@
  * @file src/utils/regex/types/StringOptions.ts
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RegExpFlagsEnum = void 0;
+exports.RegExpFlagsEnum = exports.StringPadEnum = exports.StringCaseEnum = void 0;
+exports.StringCaseEnum = {
+    UPPER: 'upper',
+    LOWER: 'lower',
+    TITLE: 'title',
+};
+exports.StringPadEnum = {
+    LEFT: 'left',
+    RIGHT: 'right',
+    BOTH: 'both'
+};
 /**
  * @reference {@link https://javascript.info/regexp-introduction}
  * @enum {string} **`RegExpFlagsEnum`**

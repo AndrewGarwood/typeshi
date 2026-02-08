@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Str = void 0;
 exports.stringEndsWithAnyOf = stringEndsWithAnyOf;
 exports.stringStartsWithAnyOf = stringStartsWithAnyOf;
 exports.stringContainsAnyOf = stringContainsAnyOf;
@@ -41,7 +40,8 @@ function stringEndsWithAnyOf(s, suffixes, ...flags) {
             : undefined);
     if ((0, typeValidation_1.isStringArray)(suffixes)) {
         /** Escape special regex characters in suffixes and join them with '|' (OR) */
-        const escapedSuffixes = suffixes.map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+        const escapedSuffixes = suffixes
+            .map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
         const pattern = `(${escapedSuffixes.join('|')})\\s*$`;
         regex = new RegExp(pattern, flagString);
     }
@@ -51,7 +51,10 @@ function stringEndsWithAnyOf(s, suffixes, ...flags) {
             : new RegExp(suffixes.source + '\\s*$', flagString));
     }
     if (!regex) {
-        config_1.typeshiLogger.error('[endsWithAnyOf()] Invalid suffixes type, returning false.', 'Expected string, array of strings, or RegExp but received:', typeof suffixes, JSON.stringify(suffixes));
+        config_1.typeshiLogger.error(['[stringEndsWithAnyOf()] Invalid suffixes type, returning false.',
+            'Expected string, array of strings, or RegExp but received:',
+            `suffixes (${typeof suffixes}) ${JSON.stringify(suffixes)}`
+        ].join(config_1.INDENT_LOG_LINE));
         return false; // Invalid suffixes type
     }
     return regex.test(s);
@@ -77,7 +80,8 @@ function stringStartsWithAnyOf(s, prefixes, ...flags) {
             : undefined);
     if (Array.isArray(prefixes)) {
         /** Escape special regex characters in suffixes and join them with '|' (OR) */
-        const escapedPrefixes = prefixes.map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+        const escapedPrefixes = prefixes
+            .map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
         const pattern = `^\\s*(${escapedPrefixes.join('|')})`;
         regex = new RegExp(pattern, flagString);
     }
@@ -87,7 +91,11 @@ function stringStartsWithAnyOf(s, prefixes, ...flags) {
             : new RegExp('^\\s*' + prefixes.source, flagString));
     }
     if (!regex) {
-        config_1.typeshiLogger.warn('startsWithAnyOf() Invalid prefixes type. returning false.', config_1.INDENT_LOG_LINE + 'Expected string, array of strings, or RegExp, but received:', typeof prefixes, config_1.INDENT_LOG_LINE + 'prefixes', prefixes);
+        config_1.typeshiLogger.warn([
+            '[stringStartsWithAnyOf()] Invalid prefixes type. returning false.',
+            'Expected string, array of strings, or RegExp, but received:',
+            `prefixes (${typeof prefixes}) ${JSON.stringify(prefixes)}`
+        ].join(config_1.INDENT_LOG_LINE));
         return false; // Invalid prefixes type
     }
     return regex.test(s);
@@ -147,8 +155,8 @@ function equivalentAlphanumericStrings(s1, s2, tolerance = 0.90) {
             { searchValue: /[^A-Za-z0-9]/g, replaceValue: '' }
         ]
     };
-    let s1Alphabetical = (0, cleaning_1.clean)(s1, cleanOptions).split('').sort().join('');
-    let s2Alphabetical = (0, cleaning_1.clean)(s2, cleanOptions).split('').sort().join('');
+    let s1Alphabetical = (0, cleaning_1.DEP_clean)(s1, cleanOptions).split('').sort().join('');
+    let s2Alphabetical = (0, cleaning_1.DEP_clean)(s2, cleanOptions).split('').sort().join('');
     if (s1Alphabetical.length === 0 || s2Alphabetical.length === 0) {
         return false;
     }
@@ -173,44 +181,6 @@ function equivalentAlphanumericStrings(s1, s2, tolerance = 0.90) {
     }
     return false;
 }
-var Str;
-(function (Str) {
-    /**
-     * @param s `string`
-     * @param prefixes `string | string[] | RegExp` possible starting string(s).
-     * @param flags `RegExpFlagsEnum[] (Optional)` regex flags to use when creating the {@link RegExp} object. see {@link RegExpFlagsEnum}
-     * @returns **`true`** if the string starts with any of the prefixes, **`false`** otherwise.
-     */
-    Str.startsWith = stringStartsWithAnyOf;
-    /**
-     * Checks if a string ends with any of the specified suffixes.
-     * @param s `string`
-     * @param suffixes `string | string[] | RegExp` possible ending strings.
-     * @param flags `RegExpFlagsEnum[] (Optional)` regex flags to use when creating the {@link RegExp} object. see {@link RegExpFlagsEnum}
-     * @returns **`true`** if the string ends with any of the suffixes, **`false`** otherwise.
-     */
-    Str.endsWith = stringEndsWithAnyOf;
-    /**
-     * @param s `string`
-     * @param substrings `string | string[] | RegExp`
-     * @param flags `RegExpFlagsEnum[] (Optional)` regex flags to use when creating the {@link RegExp} object. see {@link RegExpFlagsEnum}
-     * @returns **`true`** if the string contains any of the substrings, **`false`** otherwise.
-     */
-    Str.contains = stringContainsAnyOf;
-    /**
-     * Ignores case by default:
-     * - converts `s1` & `s2` to lowercase and removes all non-alphanumeric characters from both strings,
-     * - sorts the characters in both strings,
-     * - then compares the two strings for equivalence.
-     * @param s1 `string`
-     * @param s2 `string`
-     * @param tolerance `number` - a number between 0 and 1, default is `0.90`
-     * @returns **`boolean`**
-     * - **`true`** `if` the two alphanumeric strings are equivalent,
-     * - **`false`** `otherwise`.
-     */
-    Str.equivalentAlphanumeric = equivalentAlphanumericStrings;
-})(Str || (exports.Str = Str = {}));
 /** for simple regular expressions...
  * so like not ones that have parentheses, pipes, or curly braced numbers */
 function extractSource(regex) {
@@ -228,7 +198,7 @@ function extractSource(regex) {
     const REMOVE_UNESCAPED_QUESTION_MARK = {
         searchValue: /(?<!\\)\?/g, replaceValue: ''
     };
-    let source = (0, cleaning_1.clean)(regex.source, {
+    let source = (0, cleaning_1.DEP_clean)(regex.source, {
         replace: [
             REMOVE_ENDPOINT_CHARS,
             REPLACE_ESCAPED_DOT,
