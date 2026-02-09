@@ -151,7 +151,7 @@ function writeListsToCsvSync(listData, outputPath, delimiter = types_1.Delimiter
 function writeArrayToFileSync(arr, outputPath, separator = '\n', options = { encoding: 'utf-8', flag: 'w' }) {
     const source = (0, logging_1.getSourceString)(__filename, writeArrayToFileSync.name);
     try {
-        const content = arr.map(el => JSON.stringify(el)).join(separator);
+        const content = arr.map(el => typeof el === 'string' ? el : JSON.stringify(el)).join(separator);
         fs.writeFileSync(outputPath, content, options);
     }
     catch (error) {

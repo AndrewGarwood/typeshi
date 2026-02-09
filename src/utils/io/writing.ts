@@ -158,7 +158,9 @@ export function writeArrayToFileSync<T>(
 ): void {
     const source = getSourceString(__filename, writeArrayToFileSync.name);
     try {
-        const content = arr.map(el=>JSON.stringify(el)).join(separator);
+        const content = arr.map(el=>
+            typeof el === 'string' ? el : JSON.stringify(el)
+        ).join(separator);
         fs.writeFileSync(outputPath, content, options);
     } catch (error: any) {
         mlog.error([`${source} Error writing array to file`,
