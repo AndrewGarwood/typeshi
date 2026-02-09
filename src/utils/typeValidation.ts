@@ -335,10 +335,14 @@ export const isType = <T>(value: any, guard: (v: any, ...args: any[]) => v is T,
 
 /**
  * - calls {@link isUndefinedOrNull}`(value)` which allows for value to be `undefined` or `null`
- * - use {@link isUndefinedOr} if you want value is `T | undefined`
+ * - use {@link isUndefinedOr} if you want `value is T | undefined`
  */
 export class isOptional {
-    static type = <T>(value: any, guard: (v: any, ...args: any[]) => v is T, ...args: any[]): value is T | undefined | null => {
+    static type = <T>(
+        value: any, 
+        guard: (v: any, ...args: any[]) => v is T, 
+        ...args: any[]
+    ): value is T | undefined | null => {
         return isUndefinedOrNull(value) || isType<T>(value, guard, ...args)
     }
     /**
@@ -348,7 +352,11 @@ export class isOptional {
      * - if not provided, then will only check that value is an array
      * @param args `any[]` arguments that will be passed into `elementGuard` e.g. `elementGuard(value[i], ...args)`
      */
-    static array = <T>(value: any, elementGuard?: (v: any, ...args: any[]) => v is T, ...args: any[]): value is T[] | undefined | null => {
+    static array = <T>(
+        value: any, 
+        elementGuard?: (v: any, ...args: any[]) => v is T, 
+        ...args: any[]
+    ): value is T[] | undefined | null => {
         return isUndefinedOrNull(value) || (Array.isArray(value) 
             && (!elementGuard || value.every(v=>elementGuard(v, ...args)))
         );
@@ -364,9 +372,9 @@ export class isOptional {
     }
     /**
      * @param value 
-     * @param requireNonEmpty `boolean` `default` = `true` (if `true`, require that array have at least 1 element)
+     * @param requireNonEmpty `boolean` `default` = `false` (if `true`, require that array have at least 1 element)
      */
-    static stringArray = (value: any, requireNonEmpty: boolean = true): value is string[] | undefined | null => {
+    static stringArray = (value: any, requireNonEmpty: boolean = false): value is string[] | undefined | null => {
         return isUndefinedOrNull(value) || isStringArray(value, requireNonEmpty)
     }
 
@@ -399,10 +407,15 @@ export class isOptional {
     static positiveInteger = (value: any): value is number | undefined | null => {
         return (isUndefinedOrNull(value) || isPositveInteger(value))
     }
+    /**
+     * @param value 
+     * @param requireNonNegative `boolean (optional)` `default` = `false`
+     * @param requireNonEmpty `boolean (optional)` `default` = `false`
+     */
     static integerArray = (
         value: any, 
         requireNonNegative: boolean = false, 
-        requireNonEmpty: boolean = true
+        requireNonEmpty: boolean = false
     ): value is number[] | undefined | null => {
         return isUndefinedOrNull(value) || isIntegerArray(value, requireNonNegative, requireNonEmpty)
     }
@@ -415,7 +428,11 @@ export class isOptional {
 }
 
 export class isUndefinedOr {
-    static type = <T>(value: any, guard: (v: any, ...args: any[]) => v is T, ...args: any[]): value is T | undefined => {
+    static type = <T>(
+        value: any, 
+        guard: (v: any, ...args: any[]) => v is T, 
+        ...args: any[]
+    ): value is T | undefined => {
         return isUndefined(value) || isType<T>(value, guard, ...args);
     }
     /**
@@ -425,7 +442,11 @@ export class isUndefinedOr {
      * - if not provided, then will only check that value is an array
      * @param args `any[]` arguments that will be passed into  `elementGuard` e.g. `elementGuard(value[i], ...args)`
      */
-    static array = <T>(value: any, elementGuard?: (v: any, ...args: any[]) => v is T, ...args: any[]): value is T[] | undefined => {
+    static array = <T>(
+        value: any, 
+        elementGuard?: (v: any, ...args: any[]) => v is T, 
+        ...args: any[]
+    ): value is T[] | undefined => {
         return isUndefined(value) || (Array.isArray(value) 
             && (!elementGuard || value.every(v=>elementGuard(v, ...args)))
         );
@@ -440,10 +461,10 @@ export class isUndefinedOr {
     }
     /**
      * @param value 
-     * @param requireNonEmpty `boolean` `default` = `true` 
+     * @param requireNonEmpty `boolean` `default` = `false` 
      * - `if` `true`, require that array have at least 1 element
      */
-    static stringArray = (value: any, requireNonEmpty: boolean = true): value is string[] | undefined => {
+    static stringArray = (value: any, requireNonEmpty: boolean = false): value is string[] | undefined => {
         return isUndefined(value) || isStringArray(value, requireNonEmpty)
     }
     /**
@@ -475,10 +496,15 @@ export class isUndefinedOr {
     static positiveInteger = (value: any): value is number | undefined => {
         return (isUndefined(value) || isPositveInteger(value))
     }
+    /**
+     * @param value 
+     * @param requireNonNegative `boolean (optional)` `default` = `false`
+     * @param requireNonEmpty `boolean (optional)` `default` = `false`
+     */
     static integerArray = (
         value: any, 
         requireNonNegative: boolean = false, 
-        requireNonEmpty: boolean = true
+        requireNonEmpty: boolean = false
     ): value is number[] | undefined => {
         return isUndefined(value) || isIntegerArray(value, requireNonNegative, requireNonEmpty)
     }

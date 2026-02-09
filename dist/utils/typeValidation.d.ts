@@ -147,7 +147,7 @@ export declare function isPositveInteger(value: any): value is number;
 export declare const isType: <T>(value: any, guard: (v: any, ...args: any[]) => v is T, ...args: any[]) => value is T;
 /**
  * - calls {@link isUndefinedOrNull}`(value)` which allows for value to be `undefined` or `null`
- * - use {@link isUndefinedOr} if you want value is `T | undefined`
+ * - use {@link isUndefinedOr} if you want `value is T | undefined`
  */
 export declare class isOptional {
     static type: <T>(value: any, guard: (v: any, ...args: any[]) => v is T, ...args: any[]) => value is T | undefined | null;
@@ -168,7 +168,7 @@ export declare class isOptional {
     static string: (value: any, requireNonSpace?: boolean) => value is string | undefined | null;
     /**
      * @param value
-     * @param requireNonEmpty `boolean` `default` = `true` (if `true`, require that array have at least 1 element)
+     * @param requireNonEmpty `boolean` `default` = `false` (if `true`, require that array have at least 1 element)
      */
     static stringArray: (value: any, requireNonEmpty?: boolean) => value is string[] | undefined | null;
     /**
@@ -183,6 +183,11 @@ export declare class isOptional {
     static numeric: (value: any, requireInteger?: boolean, requireNonNegative?: boolean) => value is string | number | undefined | null;
     static number: (value: any, requireInteger?: boolean, requireNonNegative?: boolean) => value is number | undefined | null;
     static positiveInteger: (value: any) => value is number | undefined | null;
+    /**
+     * @param value
+     * @param requireNonNegative `boolean (optional)` `default` = `false`
+     * @param requireNonEmpty `boolean (optional)` `default` = `false`
+     */
     static integerArray: (value: any, requireNonNegative?: boolean, requireNonEmpty?: boolean) => value is number[] | undefined | null;
     static boolean: (value: any) => value is boolean | undefined | null;
     static function: (value: any) => value is Function | undefined | null;
@@ -205,7 +210,7 @@ export declare class isUndefinedOr {
     static string: (value: any, requireNonSpace?: boolean) => value is string | undefined;
     /**
      * @param value
-     * @param requireNonEmpty `boolean` `default` = `true`
+     * @param requireNonEmpty `boolean` `default` = `false`
      * - `if` `true`, require that array have at least 1 element
      */
     static stringArray: (value: any, requireNonEmpty?: boolean) => value is string[] | undefined;
@@ -221,6 +226,11 @@ export declare class isUndefinedOr {
     static numeric: (value: any, requireInteger?: boolean, requireNonNegative?: boolean) => value is string | number | undefined;
     static number: (value: any, requireInteger?: boolean, requireNonNegative?: boolean) => value is number | undefined;
     static positiveInteger: (value: any) => value is number | undefined;
+    /**
+     * @param value
+     * @param requireNonNegative `boolean (optional)` `default` = `false`
+     * @param requireNonEmpty `boolean (optional)` `default` = `false`
+     */
     static integerArray: (value: any, requireNonNegative?: boolean, requireNonEmpty?: boolean) => value is number[] | undefined;
     static boolean: (value: any) => value is boolean | undefined;
     static function: (value: any) => value is Function | undefined;

@@ -88,7 +88,7 @@ export function isFileData(value: any): value is FileData {
 export function isDirectoryFileOptions(value: unknown): value is DirectoryFileOptions {
     const candidate = value as DirectoryFileOptions;
     return (isObject(candidate, false)
-        && isOptional.stringArray(candidate.targetExtensions)
+        && isOptional.stringArray(candidate.targetExtensions, false)
         && isOptional.boolean(candidate.basenameOnly)
         && isOptional.boolean(candidate.recursive)
     );

@@ -305,7 +305,7 @@ const isType = (value, guard, ...args) => {
 exports.isType = isType;
 /**
  * - calls {@link isUndefinedOrNull}`(value)` which allows for value to be `undefined` or `null`
- * - use {@link isUndefinedOr} if you want value is `T | undefined`
+ * - use {@link isUndefinedOr} if you want `value is T | undefined`
  */
 class isOptional {
 }
@@ -335,9 +335,9 @@ isOptional.string = (value, requireNonSpace = false) => {
 };
 /**
  * @param value
- * @param requireNonEmpty `boolean` `default` = `true` (if `true`, require that array have at least 1 element)
+ * @param requireNonEmpty `boolean` `default` = `false` (if `true`, require that array have at least 1 element)
  */
-isOptional.stringArray = (value, requireNonEmpty = true) => {
+isOptional.stringArray = (value, requireNonEmpty = false) => {
     return isUndefinedOrNull(value) || isStringArray(value, requireNonEmpty);
 };
 /**
@@ -359,7 +359,12 @@ isOptional.number = (value, requireInteger = false, requireNonNegative = false) 
 isOptional.positiveInteger = (value) => {
     return (isUndefinedOrNull(value) || isPositveInteger(value));
 };
-isOptional.integerArray = (value, requireNonNegative = false, requireNonEmpty = true) => {
+/**
+ * @param value
+ * @param requireNonNegative `boolean (optional)` `default` = `false`
+ * @param requireNonEmpty `boolean (optional)` `default` = `false`
+ */
+isOptional.integerArray = (value, requireNonNegative = false, requireNonEmpty = false) => {
     return isUndefinedOrNull(value) || isIntegerArray(value, requireNonNegative, requireNonEmpty);
 };
 isOptional.boolean = (value) => {
@@ -395,10 +400,10 @@ isUndefinedOr.string = (value, requireNonSpace = false) => {
 };
 /**
  * @param value
- * @param requireNonEmpty `boolean` `default` = `true`
+ * @param requireNonEmpty `boolean` `default` = `false`
  * - `if` `true`, require that array have at least 1 element
  */
-isUndefinedOr.stringArray = (value, requireNonEmpty = true) => {
+isUndefinedOr.stringArray = (value, requireNonEmpty = false) => {
     return isUndefined(value) || isStringArray(value, requireNonEmpty);
 };
 /**
@@ -420,7 +425,12 @@ isUndefinedOr.number = (value, requireInteger = false, requireNonNegative = fals
 isUndefinedOr.positiveInteger = (value) => {
     return (isUndefined(value) || isPositveInteger(value));
 };
-isUndefinedOr.integerArray = (value, requireNonNegative = false, requireNonEmpty = true) => {
+/**
+ * @param value
+ * @param requireNonNegative `boolean (optional)` `default` = `false`
+ * @param requireNonEmpty `boolean (optional)` `default` = `false`
+ */
+isUndefinedOr.integerArray = (value, requireNonNegative = false, requireNonEmpty = false) => {
     return isUndefined(value) || isIntegerArray(value, requireNonNegative, requireNonEmpty);
 };
 isUndefinedOr.boolean = (value) => {

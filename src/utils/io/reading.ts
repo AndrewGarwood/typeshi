@@ -833,9 +833,9 @@ export function parseCsvForOneToMany(
         (delimiter === DelimiterCharacterEnum.TAB) ? 'tsv' : 'csv'
     );
     const source = `[reading.parseCsvForOneToMany()]`
-    validate.existingFileArgument(source, ['.tsv', '.csv'], {filePath})
-    validate.multipleStringArguments(source, {keyColumn, valueColumn});
     try {
+        validate.existingFileArgument(source, ['.tsv', '.csv'], {filePath});
+        validate.multipleStringArguments(source, {keyColumn, valueColumn});
         const { 
             keyStripOptions, valueStripOptions, 
             keyCaseOptions, valueCaseOptions, 

@@ -720,9 +720,9 @@ function parseExcelForOneToMany(filePath, sheetName, keyColumn, valueColumn, opt
 function parseCsvForOneToMany(filePath, keyColumn, valueColumn, delimiter = types_1.DelimiterCharacterEnum.COMMA, options = {}) {
     filePath = coerceFileExtension(filePath, (delimiter === types_1.DelimiterCharacterEnum.TAB) ? 'tsv' : 'csv');
     const source = `[reading.parseCsvForOneToMany()]`;
-    validate.existingFileArgument(source, ['.tsv', '.csv'], { filePath });
-    validate.multipleStringArguments(source, { keyColumn, valueColumn });
     try {
+        validate.existingFileArgument(source, ['.tsv', '.csv'], { filePath });
+        validate.multipleStringArguments(source, { keyColumn, valueColumn });
         const { keyStripOptions, valueStripOptions, keyCaseOptions, valueCaseOptions, keyPadOptions, valuePadOptions } = options;
         const data = fs_1.default.readFileSync(filePath, 'utf8');
         const lines = data.split('\n');

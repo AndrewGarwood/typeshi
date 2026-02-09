@@ -71,7 +71,7 @@ function isFileData(value) {
 function isDirectoryFileOptions(value) {
     const candidate = value;
     return ((0, typeValidation_1.isObject)(candidate, false)
-        && typeValidation_1.isOptional.stringArray(candidate.targetExtensions)
+        && typeValidation_1.isOptional.stringArray(candidate.targetExtensions, false)
         && typeValidation_1.isOptional.boolean(candidate.basenameOnly)
         && typeValidation_1.isOptional.boolean(candidate.recursive));
 }
