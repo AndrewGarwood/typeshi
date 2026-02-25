@@ -6,11 +6,10 @@ import fs from "fs";
 import { Readable } from "stream";
 import csv from "csv-parser";
 import Excel from "xlsx";
-import { RegExpFlagsEnum, DEP_StringCaseOptions, stringEndsWithAnyOf, 
-    StringPadOptions, StringReplaceOptions, DEP_StringStripOptions, DEP_clean, 
-    DEP_CleanStringOptions,
-    DEP_isCleanStringOptions,
-    DEP_StringPadOptions
+import { RegExpFlagsEnum, clean, 
+    stringEndsWithAnyOf,
+    StringCleanOptions,
+    isStringCleanOptions
 } from "../regex";
 import { DirectoryFileOptions, FileData, FileExtension } from "./types/Io";
 import { 
@@ -22,8 +21,7 @@ import {
 } from "../../config";
 import { DelimiterCharacterEnum, DelimitedFileTypeEnum, isFileData, isDirectoryFileOptions } from "./types";
 import { 
-    isNonEmptyArray, isNullLike as isNull, hasKeys, isNonEmptyString, 
-    isEmptyArray, 
+    isNonEmptyArray, isEmpty, hasKeys, isNonEmptyString,
     isObject,
     isBoolean
 } from "../typeValidation";
@@ -218,7 +216,7 @@ export async function concatenateFiles(
         const rows = await getRows(fileRepresentative, sheetName);
         if (!isNonEmptyArray(rows)) { continue }
         if (!haveDefinedRequiredHeaders) {
-            let firstValidRow = rows.find(row => !isNull(row));
+            let firstValidRow = rows.find(row => !isEmpty(row));
             if (!firstValidRow) { continue }
             requiredHeaders = Object.keys(firstValidRow);
             haveDefinedRequiredHeaders = true;
@@ -414,50 +412,57 @@ export async function getOneToOneDictionary(
     arg1: string | Record<string, any>[] | FileData,
     keyColumn: string,
     valueColumn: string,
-    keyOptions?: DEP_CleanStringOptions,
-    valueOptions?: DEP_CleanStringOptions,
+    keyOptions?: StringCleanOptions,
+    valueOptions?: StringCleanOptions,
     requireIncludeAllRows: boolean = false
 ): Promise<Record<string, string>> {
     const source = getSourceString(__filename, getOneToOneDictionary.name);
-    validate.multipleStringArguments(source, {keyColumn, valueColumn});
-    let rows: Record<string, any>[] = await handleFileArgument(
-        arg1, getOneToOneDictionary.name, [keyColumn, valueColumn]
-    );
-    const dict: Record<string, string> = {};
-    for (let i = 0; i < rows.length; i++) {
-        const row = rows[i]
-        if (!hasKeys(row, [keyColumn, valueColumn])) {
-            let msg = [`${source} row @ index ${i} missing key(s): '${keyColumn}', '${valueColumn}'`,
-                `  keyColumn: '${keyColumn}' in row ? ${keyColumn in row} -> row[keyColumn] = '${row[keyColumn]}'`,
-                `valueColumn: '${valueColumn}' in row ? ${valueColumn in row} -> row[valueColumn] = '${row[valueColumn]}'`,
-            ].join(TAB);
-            if (requireIncludeAllRows) throw new Error(msg);
-            mlog.warn(msg);
-            continue;
+    try {
+        validate.multipleStringArguments(source, {keyColumn, valueColumn});
+        let rows: Record<string, any>[] = await handleFileArgument(
+            arg1, getOneToOneDictionary.name, [keyColumn, valueColumn]
+        );
+        const dict: Record<string, string> = {};
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i]
+            if (!hasKeys(row, [keyColumn, valueColumn])) {
+                let msg = [`${source} row @ index ${i} missing key(s): '${keyColumn}', '${valueColumn}'`,
+                    `  keyColumn: '${keyColumn}' in row ? ${keyColumn in row} -> row[keyColumn] = '${row[keyColumn]}'`,
+                    `valueColumn: '${valueColumn}' in row ? ${valueColumn in row} -> row[valueColumn] = '${row[valueColumn]}'`,
+                ].join(TAB);
+                if (requireIncludeAllRows) throw new Error(msg);
+                mlog.warn(msg);
+                continue;
+            }
+            const key = clean(String(row[keyColumn]), keyOptions) 
+            const value = clean(String(row[valueColumn]), valueOptions) 
+            if (!key || !value) {
+                let msg = [`${source} Row @ index ${i} missing key or value.`, 
+                    `  keyColumn: '${keyColumn}' in row ? ${keyColumn in row}`,
+                    `->   row[keyColumn] = '${row[keyColumn]}'`,
+                    `    clean(String(row[keyColumn]), keyOptions): '${key}'`,
+                    `valueColumn: '${valueColumn}' in row ? ${valueColumn in row}`,
+                    `-> row[valueColumn] = '${row[valueColumn]}'`,
+                    `clean(String(row[valueColumn]), valueOptions): '${value}'`,
+                ].join(TAB);
+                if (requireIncludeAllRows) throw new Error(msg);
+                mlog.warn(msg);
+                continue;
+            }
+            if (dict[key]) {
+                mlog.warn([`${source} row @ index ${i} Duplicate key found: '${key}'`,
+                    `overwriting value '${dict[key]}' with '${value}'`
+                ].join(TAB));
+            }
+            dict[key] = value;
         }
-        const key = DEP_clean(String(row[keyColumn]), keyOptions) 
-        const value = DEP_clean(String(row[valueColumn]), valueOptions) 
-        if (!key || !value) {
-            let msg = [`${source} Row @ index ${i} missing key or value.`, 
-                `  keyColumn: '${keyColumn}' in row ? ${keyColumn in row}`,
-                `->   row[keyColumn] = '${row[keyColumn]}'`,
-                `    clean(String(row[keyColumn]), keyOptions): '${key}'`,
-                `valueColumn: '${valueColumn}' in row ? ${valueColumn in row}`,
-                `-> row[valueColumn] = '${row[valueColumn]}'`,
-                `clean(String(row[valueColumn]), valueOptions): '${value}'`,
-            ].join(TAB);
-            if (requireIncludeAllRows) throw new Error(msg);
-            mlog.warn(msg);
-            continue;
-        }
-        if (dict[key]) {
-            mlog.warn([`${source} row @ index ${i} Duplicate key found: '${key}'`,
-                `overwriting value '${dict[key]}' with '${value}'`
-            ].join(TAB));
-        }
-        dict[key] = value;
+        return dict;
+    } catch (error: any) {
+        mlog.error([`${source} An unexpected error occurred, returning empty dictionary.`,
+            `caught: ${error}`
+        ].join(NL));
+        return {};
     }
-    return dict;
 }
 
 /**
@@ -535,50 +540,54 @@ export async function getIndexedColumnValues(
 export async function handleFileArgument(
     arg1: string | FileData | Record<string, any>[],
     invocationSource: string,
-    requiredHeaders: string[] = [],
+    requiredHeaders?: string[],
     sheetName?: string
 ): Promise<Record<string, any>[]> {
     const source = getSourceString(__filename, handleFileArgument.name);
-    validate.stringArgument(source, {invocationSource});
-    validate.arrayArgument(source, {requiredHeaders, isNonEmptyString}, true);
-    let rows: Record<string, any>[] = [];
-    // Handle file path validation only for string inputs
-    if (isNonEmptyString(arg1) 
-        && stringEndsWithAnyOf(arg1, /(\.tsv|\.csv)/i) 
-        && !isValidCsvSync(arg1, requiredHeaders)) {
-        throw new Error([
-            `${source} Invalid CSV filePath provided: '${arg1}'`,
-            `invocationSource: ${invocationSource}`,
-            `requiredHeaders ? ${isNonEmptyArray(requiredHeaders) 
-                ? JSON.stringify(requiredHeaders) 
-                : 'none provided'}`
-        ].join(TAB));
-    } 
-    
-    if ((isNonEmptyString(arg1) && isFile(arg1)) // arg1 is file path string
-        || isFileData(arg1)) {  // arg1 is FileData { fileName: string; fileContent: string; }
-        rows = await getRows(arg1, sheetName);
-    } else if (isNonEmptyArray(arg1)) { // arg1 is already array of rows
-        if (arg1.some(v => !isObject(v))) {
+    try {
+        let rows: Record<string, any>[] = [];
+        if ((isNonEmptyString(arg1) && isFile(arg1)) // arg1 is file path
+            || isFileData(arg1)) { 
+            rows = await getRows(arg1, sheetName);
+        } else if (isNonEmptyArray(arg1)) { // arg1 is already array of rows
+            if (arg1.some(v => !isObject(v))) {
+                throw new Error([
+                    `${source} Error: Invalid 'arg1' (Record<string, any>[]) param:`,
+                    `There exists an element in the row array that is not an object.`,
+                    `Source: ${invocationSource}`,
+                ].join(TAB))
+            }
+            rows = arg1 as Record<string, any>[];
+        } else {
             throw new Error([
-                `${source} Error: Invalid 'arg1' (Record<string, any>[]) param:`,
-                `There exists an element in the row array that is not an object.`,
+                `${source} Invalid parameter: 'arg1' (string | FileData | Record<string, any>[])`,
+                `arg1 must be a file path string, FileData object, or an array of rows.`,
                 `Source: ${invocationSource}`,
-            ].join(TAB))
+            ].join(TAB));
         }
-        rows = arg1 as Record<string, any>[];
-    } else {
-        throw new Error([
-            `${source} Invalid parameter: 'arg1' (string | FileData | Record<string, any>[])`,
-            `arg1 must be a file path string, FileData object, or an array of rows.`,
-            `Source: ${invocationSource}`,
-        ].join(TAB));
+        if (isEmpty(requiredHeaders)) return rows;
+        for (let i = 0; i < rows.length; i++) {
+            const rowHeaders = new Set(Object.keys(rows[i]));
+            if (requiredHeaders.some(h=>!rowHeaders.has(h))) {
+                throw new Error([
+                    `${source} Invalid row @ index ${i}: Missing required header(s)`,
+                    `requiredHeaders: ${JSON.stringify(requiredHeaders)}`,
+                    `row${i} headers: ${JSON.stringify(Array.from(rowHeaders))}`,
+                    `Source: ${invocationSource}`,
+                ].join(TAB));
+            }
+        }
+        return rows;
+    } catch (error: any) {
+        mlog.error([`${source} An unexpected error occurred. Returning empty array.`,
+            `caught: ${error}`
+        ].join(NL));
+        return [];
     }
-    return rows;
 }
 
 
-// overloads for backwards compatibility (I hope)
+// overloads for backwards compatibility
 
 /**
  * `sync`
@@ -699,732 +708,48 @@ export function getDirectoryFiles(
     }
 }
 
+
 /**
  * @param dataSource `string | FileData | Record<string, any>[]`
  * @param keyColumn `string`
  * @param valueColumn `string`
- * @param keyOptions {@link DEP_CleanStringOptions} `(optional)`
- * @param valueOptions {@link DEP_CleanStringOptions}`(optional)`
- * @param sheetName `string`
+ * @param keyOptions {@link StringCleanOptions} `(optional)`
+ * @param valueOptions {@link StringCleanOptions} `(optional)`
+ * @param sheetName `string` `(optional)`
  * @returns **`dict`** `Promise<Record<string, string[]>>`
  */
 export async function getOneToManyDictionary(
     dataSource: string | FileData | Record<string, any>[],
     keyColumn: string,
     valueColumn: string,
-    keyOptions?: DEP_CleanStringOptions,
-    valueOptions?: DEP_CleanStringOptions,
+    keyOptions?: StringCleanOptions,
+    valueOptions?: StringCleanOptions,
     sheetName?: string
 ): Promise<Record<string, string[]>> {
     const source = getSourceString(__filename, getOneToManyDictionary.name);
-    validate.multipleStringArguments(source, {keyColumn, valueColumn});
-    if (keyOptions) validate.objectArgument(source, {keyOptions, DEP_isCleanStringOptions});
-    if (valueOptions) validate.objectArgument(source, {valueOptions, DEP_isCleanStringOptions});
-    const rows = await handleFileArgument(dataSource, source, [keyColumn, valueColumn], sheetName);
-    const dict: Record<string, string[]> = {}
-    for (let i = 0; i < rows.length; i++) {
-        let row = rows[i];
-        let key = DEP_clean(row[keyColumn], keyOptions).trim().replace(/\.$/, '');
-        if (!dict[key]) {
-            dict[key] = [];
-        }
-        let value = DEP_clean(row[valueColumn], valueOptions).trim().replace(/\.$/, '');
-        if (!dict[key].includes(value)) {
-            dict[key].push(value);
-        }
-    }
-    return dict;
-}
-
-/**
- * @deprecated `use `{@link getOneToManyDictionary}
- * @param filePath `string`
- * @param sheetName `string`
- * @param keyColumn `string`
- * @param valueColumn `string`
- * @param options - {@link ParseOneToManyOptions}
- * = `{ keyStripOptions`?: {@link DEP_StringStripOptions}, `valueStripOptions`?: {@link DEP_StringStripOptions}, keyCaseOptions`?: {@link StringCaseOptions}, `valueCaseOptions`?: {@link StringCaseOptions}, `keyPadOptions`?: {@link StringPadOptions}, `valuePadOptions`?: {@link StringPadOptions} `}`
- * - {@link DEP_StringStripOptions} = `{ char`: `string`, `escape`?: `boolean`, `stripLeftCondition`?: `(s: string, ...args: any[]) => boolean`, `leftArgs`?: `any[]`, `stripRightCondition`?: `(s: string, ...args: any[]) => boolean`, `rightArgs`?: `any[] }`
- * - {@link DEP_StringCaseOptions} = `{ toUpper`?: `boolean`, `toLower`?: `boolean`, `toTitle`?: `boolean }`
- * - {@link StringPadOptions} = `{ padLength`: `number`, `padChar`?: `string`, `padLeft`?: `boolean`, `padRight`?: `boolean }`
- * @returns **`dict`** `Record<string, Array<string>>` — key-value pairs where key is from `keyColumn` and value is an array of values from `valueColumn`
- */
-export function parseExcelForOneToMany(
-    filePath: string, 
-    sheetName: string, 
-    keyColumn: string, 
-    valueColumn: string,
-    options: {
-        keyStripOptions?: DEP_StringStripOptions;
-        valueStripOptions?: DEP_StringStripOptions;
-        keyCaseOptions?: DEP_StringCaseOptions;
-        valueCaseOptions?: DEP_StringCaseOptions;
-        keyPadOptions?: DEP_StringPadOptions;
-        valuePadOptions?: DEP_StringPadOptions;
-    } = {},
-): Record<string, Array<string>> {
-    filePath = coerceFileExtension(filePath, 'xlsx');
-    validate.multipleStringArguments(`reading.parseExcelForOneToMany`, {filePath, sheetName, keyColumn, valueColumn});
     try {
-        const { 
-            keyStripOptions, valueStripOptions, 
-            keyCaseOptions, valueCaseOptions, 
-            keyPadOptions, valuePadOptions 
-        } = options;
-        const workbook = Excel.readFile(filePath);
-        const sheet = workbook.Sheets[sheetName];
-        const jsonData: Record<string, any>[] = Excel.utils.sheet_to_json(sheet);
-        const dict: Record<string, Array<string>> = {};
-        jsonData.forEach(row => {
-            let key: string = DEP_clean(
-                String(row[keyColumn]), 
-                keyStripOptions, 
-                keyCaseOptions, 
-                keyPadOptions
-            ).trim().replace(/\.$/, '');
-            let val: string = DEP_clean(
-                String(row[valueColumn]),
-                valueStripOptions, 
-                valueCaseOptions, 
-                valuePadOptions
-            ).trim().replace(/\.$/, '');
-            if (!dict[key]) {
-                dict[key] = [];
-            }
-            if (!dict[key].includes(val)) {
-                dict[key].push(val);
-            }
-        });
-        return dict;
-    } catch (err) {
-        mlog.error('Error reading or parsing the Excel file:', err, 
-            TAB+'Given File Path:', '"' + filePath + '"');
-        return {} as Record<string, Array<string>>;
-    }
-}
-
-/**
- * @deprecated -> use {@link getOneToManyDictionary}
- * @param filePath `string`
- * @param keyColumn `string`
- * @param valueColumn `string`
- * @param delimiter {@link DelimiterCharacters} | `string`
- * @param options {@link ParseOneToManyOptions}
- * = `{ keyCaseOptions`?: {@link DEP_StringCaseOptions}, `valueCaseOptions`?: {@link DEP_StringCaseOptions}, `keyPadOptions`?: {@link StringPadOptions}, `valuePadOptions`?: {@link StringPadOptions} `}`
- * - {@link DEP_StringCaseOptions} = `{ toUpper`?: `boolean`, `toLower`?: `boolean`, `toTitle`?: `boolean }`
- * - {@link StringPadOptions} = `{ padLength`: `number`, `padChar`?: `string`, `padLeft`?: `boolean`, `padRight`?: `boolean }`
- * @returns `Record<string, Array<string>>` - key-value pairs where key is from `keyColumn` and value is an array of values from `valueColumn`
- */
-export function parseCsvForOneToMany(
-    filePath: string,
-    keyColumn: string,
-    valueColumn: string,
-    delimiter: DelimiterCharacterEnum | string = DelimiterCharacterEnum.COMMA,
-    options: {
-        keyStripOptions?: DEP_StringStripOptions;
-        valueStripOptions?: DEP_StringStripOptions;
-        keyCaseOptions?: DEP_StringCaseOptions;
-        valueCaseOptions?: DEP_StringCaseOptions;
-        keyPadOptions?: DEP_StringPadOptions;
-        valuePadOptions?: DEP_StringPadOptions;
-    } = {},
-): Record<string, Array<string>> {
-    filePath = coerceFileExtension(filePath, 
-        (delimiter === DelimiterCharacterEnum.TAB) ? 'tsv' : 'csv'
-    );
-    const source = `[reading.parseCsvForOneToMany()]`
-    try {
-        validate.existingFileArgument(source, ['.tsv', '.csv'], {filePath});
+        const dict: Record<string, string[]> = {}
         validate.multipleStringArguments(source, {keyColumn, valueColumn});
-        const { 
-            keyStripOptions, valueStripOptions, 
-            keyCaseOptions, valueCaseOptions, 
-            keyPadOptions, valuePadOptions 
-        } = options;
-        const data = fs.readFileSync(filePath, 'utf8');
-        const lines = data.split('\n');
-        const dict: Record<string, Array<string>> = {};
-        const header = lines[0].split(delimiter).map(col => col.trim());
-        const keyIndex = header.indexOf(keyColumn);
-        const valueIndex = header.indexOf(valueColumn);
-        if (keyIndex === -1 || valueIndex === -1) {
-            throw new Error(`Key or value column not found in CSV file.`);
-        }
-        for (let i = 1; i < lines.length; i++) {
-            const line = lines[i].split(delimiter).map(col => col.trim());
-            if (line.length > 1) {
-                let key = DEP_clean(
-                    line[keyIndex],
-                    keyStripOptions, 
-                    keyCaseOptions, 
-                    keyPadOptions
-                );
-                let val = DEP_clean(
-                    line[valueIndex],
-                    valueStripOptions,
-                    valueCaseOptions, 
-                    valuePadOptions
-                );
-                if (!dict[key]) {
-                    dict[key] = [];
-                }
-                if (!dict[key].includes(val)) {
-                    dict[key].push(val);
-                }
-            }
+        if (keyOptions) validate.objectArgument(source, {keyOptions, isStringCleanOptions});
+        if (valueOptions) validate.objectArgument(source, {valueOptions, isStringCleanOptions});
+        const rows = await handleFileArgument(dataSource, source, [keyColumn, valueColumn], sheetName);
+        for (let i = 0; i < rows.length; i++) {
+            let row = rows[i];
+            let key = clean(row[keyColumn], keyOptions)
+                .trim().replace(/\.$/, '');
+            if (!dict[key]) dict[key] = [];
+            let value = clean(row[valueColumn], valueOptions)
+                .trim().replace(/\.$/, '');
+            if (!dict[key].includes(value)) dict[key].push(value);
         }
         return dict;
-    } catch (err) {
-        mlog.error('Error reading or parsing the CSV file:', err, 
-            TAB+'Given File Path:', '"' + filePath + '"');
-        return {} as Record<string, Array<string>>;
+    } catch (error: any) {
+        mlog.error([`${source} An unexpected error occurred, returning empty dictionary.`,
+            `caught: ${error}`
+        ].join(NL));
+        return {};
     }
 }
-
-const DEFAULT_CSV_VALIDATION_RULES = {
-    allowEmptyRows: true,
-    allowInconsistentColumns: true,
-    maxRowsToCheck: Infinity,
-}
-
-export interface CsvValidationOptions {
-    allowEmptyRows?: boolean;
-    allowInconsistentColumns?: boolean;
-    maxRowsToCheck?: number;
-}
-
-/**
- * @notimplemented
- * @TODO
- * @param arg1 
- * @param requiredHeaders 
- * @param options 
- * @returns 
- */
-export async function isValidCsv(
-    arg1: string | FileData | Record<string, any>[],
-    requiredHeaders?: string[],
-    options: CsvValidationOptions = DEFAULT_CSV_VALIDATION_RULES
-): Promise<boolean> {
-    return false;
-}
-
-/**
- * @problem has trouble handling case where column value contains a single double quote; 
- * e.g. when it's used as the inches unit after a number 
- * 
- * `sync`
- * @param filePath `string` - must be a string to an existing file, otherwise return `false`.
- * @param requiredHeaders `string[]` - `optional` array of headers that must be present in the CSV file.
- * - If provided, the function checks if all required headers are present in the CSV header row
- * @param options `object` - optional configuration
- * - `allowEmptyRows`: `boolean` - if true, allows rows with all empty fields (default: true)
- * - `allowInconsistentColumns`: `boolean` - if true, allows rows with different column counts (default: false)
- * - `maxRowsToCheck`: `number` - maximum number of rows to validate (default: all rows)
- * @returns **`isValidCsv`** `boolean`
- * - **`true`** `if` the CSV file at `filePath` is valid (proper structure and formatting),
- * - **`false`** `otherwise`. 
- */
-export function isValidCsvSync(
-    filePath: string,
-    requiredHeaders?: string[],
-    options: CsvValidationOptions = DEFAULT_CSV_VALIDATION_RULES
-): boolean {
-    const { 
-        allowEmptyRows = true, 
-        allowInconsistentColumns = false, 
-        maxRowsToCheck = Infinity 
-    } = options;
-    validate.existingPathArgument(`reading.isValidCsv`, {filePath});
-    try {
-        const delimiter = getDelimiterFromFilePath(filePath);
-        const data = fs.readFileSync(filePath, 'utf8');
-        // Handle different line endings
-        const normalizedData = data.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-        // Split into lines, but be careful about quoted fields with newlines
-        let lines: string[] = [];
-        let currentLine = '';
-        let inQuotes = false;
-        let i = 0;
-        while (i < normalizedData.length) {
-            const char = normalizedData[i];
-            const nextChar = normalizedData[i + 1];
-            if (char === '"') {
-                if (inQuotes && nextChar === '"') {
-                    // Escaped quote
-                    currentLine += '""';
-                    i++; // Skip next quote
-                } else {
-                    // Toggle quote state
-                    inQuotes = !inQuotes;
-                    currentLine += char;
-                }
-            } else if (char === '\n' && !inQuotes) {
-                // End of line (not within quotes)
-                if (currentLine.trim() !== '' || allowEmptyRows) {
-                    lines.push(currentLine);
-                }
-                currentLine = '';
-            } else {
-                currentLine += char;
-            }
-            i++;
-        }
-        // Add the last line if it exists
-        if (currentLine.trim() !== '' || allowEmptyRows) {
-            lines.push(currentLine);
-        }
-        if (lines.length < 1) {
-            mlog.error(`[ERROR isValidCsv()]: file has no valid lines: ${filePath}`);
-            return false;
-        }
-        const headerRow: string[] = parseCsvLine(lines[0], delimiter);
-        if (headerRow.length < 1) {
-            mlog.error(`[ERROR isValidCsv()]: no header found in file: ${filePath}`);
-            return false;
-        }
-        // Check for empty headers
-        if (headerRow.some(header => header === '')) {
-            mlog.warn(`[isValidCsv()]: Found empty header(s) in file: ${filePath}`);
-            if (!allowInconsistentColumns) {
-                return false;
-            }
-        }
-        // Validate required headers
-        if (isNonEmptyArray(requiredHeaders)) {
-            const hasRequiredHeaders = requiredHeaders.every(header => {
-                if (!isNonEmptyString(header)) {
-                    mlog.warn([
-                        `[reading.isValidCsv]: Invalid parameter: 'requiredHeaders'`,
-                        `requiredHeaders must be of type: Array<string>`,
-                        `found array element of type: '${typeof header}' (skipping)`
-                    ].join(TAB));
-                    return true; // skip headers if they are not strings
-                }
-                return headerRow.includes(header);
-            });
-            
-            if (!hasRequiredHeaders) {
-                mlog.warn([
-                    `[isValidCsv()]: Required headers missing from headerRow`,
-                    `filePath: '${filePath}'`,
-                    `requiredHeaders: ${JSON.stringify(requiredHeaders)}`,
-                    `csvFileHeaders: ${JSON.stringify(headerRow)}`
-                ].join(TAB)); 
-                return false; 
-            }
-        }
-        // Check consistency of data rows
-        const maxRows = Math.min(lines.length, maxRowsToCheck + 1); // +1 for header
-        const expectedColumnCount = headerRow.length;
-        
-        for (let i = 1; i < maxRows; i++) {
-            const line = lines[i];
-            
-            // Skip completely empty lines if allowed
-            if (allowEmptyRows && line.trim() === '') {
-                continue;
-            }
-            
-            const rowValues: string[] = parseCsvLine(line, delimiter);
-            
-            // Check if row is empty (all fields are empty)
-            const isEmptyRow = rowValues.every(val => val === '');
-            if (isEmptyRow && allowEmptyRows) {
-                continue;
-            }
-            
-            // Check column count consistency
-            if (rowValues.length !== expectedColumnCount && !allowInconsistentColumns) {
-                mlog.warn([
-                    `[isValidCsv()]: Invalid row found: header.length !== rowValues.length`,
-                    `   header.length: ${expectedColumnCount}`,
-                    `rowValues.length: ${rowValues.length}`,
-                    ` -> Difference =  ${expectedColumnCount - rowValues.length}`,
-                    `   header:  ${JSON.stringify(headerRow)}`,
-                    // `rowValues: ${JSON.stringify(rowValues)}`,
-                    ` rowIndex:  ${i}`,
-                    ` filePath: '${filePath}'`,
-                    `delimiter: '${delimiter}'`
-                ].join(TAB));
-                return false;
-            }
-        }
-        return true;
-        
-    } catch (error) {
-        mlog.error([
-            `[isValidCsv()]: Error reading or parsing CSV file: ${filePath}`,
-            `Error: ${error instanceof Error ? error.message : String(error)}`
-        ].join(TAB));
-        return false;
-    }
-}
-/**
- * Parses a CSV line into fields, properly handling quoted fields with embedded delimiters, quotes, and newlines
- * @param line `string` - the CSV line to parse
- * @param delimiter `string` - the delimiter character
- * @returns **`fields`** `string[]` - array of field values
- */
-function parseCsvLine(line: string, delimiter: string): string[] {
-    const fields: string[] = [];
-    let current = '';
-    let inQuotes = false;
-    let i = 0;
-    while (i < line.length) {
-        const char = line[i];
-        const nextChar = line[i + 1];
-        if (!inQuotes) {
-            if (char === '"') {
-                inQuotes = true;
-            } else if (char === delimiter) {
-                fields.push(current.trim());
-                current = '';
-            } else {
-                current += char;
-            }
-        } else {
-            if (char === '"') {
-                if (nextChar === '"') {
-                    // Escaped quote within quoted field
-                    current += '"';
-                    i++; // Skip the next quote
-                } else {
-                    // End of quoted field
-                    inQuotes = false;
-                }
-            } else {
-                current += char;
-            }
-        }
-        i++;
-    }
-
-    // Add the last field
-    fields.push(current.trim());
-    
-    return fields;
-}
-/**
- * Analyzes a CSV file and returns detailed validation information
- * @param filePath `string` - path to the CSV file
- * @param options `object` - validation options
- * @returns **`analysis`** `object` - detailed analysis of the CSV file
- */
-export function analyzeCsv(
-    filePath: string,
-    options: {
-        sampleSize?: number;
-        checkEncoding?: boolean;
-        detectDelimiter?: boolean;
-    } = {}
-): {
-    isValid: boolean;
-    issues: string[];
-    warnings: string[];
-    stats: {
-        totalRows: number;
-        headerCount: number;
-        maxRowLength: number;
-        minRowLength: number;
-        emptyRows: number;
-        encoding: string | null;
-        detectedDelimiter: string | null;
-    };
-    headers: string[];
-} {
-    const { sampleSize = 1000, checkEncoding = false, detectDelimiter = false } = options;
-    const issues: string[] = [];
-    const warnings: string[] = [];
-    const stats = {
-        totalRows: 0,
-        headerCount: 0,
-        maxRowLength: 0,
-        minRowLength: Infinity,
-        emptyRows: 0,
-        encoding: null as string | null,
-        detectedDelimiter: null as string | null
-    };
-    let headers: string[] = [];
-
-    try {
-        validate.existingPathArgument(`reading.analyzeCsv`, {filePath});
-        
-        const data = fs.readFileSync(filePath, 'utf8');
-        const normalizedData = data.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-        
-        // Detect delimiter if requested
-        let delimiter: string;
-        if (detectDelimiter) {
-            const commonDelimiters = [',', '\t', ';', '|'];
-            const delimiterCounts = commonDelimiters.map(delim => ({
-                delimiter: delim,
-                count: (data.match(new RegExp(`\\${delim}`, 'g')) || []).length
-            }));
-            const mostLikely = delimiterCounts.sort((a, b) => b.count - a.count)[0];
-            delimiter = mostLikely.count > 0 ? mostLikely.delimiter : getDelimiterFromFilePath(filePath);
-            stats.detectedDelimiter = delimiter;
-        } else {
-            delimiter = getDelimiterFromFilePath(filePath);
-        }
-
-        // Parse the file properly
-        let lines: string[] = [];
-        let currentLine = '';
-        let inQuotes = false;
-        let i = 0;
-        
-        while (i < normalizedData.length) {
-            const char = normalizedData[i];
-            const nextChar = normalizedData[i + 1];
-            
-            if (char === '"') {
-                if (inQuotes && nextChar === '"') {
-                    currentLine += '""';
-                    i++;
-                } else {
-                    inQuotes = !inQuotes;
-                    currentLine += char;
-                }
-            } else if (char === '\n' && !inQuotes) {
-                lines.push(currentLine);
-                currentLine = '';
-            } else {
-                currentLine += char;
-            }
-            i++;
-        }
-        
-        if (currentLine) {
-            lines.push(currentLine);
-        }
-
-        stats.totalRows = lines.length;
-
-        if (lines.length === 0) {
-            issues.push('File is empty');
-            return { isValid: false, issues, warnings, stats, headers };
-        }
-
-        headers = parseCsvLine(lines[0], delimiter);
-        stats.headerCount = headers.length;
-        stats.maxRowLength = headers.length;
-        stats.minRowLength = headers.length;
-
-        // Check for duplicate headers
-        const headerSet = new Set(headers);
-        if (headerSet.size !== headers.length) {
-            warnings.push('Duplicate header names found');
-        }
-
-        // Check for empty headers
-        if (headers.some(h => h.trim() === '')) {
-            warnings.push('Empty header names found');
-        }
-
-        // Analyze data rows (sample if necessary)
-        const rowsToCheck = Math.min(lines.length - 1, sampleSize);
-        const step = rowsToCheck < lines.length - 1 ? Math.floor((lines.length - 1) / rowsToCheck) : 1;
-        
-        let inconsistentRows = 0;
-        for (let i = 1; i < lines.length; i += step) {
-            const line = lines[i];
-            
-            if (line.trim() === '') {
-                stats.emptyRows++;
-                continue;
-            }
-            
-            const fields = parseCsvLine(line, delimiter);
-            stats.maxRowLength = Math.max(stats.maxRowLength, fields.length);
-            stats.minRowLength = Math.min(stats.minRowLength, fields.length);
-            
-            if (fields.length !== headers.length) {
-                inconsistentRows++;
-            }
-        }
-        if (inconsistentRows > 0) {
-            warnings.push(`${inconsistentRows} rows have inconsistent column counts`);
-        }
-        if (stats.emptyRows > 0) {
-            warnings.push(`${stats.emptyRows} empty rows found`);
-        }
-        // Encoding detection (basic)
-        if (checkEncoding) {
-            try {
-                const buffer = fs.readFileSync(filePath);
-                const hasUtf8Bom = buffer.length >= 3 && 
-                    buffer[0] === 0xEF && buffer[1] === 0xBB && buffer[2] === 0xBF;
-                stats.encoding = hasUtf8Bom ? 'UTF-8 with BOM' : 'UTF-8';
-            } catch (error) {
-                warnings.push('Could not detect file encoding');
-            }
-        }
-
-        const isValid = issues.length === 0;
-        return { isValid, issues, warnings, stats, headers };
-
-    } catch (error) {
-        issues.push(`Error analyzing file: ${error instanceof Error ? error.message : String(error)}`);
-        return { isValid: false, issues, warnings, stats, headers };
-    }
-}
-
-/**
- * Attempts to repair common CSV formatting issues
- * @param filePath `string` - path to the CSV file to repair
- * @param outputPath `string` - path where the repaired CSV will be saved
- * @param options `object` - repair options
- * @returns **`repairResult`** `object` - result of the repair operation
- */
-export function repairCsv(
-    filePath: string,
-    outputPath: string,
-    options: {
-        fixQuoting?: boolean;
-        removeEmptyRows?: boolean;
-        standardizeLineEndings?: boolean;
-        fillMissingColumns?: boolean;
-        fillValue?: string;
-    } = {}
-): {
-    success: boolean;
-    repairsMade: string[];
-    errors: string[];
-} {
-    const { 
-        fixQuoting = true, 
-        removeEmptyRows = true, 
-        standardizeLineEndings = true,
-        fillMissingColumns = true,
-        fillValue = ''
-    } = options;
-    
-    const repairsMade: string[] = [];
-    const errors: string[] = [];
-
-    try {
-        validate.existingPathArgument(`reading.repairCsv`, {filePath});
-        validate.stringArgument(`reading.repairCsv`, {outputPath});
-        
-        const delimiter = getDelimiterFromFilePath(filePath);
-        let data = fs.readFileSync(filePath, 'utf8');
-        
-        // Standardize line endings
-        if (standardizeLineEndings) {
-            const originalData = data;
-            data = data.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-            if (originalData !== data) {
-                repairsMade.push('Standardized line endings');
-            }
-        }
-
-        // Parse lines properly
-        let lines: string[] = [];
-        let currentLine = '';
-        let inQuotes = false;
-        let i = 0;
-        
-        while (i < data.length) {
-            const char = data[i];
-            const nextChar = data[i + 1];
-            
-            if (char === '"') {
-                if (inQuotes && nextChar === '"') {
-                    currentLine += '""';
-                    i++;
-                } else {
-                    inQuotes = !inQuotes;
-                    currentLine += char;
-                }
-            } else if (char === '\n' && !inQuotes) {
-                lines.push(currentLine);
-                currentLine = '';
-            } else {
-                currentLine += char;
-            }
-            i++;
-        }
-        
-        if (currentLine) {
-            lines.push(currentLine);
-        }
-
-        if (lines.length === 0) {
-            errors.push('File is empty');
-            return { success: false, repairsMade, errors };
-        }
-
-        // Get expected column count from header
-        const headerFields = parseCsvLine(lines[0], delimiter);
-        const expectedColumnCount = headerFields.length;
-        
-        // Process each line
-        const repairedLines: string[] = [];
-        let emptyRowsRemoved = 0;
-        let rowsWithMissingColumns = 0;
-        
-        for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-            const line = lines[lineIndex];
-            
-            // Skip empty rows if requested
-            if (removeEmptyRows && line.trim() === '') {
-                emptyRowsRemoved++;
-                continue;
-            }
-            
-            let fields = parseCsvLine(line, delimiter);
-            
-            // Fill missing columns
-            if (fillMissingColumns && fields.length < expectedColumnCount) {
-                while (fields.length < expectedColumnCount) {
-                    fields.push(fillValue);
-                }
-                rowsWithMissingColumns++;
-            }
-            
-            // Reconstruct line with proper quoting
-            const repairedLine = fields.map(field => {
-                // Escape quotes and wrap in quotes if needed
-                if (field.includes(delimiter) || field.includes('\n') || field.includes('"')) {
-                    const escapedField = field.replace(/"/g, '""');
-                    return `"${escapedField}"`;
-                }
-                return field;
-            }).join(delimiter);
-            
-            repairedLines.push(repairedLine);
-        }
-
-        // Record repairs made
-        if (emptyRowsRemoved > 0) {
-            repairsMade.push(`Removed ${emptyRowsRemoved} empty rows`);
-        }
-        if (rowsWithMissingColumns > 0) {
-            repairsMade.push(`Fixed ${rowsWithMissingColumns} rows with missing columns`);
-        }
-
-        // Write repaired file
-        const repairedData = repairedLines.join('\n');
-        fs.writeFileSync(outputPath, repairedData, 'utf8');
-        
-        return { success: true, repairsMade, errors };
-
-    } catch (error) {
-        errors.push(`Error repairing CSV: ${error instanceof Error ? error.message : String(error)}`);
-        return { success: false, repairsMade, errors };
-    }
-}
-
-/** paths to folders or files */
-export async function validatePath(...paths: string[]): Promise<void> {
-    for (const path of paths) {
-        if (!fs.existsSync(path)) {
-            throw new Error(`[ERROR reading.validatePath()]: path does not exist: ${path}`);
-        }
-    }
-}
-
 
 /**
  * @param rowSource `string | Record<string, any>[]`

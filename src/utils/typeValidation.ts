@@ -6,59 +6,6 @@ import { equivalentAlphanumericStrings } from "./regex/index";
 
 
 /**
- * - alias for {@link isNullLike}
- * ... maybe should just change name of isNullLike but that might break things...
- * @param value `any` the value to check
- * @returns **`isNullLike`** `boolean` = `value is '' | (Array<any> & { length: 0 }) | null | undefined | Record<string, never>`
- * - **`true`** `if` the `value` is null, undefined, empty object (no keys), empty array, or empty string
- * - **`false`** `otherwise`
- */
-export const isEmpty = isNullLike;
-/**
- * @param value `any` the value to check
- * @returns **`isNullLike`** `boolean` = `value is '' | (Array<any> & { length: 0 }) | null | undefined | Record<string, never>`
- * - **`true`** `if` the `value` is null, undefined, empty object (no keys), empty array, or empty string
- * - **`false`** `otherwise`
- */
-export function isNullLike(
-    value: any
-): value is '' | null | undefined | (Array<any> & { length: 0 }) | Record<string, never> {
-    if (value === null || value === undefined) {
-        return true;
-    }
-    if (typeof value === 'boolean' || typeof value === 'number') {
-        return false;
-    }
-    // Check for empty object or array
-    if (typeof value === 'object' && isEmptyArray(Object.keys(value))) {
-        return true;
-    }
-    const isNullLikeString = (typeof value === 'string' 
-        && (value.trim() === '' 
-            || value.toLowerCase() === 'undefined' 
-            || value.toLowerCase() === 'null'
-        )
-    ); 
-    if (isNullLikeString) {
-        return true;
-    }
-    return false;
-}
-/**
- * @deprecated no type predicate b/c "A type predicate cannot reference a rest parameter.ts(1229)" 
- * @param values `any[]`
- * @returns `values.some(v => `{@link isNullLike}`(v))`
- * - **`true`** `if` any of the values are null, undefined, empty object (no keys), empty array, or empty string
- * - **`false`** `otherwise`.
- */
-export function anyNull(...values: any[]): boolean {
-    if (values === null || values === undefined) {
-        return true;
-    }
-    return values.some(v => isNullLike(v));
-}
-
-/**
  * @param value 
  * @returns **`isNonEmptyArray`** `boolean` = `value is Array<T> & { length: number }`
  * - **`true`** if `value` is an array and has at least one element, 
@@ -515,6 +462,60 @@ export class isUndefinedOr {
         return isUndefined(value) || isFunction(value);
     }
 }
+
+/**
+ * - alias for {@link isNullLike}
+ * ... maybe should just change name of isNullLike but that might break things...
+ * @param value `any` the value to check
+ * @returns **`isNullLike`** `boolean` = `value is '' | (Array<any> & { length: 0 }) | null | undefined | Record<string, never>`
+ * - **`true`** `if` the `value` is null, undefined, empty object (no keys), empty array, or empty string
+ * - **`false`** `otherwise`
+ */
+export const isEmpty = isNullLike;
+/**
+ * @param value `any` the value to check
+ * @returns **`isNullLike`** `boolean` = `value is '' | (Array<any> & { length: 0 }) | null | undefined | Record<string, never>`
+ * - **`true`** `if` the `value` is null, undefined, empty object (no keys), empty array, or empty string
+ * - **`false`** `otherwise`
+ */
+export function isNullLike(
+    value: any
+): value is '' | null | undefined | (Array<any> & { length: 0 }) | Record<string, never> {
+    if (value === null || value === undefined) {
+        return true;
+    }
+    if (typeof value === 'boolean' || typeof value === 'number') {
+        return false;
+    }
+    // Check for empty object or array
+    if (typeof value === 'object' && isEmptyArray(Object.keys(value))) {
+        return true;
+    }
+    const isNullLikeString = (typeof value === 'string' 
+        && (value.trim() === '' 
+            || value.toLowerCase() === 'undefined' 
+            || value.toLowerCase() === 'null'
+        )
+    ); 
+    if (isNullLikeString) {
+        return true;
+    }
+    return false;
+}
+/**
+ * @deprecated no type predicate b/c "A type predicate cannot reference a rest parameter.ts(1229)" 
+ * @param values `any[]`
+ * @returns `values.some(v => `{@link isNullLike}`(v))`
+ * - **`true`** `if` any of the values are null, undefined, empty object (no keys), empty array, or empty string
+ * - **`false`** `otherwise`.
+ */
+export function anyNull(...values: any[]): boolean {
+    if (values === null || values === undefined) {
+        return true;
+    }
+    return values.some(v => isNullLike(v));
+}
+
 /**
  * these may be unnecessary, but added for completeness
  */
@@ -532,6 +533,14 @@ export function isBoolean(value: any): value is boolean {
  */
 export function isFunction(value: any): value is Function {
     return (typeof value === 'function');
+}
+
+/**
+ * @param value 
+ * @returns `value === null`
+ */
+export function isNull(value: unknown): value is null {
+    return value === null;
 }
 
 /**
