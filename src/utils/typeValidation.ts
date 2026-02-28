@@ -11,7 +11,7 @@ import { equivalentAlphanumericStrings } from "./regex/index";
  * - **`true`** if `value` is an array and has at least one element, 
  * - **`false`** otherwise.
  */
-export function isNonEmptyArray<T = any>(value: any): value is Array<T> & { length: number } {
+export function isNonEmptyArray<T>(value: any): value is Array<T> & { length: number } {
     return Array.isArray(value) && value.length > 0;
 }
 /**
@@ -20,7 +20,7 @@ export function isNonEmptyArray<T = any>(value: any): value is Array<T> & { leng
  * - **`true`** if `value` is an array and has no elements,
  * - **`false`** `otherwise`
  */
-export function isEmptyArray<T = any>(value: any): value is Array<T> & { length: 0 } {
+export function isEmptyArray<T>(value: any): value is Array<T> & { length: 0 } {
     return Array.isArray(value) && value.length === 0; 
 }
 
@@ -55,7 +55,7 @@ export function isIntegerArray(
 export function isStringArray(
     value: any,
     requireNonEmpty: boolean = true
-): value is Array<string> & { length: number } {
+): value is string[] & { length: number } {
     return (requireNonEmpty 
         ? isNonEmptyArray(value) && value.every(el => isNonEmptyString(el)) 
         : isEmptyArray(value)
@@ -64,7 +64,7 @@ export function isStringArray(
 
 /**
  * @note **passing in an array will return `false`.**
- * @note a value is considered trivial if {@link isNullLike}`(value)` returns `true` and vice versa
+ * @note a value is considered trivial if {@link isEmpty}`(value)` returns `true` and vice versa
  * @param obj `any` The object to check.
  * @param requireAll `boolean` - flag indicating whether all values must be nontrivial or not
  * @returns **`hasNonTrivialKeys`** `boolean`
@@ -77,8 +77,8 @@ export function hasNonTrivialKeys(
 ): obj is Record<string, any> {
     if (!isObject(obj)) { return false }
     return (requireAll 
-        ? Object.values(obj).every(v=>!isNullLike(v)) 
-        : Object.values(obj).some(v=>!isNullLike(v))
+        ? Object.values(obj).every(v=>!isEmpty(v)) 
+        : Object.values(obj).some(v=>!isEmpty(v))
     );
 }
 /**
@@ -463,22 +463,14 @@ export class isUndefinedOr {
     }
 }
 
+
 /**
- * - alias for {@link isNullLike}
- * ... maybe should just change name of isNullLike but that might break things...
  * @param value `any` the value to check
- * @returns **`isNullLike`** `boolean` = `value is '' | (Array<any> & { length: 0 }) | null | undefined | Record<string, never>`
+ * @returns **`isEmpty`** `boolean` = `value is '' | (Array<any> & { length: 0 }) | null | undefined | Record<string, never>`
  * - **`true`** `if` the `value` is null, undefined, empty object (no keys), empty array, or empty string
  * - **`false`** `otherwise`
  */
-export const isEmpty = isNullLike;
-/**
- * @param value `any` the value to check
- * @returns **`isNullLike`** `boolean` = `value is '' | (Array<any> & { length: 0 }) | null | undefined | Record<string, never>`
- * - **`true`** `if` the `value` is null, undefined, empty object (no keys), empty array, or empty string
- * - **`false`** `otherwise`
- */
-export function isNullLike(
+export function isEmpty(
     value: any
 ): value is '' | null | undefined | (Array<any> & { length: 0 }) | Record<string, never> {
     if (value === null || value === undefined) {
@@ -491,29 +483,16 @@ export function isNullLike(
     if (typeof value === 'object' && isEmptyArray(Object.keys(value))) {
         return true;
     }
-    const isNullLikeString = (typeof value === 'string' 
+    const isEmptyString = (typeof value === 'string' 
         && (value.trim() === '' 
             || value.toLowerCase() === 'undefined' 
             || value.toLowerCase() === 'null'
         )
     ); 
-    if (isNullLikeString) {
+    if (isEmptyString) {
         return true;
     }
     return false;
-}
-/**
- * @deprecated no type predicate b/c "A type predicate cannot reference a rest parameter.ts(1229)" 
- * @param values `any[]`
- * @returns `values.some(v => `{@link isNullLike}`(v))`
- * - **`true`** `if` any of the values are null, undefined, empty object (no keys), empty array, or empty string
- * - **`false`** `otherwise`.
- */
-export function anyNull(...values: any[]): boolean {
-    if (values === null || values === undefined) {
-        return true;
-    }
-    return values.some(v => isNullLike(v));
 }
 
 /**
