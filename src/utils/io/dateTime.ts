@@ -81,7 +81,7 @@ export const DEFAULT_TIMEZONE = 'America/Los_Angeles';
  * @example "2025-04-16T00:00:00.000Z"
  * @note dateFormat === DateFormatEnum.LOCALE -> use {@link DEFAULT_LOCALE} and {@link DEFAULT_TIMEZONE}
  */
-export function getDateFromUnixTimestamp(unixTimestamp: number, dateFormat: DateFormatEnum): string | null {
+export function getDateStringFromUnixTimestamp(unixTimestamp: number, dateFormat: DateFormatEnum): string | null {
     if (!unixTimestamp) {
         console.error('No unixTimestamp provided');
         return null;

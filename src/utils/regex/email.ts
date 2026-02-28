@@ -21,10 +21,5 @@ export function isValidEmail(email: string, excludeSubstrings?: string | RegExp 
 /** @returns **`email`**: `string` - the first email that matches {@link EMAIL_REGEX} or an empty string `''`*/
 export function extractEmail(email: string): RegExpMatchArray | null {
     if (!email) return null;
-    email = email.trim();
-    const match = email.match(EMAIL_REGEX);
-    if (match) {
-        return match;
-    }
-    return null;
+    return email.trim().match(EMAIL_REGEX);
 }

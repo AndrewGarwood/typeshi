@@ -145,10 +145,7 @@ export function readFileToArraySync(
  * @param expectedExtension `string | `{@link FileExtension}
  * @returns **`validatedFilePath`** `string` 
  */
-export function coerceFileExtension(filePath: string, expectedExtension: string | FileExtension): string {
-    validate.multipleStringArguments(getSourceString(__filename, coerceFileExtension.name), 
-        {filePath, expectedExtension}
-    );
+export function coerceFileExtension(filePath: string, expectedExtension: FileExtension): string {
     expectedExtension = expectedExtension.replace(/\./, '');
     if (filePath.endsWith(`.${expectedExtension}`)) {
         return filePath
@@ -247,10 +244,10 @@ export async function concatenateFiles(
                     throw new Error(message);
                 }
                 for (const header of missingHeaders) {
-                    (row as Record<string, any>)[header] = '';
+                    (row)[header] = '';
                 }
             }
-            concatenatedRows.push(row as Record<string, any>);
+            concatenatedRows.push(row);
         }
     }
     return concatenatedRows;
@@ -399,7 +396,7 @@ export async function getCsvRows(
                 );
                 reject(error);
             });
-    })
+    });
 }
 
 /**

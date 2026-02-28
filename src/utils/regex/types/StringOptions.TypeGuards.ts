@@ -2,7 +2,7 @@
  * @file src/utils/regex/types/StringOptions.TypeGuards.ts
  */
 import { 
-    DEP_CleanStringOptions, StringCaseEnum, StringCleanOptions, StringPadEnum, 
+    StringCaseEnum, StringCleanOptions, StringPadEnum, 
     StringPadOptions, StringReplaceParams, StringStripOptions, StringCondition, StringStripCondition 
 } from "./StringOptions";
 import { hasKeys, isFunction, isNonEmptyArray, isNonEmptyString, isObject, isPositveInteger, isUndefinedOr } from "../../typeValidation";
@@ -32,7 +32,7 @@ export function isStringPadOptions(value: unknown): value is StringPadOptions {
     const candidate = value as StringPadOptions;
     return (isObject(candidate)
         && isPositveInteger(candidate.maxLength)
-        && (!candidate.char || (typeof candidate.char === 'string' && candidate.char.length === 1))
+        && isUndefinedOr.string(candidate.char) //  && candidate.char.length === 1
         && isUndefinedOr.type(candidate.side, isStringPadEnum)
     );
     
@@ -53,7 +53,8 @@ export function isStringPadEnum(value: unknown): value is StringPadEnum {
 export function isStringReplaceParams(value: unknown): value is StringReplaceParams {
     const candidate = value as StringReplaceParams;
     return (isObject(candidate)
-        && (typeof candidate.searchValue === 'string' || candidate.searchValue instanceof RegExp)
+        && (typeof candidate.searchValue === 'string' 
+            || candidate.searchValue instanceof RegExp)
         && (typeof candidate.replaceValue === 'string')
     );
 }
@@ -62,7 +63,7 @@ export function isStringCondition(value: unknown): value is StringCondition {
     const candidate = value as StringCondition;
     return (isObject(candidate)
         && isFunction(candidate.condition)
-        && (!candidate.args || Array.isArray(candidate.args))
+        && isUndefinedOr.array(candidate.args)
     );
 }
 
@@ -72,20 +73,5 @@ export function isStringStripCondition(value: unknown): value is StringStripCond
         && isFunction(candidate.condition)
         && isUndefinedOr.array(candidate.args)
         && isUndefinedOr.positiveInteger(candidate.max)
-    );
-
-}
-
-
-/**
- * - {@link DEP_CleanStringOptions}
- * @param value `any`
- * @returns **`isCleanStringOptions`** `boolean`
- * - **`true`** if the `value` is an object with at least one key in `['strip', 'case', 'pad', 'replace']` and no other keys,
- * - **`false`** `otherwise`.
- */
-export function DEP_isCleanStringOptions(value: any): value is DEP_CleanStringOptions {
-    return (value && typeof value === 'object'
-        && hasKeys(value, ['strip', 'case', 'pad', 'replace'], false, true)
     );
 }

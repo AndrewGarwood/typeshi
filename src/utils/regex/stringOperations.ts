@@ -2,9 +2,8 @@
  * @file src/utils/regex/stringOperations.ts
  */
 import { typeshiLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL} from "../../config";
-import { DEP_CleanStringOptions, DEP_StringCaseOptions, StringReplaceOptions } from ".";
+import { StringCleanOptions, clean } from ".";
 import { RegExpFlagsEnum, StringReplaceParams } from "./types/StringOptions";
-import { DEP_clean } from "./cleaning";
 import { distance as levenshteinDistance } from "fastest-levenshtein";
 import { isNonEmptyArray, isNonEmptyString, isStringArray } from "../typeValidation";
 
@@ -31,9 +30,8 @@ export function stringEndsWithAnyOf(
         return false;
     }
     let regex = undefined;
-    if (typeof suffixes === 'string') {
-        suffixes = [suffixes];
-    }
+    if (typeof suffixes === 'string') suffixes = [suffixes];
+    
     let flagString = (isNonEmptyArray(flags) 
         ? flags.join('') 
         : suffixes instanceof RegExp && isNonEmptyString(suffixes.flags)
@@ -171,14 +169,12 @@ export function equivalentAlphanumericStrings(
     tolerance: number = 0.90,
 ): boolean {
     if (!s1 || !s2) return false;
-    const cleanOptions = {
-        case: { toLower: true } as DEP_StringCaseOptions, 
-        replace: [
-            {searchValue: /[^A-Za-z0-9]/g, replaceValue: '' }
-        ] as StringReplaceOptions
-    } as DEP_CleanStringOptions;
-    let s1Alphabetical = DEP_clean(s1, cleanOptions).split('').sort().join('');
-    let s2Alphabetical = DEP_clean(s2, cleanOptions).split('').sort().join('');
+    const cleanOptions: StringCleanOptions = {
+        case: 'lower',
+        replace: [{searchValue: /[^A-Za-z0-9]/g, replaceValue: '' }]
+    }
+    let s1Alphabetical = clean(s1, cleanOptions).split('').sort().join('');
+    let s2Alphabetical = clean(s2, cleanOptions).split('').sort().join('');
     if (s1Alphabetical.length === 0 || s2Alphabetical.length === 0) {
         return false;
     }
@@ -213,9 +209,7 @@ export function equivalentAlphanumericStrings(
 
 /** for simple regular expressions... 
  * so like not ones that have parentheses, pipes, or curly braced numbers */
-export function extractSource(
-    regex: RegExp
-): string {
+export function extractSource(regex: RegExp): string {
     if (!regex) return '';
     const REMOVE_ENDPOINT_CHARS: StringReplaceParams = {
         searchValue: /(^(\^|\\b)|(\$|\\b)$)/g, replaceValue: ''
@@ -229,7 +223,7 @@ export function extractSource(
     const REMOVE_UNESCAPED_QUESTION_MARK: StringReplaceParams = {
         searchValue: /(?<!\\)\?/g, replaceValue: ''
     }
-    let source = DEP_clean(regex.source, {
+    let source = clean(regex.source, {
         replace: [
             REMOVE_ENDPOINT_CHARS,
             REPLACE_ESCAPED_DOT,

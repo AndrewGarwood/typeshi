@@ -9,7 +9,12 @@ import {
     equivalentAlphanumericStrings, 
 } from "./stringOperations";
 import { 
-    StringCaseEnum, StringPadOptions, StringReplaceParams 
+    StringCaseEnum, 
+    StringPadOptions, 
+    StringReplaceParams, 
+    StringStripCondition, 
+    StringStripOptions,
+    StringCleanOptions 
 } from "./types";
 import {  
     applyCaseOptions, 
@@ -90,7 +95,8 @@ export class Str {
     static replace = applyReplaceParams;
     /**
      * @param s `string` 
-     * @param options {@link StringStripOptions} = `{ char?: string, left?: StringStripCondition, right?: StringStripCondition }`
+     * @param options {@link StringStripOptions} 
+     * = `{ char?: string, left?: `{@link StringStripCondition}`, right?: StringStripCondition }`
      * @returns **`s`**
      */
     static strip = applyStripOptions;

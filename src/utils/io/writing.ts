@@ -3,7 +3,7 @@
  */
 import * as fs from "node:fs";
 import { DELAY } from "../../config/env";
-import { typeshiLogger as mlog, INDENT_LOG_LINE as TAB } from "../../config/setupLog";
+import { typeshiLogger as mlog, typeshiHiddenLogger as hlog, INDENT_LOG_LINE as TAB } from "../../config/setupLog";
 import { coerceFileExtension, getDelimiterFromFilePath } from "./reading";
 import { DelimiterCharacterEnum, isWriteJsonOptions, WriteJsonOptions } from "./types";
 import { isEmptyArray, isNonEmptyString, isObject, isStringArray } from "../typeValidation";
@@ -20,7 +20,7 @@ import { getSourceString } from "./logging";
  * @param options.enableOverwrite `boolean` - `optional`, default=`true` If `enableOverwrite` is `true`, the file will be overwritten. If `false`, the `data` will be appended to the file.
  * @returns {void}
  */
-export function writeObjectToJsonSync(options: WriteJsonOptions): void
+export function writeJsonSync(options: WriteJsonOptions): void
 
 /**
  * Output JSON data to a file with `fs.writeFileSync` or `fs.appendFileSync`.
@@ -31,21 +31,22 @@ export function writeObjectToJsonSync(options: WriteJsonOptions): void
  * @param enableOverwrite `boolean` - `optional`, default=`true` If `enableOverwrite` is `true`, the file will be overwritten. If `false`, the `data` will be appended to the file.
  * @returns {void}
  */
-export function writeObjectToJsonSync(
+export function writeJsonSync(
     data: Record<string, any> | string, 
     filePath: string,
     indent?: number,
     enableOverwrite?: boolean
 ): void
 
-export function writeObjectToJsonSync(
+/** `writeObjectToJsonSync` */
+export function writeJsonSync(
     /** {@link WriteJsonOptions} `| Record<string, any> | string`, */
     arg1: WriteJsonOptions | Record<string, any> | string, 
     filePath?: string,
     indent: number=4,
     enableOverwrite: boolean=true
 ): void {
-    const source = getSourceString(__filename, writeObjectToJsonSync.name);
+    const source = getSourceString(__filename, writeJsonSync.name);
     if (!arg1) {
         mlog.error(`${source} No data to write to JSON file'`);
         return;
@@ -73,18 +74,13 @@ export function writeObjectToJsonSync(
         try {
             objectData = JSON.parse(data) as Record<string, any>;
         } catch (error) {
-            mlog.error(
-                `${source} Error parsing string to JSON'`,
-                error
-            );
+            mlog.error(`${source} Error parsing string to JSON'`, error);
             return;
         }
     } else if (isObject(data)) {
         objectData = data;
     } else {
-        mlog.error(
-            `${source} Invalid parameter 'data'`,
-        );
+        mlog.error(`${source} Invalid parameter 'data'`,);
         return;
     }
     
@@ -96,7 +92,7 @@ export function writeObjectToJsonSync(
         } else {
             fs.appendFileSync(outputPath, jsonData, { flag: 'a' });
         }
-        // mlog.info(`[writing.writeObjectToJson()] file saved to '${outputPath}'`)
+        hlog.info(`${source} file saved to '${outputPath}'`)
     } catch (error) {
         mlog.error(`${source} Error writing to JSON file'`,
             error
@@ -105,17 +101,15 @@ export function writeObjectToJsonSync(
     }
 }
 
-export const writeJsonSync = writeObjectToJsonSync;
 
-
-export const writeArraysToCsvSync = writeListsToCsvSync;
 /**
+ * `writeListsToCsvSync`
  * @param listData `Record<string, Array<string>>` map col names to col values
  * @param outputPath `string`
  * @param delimiter `string` - optional, default=`'\t'`
  * @param columnDelimiter `string` - optional, default=`''`
  */
-export function writeListsToCsvSync(
+export function writeArraysToCsvSync(
     listData: Record<string, Array<string>>,
     outputPath: string,
     delimiter: string = DelimiterCharacterEnum.TAB,
@@ -234,7 +228,7 @@ export function trimFileSync(maxMB: number=5, ...filePaths: string[]): void {
             mlog.info(`Trimmed file to last ${maxMB}MB: ${filePath}`);
         } catch (e) {
             mlog.error('Error trimming file to last 10MB', e);
-            throw e;
+            // throw e;
         }
     }
 }
@@ -260,7 +254,7 @@ export async function trimFile(maxMB: number=5, ...filePaths: string[]): Promise
             mlog.info(`Trimmed file to last ${maxMB}MB: ${filePath}`);
         } catch (e) {
             mlog.error('Error trimming file to last 10MB', e);
-            throw e;
+            // throw e;
         }
     }
     await DELAY(1000, `[trimFile()] Releasing file handles...`);
