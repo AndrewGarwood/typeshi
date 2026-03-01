@@ -8,7 +8,6 @@ exports.isStringPadEnum = isStringPadEnum;
 exports.isStringReplaceParams = isStringReplaceParams;
 exports.isStringCondition = isStringCondition;
 exports.isStringStripCondition = isStringStripCondition;
-exports.DEP_isCleanStringOptions = DEP_isCleanStringOptions;
 /**
  * @file src/utils/regex/types/StringOptions.TypeGuards.ts
  */
@@ -34,7 +33,7 @@ function isStringPadOptions(value) {
     const candidate = value;
     return ((0, typeValidation_1.isObject)(candidate)
         && (0, typeValidation_1.isPositveInteger)(candidate.maxLength)
-        && (!candidate.char || (typeof candidate.char === 'string' && candidate.char.length === 1))
+        && typeValidation_1.isUndefinedOr.string(candidate.char) //  && candidate.char.length === 1
         && typeValidation_1.isUndefinedOr.type(candidate.side, isStringPadEnum));
 }
 function isStringCaseEnum(value) {
@@ -48,14 +47,15 @@ function isStringPadEnum(value) {
 function isStringReplaceParams(value) {
     const candidate = value;
     return ((0, typeValidation_1.isObject)(candidate)
-        && (typeof candidate.searchValue === 'string' || candidate.searchValue instanceof RegExp)
+        && (typeof candidate.searchValue === 'string'
+            || candidate.searchValue instanceof RegExp)
         && (typeof candidate.replaceValue === 'string'));
 }
 function isStringCondition(value) {
     const candidate = value;
     return ((0, typeValidation_1.isObject)(candidate)
         && (0, typeValidation_1.isFunction)(candidate.condition)
-        && (!candidate.args || Array.isArray(candidate.args)));
+        && typeValidation_1.isUndefinedOr.array(candidate.args));
 }
 function isStringStripCondition(value) {
     const candidate = value;
@@ -63,15 +63,4 @@ function isStringStripCondition(value) {
         && (0, typeValidation_1.isFunction)(candidate.condition)
         && typeValidation_1.isUndefinedOr.array(candidate.args)
         && typeValidation_1.isUndefinedOr.positiveInteger(candidate.max));
-}
-/**
- * - {@link DEP_CleanStringOptions}
- * @param value `any`
- * @returns **`isCleanStringOptions`** `boolean`
- * - **`true`** if the `value` is an object with at least one key in `['strip', 'case', 'pad', 'replace']` and no other keys,
- * - **`false`** `otherwise`.
- */
-function DEP_isCleanStringOptions(value) {
-    return (value && typeof value === 'object'
-        && (0, typeValidation_1.hasKeys)(value, ['strip', 'case', 'pad', 'replace'], false, true));
 }

@@ -71,6 +71,7 @@ function getSourceString(fileName, func, funcInfo, startLine, endLine) {
     return `[${fileName}.${funcName}(${(0, typeValidation_1.isNonEmptyString)(funcInfo) ? ` ${funcInfo} ` : ''})${lineNumberText}]`;
 }
 /**
+ * @deprecated
  * Auto-formats debug logs at the end of application execution.
  * Call this function when your main application is finishing.
  * @param filePaths `string[]` - optional, specific file paths to format.
@@ -99,6 +100,7 @@ function autoFormatLogsOnExit(filePaths) {
     }
 }
 /**
+ * @deprecated
  * Formats a debug log file from JSON format to a more readable text format.
  * Removes the numeric keys and properly handles escape sequences.
  * @param inputPath `string` - path to the input log file (e.g., DEBUG.txt)
@@ -125,6 +127,7 @@ function formatDebugLogFile(inputPath, outputPath) {
     }
 }
 /**
+ * @deprecated
  * Formats the content of a debug log file from JSON objects to readable text.
  * @param content `string` - the raw content of the log file
  * @returns `string` - the formatted content
@@ -179,6 +182,7 @@ function formatLogContent(content) {
     return formattedLines.join('\n');
 }
 /**
+ * @deprecated
  * Formats a single log entry object into readable text.
  * @param logObj `Record<string, any>` - the parsed log object
  * @returns `string` - the formatted log entry
@@ -209,20 +213,7 @@ function formatSingleLogEntry(logObj) {
     return lines.join(''); // lines.join('\n');
 }
 /**
- * Unescapes a string by replacing escape sequences with their actual characters.
- * @param s `string` - the string with escape sequences
- * @returns `string` - the unescaped string
- */
-function unescapeString(s) {
-    return String(s) // coerce passed value to string
-        .replace(/\\n/g, '\n') // Replace \n with actual newlines
-        .replace(/\\t/g, '\t') // Replace \t with actual tabs
-        .replace(/\\r/g, '\r') // Replace \r with carriage returns
-        .replace(/\\"/g, '"') // Replace \" with actual quotes
-        .replace(/\\\\/g, '\\') // Replace \\ with single backslash
-        .replace(/\\'/g, "'"); // Replace \' with actual single quotes
-}
-/**
+ * @deprecated
  * Formats all debug log files in the log directory.
  * Looks for .txt files and creates .FORMATTED.txt versions.
  * @param logDirectory `string` - optional, path to the log directory.
@@ -259,6 +250,7 @@ function formatAllDebugLogs(logDirectory) {
     }
 }
 /**
+ * @deprecated
  * reduce metadata to two entries, then return stringified `logObj`
  * @param logObj {@link ILogObj}
  * @returns `string`
@@ -278,4 +270,18 @@ function formatLogObj(logObj) {
         delete logObj['_meta'];
     }
     return JSON.stringify(logObj, null, 4) + "\n";
+}
+/**
+ * Unescapes a string by replacing escape sequences with their actual characters.
+ * @param s `string` - the string with escape sequences
+ * @returns `string` - the unescaped string
+ */
+function unescapeString(s) {
+    return String(s) // coerce passed value to string
+        .replace(/\\n/g, '\n') // Replace \n with actual newlines
+        .replace(/\\t/g, '\t') // Replace \t with actual tabs
+        .replace(/\\r/g, '\r') // Replace \r with carriage returns
+        .replace(/\\"/g, '"') // Replace \" with actual quotes
+        .replace(/\\\\/g, '\\') // Replace \\ with single backslash
+        .replace(/\\'/g, "'"); // Replace \' with actual single quotes
 }

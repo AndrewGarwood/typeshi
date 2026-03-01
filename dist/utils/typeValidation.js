@@ -3,9 +3,7 @@
  * @file src/utils/typeValidation.ts
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isUndefinedOr = exports.isOptional = exports.isType = exports.isEmpty = void 0;
-exports.isNullLike = isNullLike;
-exports.anyNull = anyNull;
+exports.isUndefinedOr = exports.isOptional = exports.isType = void 0;
 exports.isNonEmptyArray = isNonEmptyArray;
 exports.isEmptyArray = isEmptyArray;
 exports.isIntegerArray = isIntegerArray;
@@ -19,59 +17,13 @@ exports.isPrimitiveValue = isPrimitiveValue;
 exports.isInteger = isInteger;
 exports.isObject = isObject;
 exports.isPositveInteger = isPositveInteger;
+exports.isEmpty = isEmpty;
 exports.isBoolean = isBoolean;
 exports.isFunction = isFunction;
+exports.isNull = isNull;
 exports.isUndefined = isUndefined;
 exports.isUndefinedOrNull = isUndefinedOrNull;
 const index_1 = require("./regex/index");
-/**
- * - alias for {@link isNullLike}
- * ... maybe should just change name of isNullLike but that might break things...
- * @param value `any` the value to check
- * @returns **`isNullLike`** `boolean` = `value is '' | (Array<any> & { length: 0 }) | null | undefined | Record<string, never>`
- * - **`true`** `if` the `value` is null, undefined, empty object (no keys), empty array, or empty string
- * - **`false`** `otherwise`
- */
-exports.isEmpty = isNullLike;
-/**
- * @param value `any` the value to check
- * @returns **`isNullLike`** `boolean` = `value is '' | (Array<any> & { length: 0 }) | null | undefined | Record<string, never>`
- * - **`true`** `if` the `value` is null, undefined, empty object (no keys), empty array, or empty string
- * - **`false`** `otherwise`
- */
-function isNullLike(value) {
-    if (value === null || value === undefined) {
-        return true;
-    }
-    if (typeof value === 'boolean' || typeof value === 'number') {
-        return false;
-    }
-    // Check for empty object or array
-    if (typeof value === 'object' && isEmptyArray(Object.keys(value))) {
-        return true;
-    }
-    const isNullLikeString = (typeof value === 'string'
-        && (value.trim() === ''
-            || value.toLowerCase() === 'undefined'
-            || value.toLowerCase() === 'null'));
-    if (isNullLikeString) {
-        return true;
-    }
-    return false;
-}
-/**
- * @deprecated no type predicate b/c "A type predicate cannot reference a rest parameter.ts(1229)"
- * @param values `any[]`
- * @returns `values.some(v => `{@link isNullLike}`(v))`
- * - **`true`** `if` any of the values are null, undefined, empty object (no keys), empty array, or empty string
- * - **`false`** `otherwise`.
- */
-function anyNull(...values) {
-    if (values === null || values === undefined) {
-        return true;
-    }
-    return values.some(v => isNullLike(v));
-}
 /**
  * @param value
  * @returns **`isNonEmptyArray`** `boolean` = `value is Array<T> & { length: number }`
@@ -118,7 +70,7 @@ function isStringArray(value, requireNonEmpty = true) {
 }
 /**
  * @note **passing in an array will return `false`.**
- * @note a value is considered trivial if {@link isNullLike}`(value)` returns `true` and vice versa
+ * @note a value is considered trivial if {@link isEmpty}`(value)` returns `true` and vice versa
  * @param obj `any` The object to check.
  * @param requireAll `boolean` - flag indicating whether all values must be nontrivial or not
  * @returns **`hasNonTrivialKeys`** `boolean`
@@ -130,8 +82,8 @@ function hasNonTrivialKeys(obj, requireAll = false) {
         return false;
     }
     return (requireAll
-        ? Object.values(obj).every(v => !isNullLike(v))
-        : Object.values(obj).some(v => !isNullLike(v)));
+        ? Object.values(obj).every(v => !isEmpty(v))
+        : Object.values(obj).some(v => !isEmpty(v)));
 }
 /**
  * @TODO add overload on param `keys` where keys = `{ required: string[], optional: string[] }`
@@ -440,6 +392,32 @@ isUndefinedOr.function = (value) => {
     return isUndefined(value) || isFunction(value);
 };
 /**
+ * @param value `any` the value to check
+ * @returns **`isEmpty`** `boolean` = `value is '' | (Array<any> & { length: 0 }) | null | undefined | Record<string, never>`
+ * - **`true`** `if` the `value` is null, undefined, empty object (no keys), empty array, or empty string
+ * - **`false`** `otherwise`
+ */
+function isEmpty(value) {
+    if (value === null || value === undefined) {
+        return true;
+    }
+    if (typeof value === 'boolean' || typeof value === 'number') {
+        return false;
+    }
+    // Check for empty object or array
+    if (typeof value === 'object' && isEmptyArray(Object.keys(value))) {
+        return true;
+    }
+    const isEmptyString = (typeof value === 'string'
+        && (value.trim() === ''
+            || value.toLowerCase() === 'undefined'
+            || value.toLowerCase() === 'null'));
+    if (isEmptyString) {
+        return true;
+    }
+    return false;
+}
+/**
  * these may be unnecessary, but added for completeness
  */
 /**
@@ -455,6 +433,13 @@ function isBoolean(value) {
  */
 function isFunction(value) {
     return (typeof value === 'function');
+}
+/**
+ * @param value
+ * @returns `value === null`
+ */
+function isNull(value) {
+    return value === null;
 }
 /**
  * - passing in `null` returns `false`

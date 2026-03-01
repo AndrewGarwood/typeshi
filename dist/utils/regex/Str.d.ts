@@ -72,7 +72,8 @@ export declare class Str {
     static replace: typeof applyReplaceParams;
     /**
      * @param s `string`
-     * @param options {@link StringStripOptions} = `{ char?: string, left?: StringStripCondition, right?: StringStripCondition }`
+     * @param options {@link StringStripOptions}
+     * = `{ char?: string, left?: `{@link StringStripCondition}`, right?: StringStripCondition }`
      * @returns **`s`**
      */
     static strip: typeof applyStripOptions;

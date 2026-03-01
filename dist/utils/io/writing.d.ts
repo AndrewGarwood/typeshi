@@ -13,7 +13,7 @@ import { WriteJsonOptions } from "./types";
  * @param options.enableOverwrite `boolean` - `optional`, default=`true` If `enableOverwrite` is `true`, the file will be overwritten. If `false`, the `data` will be appended to the file.
  * @returns {void}
  */
-export declare function writeObjectToJsonSync(options: WriteJsonOptions): void;
+export declare function writeJsonSync(options: WriteJsonOptions): void;
 /**
  * Output JSON data to a file with `fs.writeFileSync` or `fs.appendFileSync`.
  * @param data `Record<string, any> | string` - JSON data to write to file
@@ -23,16 +23,15 @@ export declare function writeObjectToJsonSync(options: WriteJsonOptions): void;
  * @param enableOverwrite `boolean` - `optional`, default=`true` If `enableOverwrite` is `true`, the file will be overwritten. If `false`, the `data` will be appended to the file.
  * @returns {void}
  */
-export declare function writeObjectToJsonSync(data: Record<string, any> | string, filePath: string, indent?: number, enableOverwrite?: boolean): void;
-export declare const writeJsonSync: typeof writeObjectToJsonSync;
-export declare const writeArraysToCsvSync: typeof writeListsToCsvSync;
+export declare function writeJsonSync(data: Record<string, any> | string, filePath: string, indent?: number, enableOverwrite?: boolean): void;
 /**
+ * `writeListsToCsvSync`
  * @param listData `Record<string, Array<string>>` map col names to col values
  * @param outputPath `string`
  * @param delimiter `string` - optional, default=`'\t'`
  * @param columnDelimiter `string` - optional, default=`''`
  */
-export declare function writeListsToCsvSync(listData: Record<string, Array<string>>, outputPath: string, delimiter?: string, columnDelimiter?: string): void;
+export declare function writeArraysToCsvSync(listData: Record<string, Array<string>>, outputPath: string, delimiter?: string, columnDelimiter?: string): void;
 /**
  * @param arr `T[]`
  * @param outputPath `string`

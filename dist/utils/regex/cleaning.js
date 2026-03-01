@@ -5,11 +5,7 @@ exports.applyStripOptions = applyStripOptions;
 exports.applyReplaceParams = applyReplaceParams;
 exports.applyPadOptions = applyPadOptions;
 exports.applyCaseOptions = applyCaseOptions;
-exports.DEP_applyPadOptions = DEP_applyPadOptions;
-exports.DEP_applyStripOptions = DEP_applyStripOptions;
 exports.toTitleCase = toTitleCase;
-exports.DEP_applyCaseOptions = DEP_applyCaseOptions;
-exports.DEP_clean = DEP_clean;
 /**
  * @file src/utils/regex/cleaning.ts
  */
@@ -154,7 +150,7 @@ function applyPadOptions(s, options) {
             s = s.padEnd(maxLength, char);
             return s;
         default:
-            config_1.typeshiLogger.error([`[Str.applyPadOptions()] Invalid argument 'options.side'`,
+            config_1.typeshiLogger.error([`[applyPadOptions()] Invalid argument 'options.side'`,
                 `Expected: 'left' | 'right' | 'both'`,
                 `Received: '${side}'`,
                 `Returing unaltered string...`
@@ -179,76 +175,12 @@ function applyCaseOptions(s, caseOptions) {
             return toTitleCase(s);
         default:
             config_1.typeshiLogger.warn([
-                '[applyCase()] Invalid case option. Returning original string.',
-                `Expected one of: ${Object.values(types_1.StringCaseEnum).join(', ')}`,
-                `Received: ${caseOptions}`
+                '[applyCaseOptions()] Unsupported case option. Returning original string.',
+                `Expected: 'upper' | 'lower' | 'title'`,
+                `Received: '${caseOptions}'`
             ].join(config_1.INDENT_LOG_LINE));
             return s;
     }
-}
-/**
- * @deprecated
- * @param s `string` - the string to handle padding options for
- * @param padOptions — {@link StringPadOptions} - `optional` padding options to apply to the string
- * = `{ padLength: number, padChar: string, padLeft: boolean, padRight: boolean }`
- * - applies the first padding option that is `true` and ignores the rest
- * @returns **`s`** - the string with padding options applied
- * @note `if` `s.length >= padLength`, no padding is applied
- */
-function DEP_applyPadOptions(s, padOptions = { padLength: 24, padChar: ' ', padLeft: false, padRight: false }) {
-    if (!s)
-        return '';
-    const { padLength, padChar, padLeft, padRight } = padOptions;
-    if (typeof padLength !== 'number' || padLength < 0) {
-        config_1.typeshiLogger.warn('handlePadOptions() Invalid padLength. Expected a positive integer, but received:', padLength);
-        return s;
-    }
-    if (s.length >= padLength) {
-        return s; // No padding needed
-    }
-    if (padLeft) {
-        s = s.padStart(padLength, padChar);
-    }
-    else if (padRight) {
-        s = s.padEnd(padLength, padChar);
-    }
-    return s;
-}
-/**
- * @param s `string`
- * @param stripOptions — {@link DEP_StringStripOptions}
- * = `{ char: string, escape?: boolean, stripLeftCondition?: (s: string, ...args: any[]) => boolean, leftArgs?: any[], stripRightCondition?: (s: string, ...args: any[]) => boolean, rightArgs?: any[] }`
- * - if `stripLeftCondition(s, leftArgs)` is `true` or `stripLeftCondition` is `undefined` (i.e. no conditions need to be met to strip left):
- * - - then the left side of the `s` is stripped of `char`
- * - if `stripRightCondition(s, rightArgs)` is `true` or `stripRightCondition` is `undefined` (i.e. no conditions need to be met to strip right):
- * - - then the right side of the `s` is stripped of `char`
- * @param stripOptions.escape escape special regex characters in `char` with `char.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')`
- * @returns `string` - the string with leading and trailing characters removed
- */
-function DEP_applyStripOptions(s, stripOptions) {
-    if (!s)
-        return '';
-    let { char, escape = false, stripLeftCondition = false, leftArgs, stripRightCondition = false, rightArgs } = stripOptions;
-    if (escape) {
-        char = char.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    }
-    let regexSource = '';
-    const leftSideUnconditionalOrMeetsCondition = !stripLeftCondition || (stripLeftCondition && stripLeftCondition(s, leftArgs));
-    const rightSideUnconditionalOrMeetsCondition = !stripRightCondition || (stripRightCondition && stripRightCondition(s, rightArgs));
-    if (leftSideUnconditionalOrMeetsCondition) {
-        regexSource = regexSource + `^${char}+`;
-    }
-    if (regexSource.length > 0) {
-        regexSource = regexSource + '|';
-    }
-    if (rightSideUnconditionalOrMeetsCondition) {
-        regexSource = regexSource + `${char}+$`;
-    }
-    if (!stripLeftCondition && !stripRightCondition) { // assume strip both sides
-        regexSource = `^${char}+|${char}+$`;
-    }
-    const regex = new RegExp(regexSource, 'g');
-    return s.replace(regex, '');
 }
 /**
  * @param s `string` - the string to convert to title case
@@ -262,61 +194,3 @@ function toTitleCase(s) {
         .replace(/\b\w/g, char => char.toUpperCase())
         .replace(/(?<=\b[A-Z]{1})\w*\b/g, char => char.toLowerCase());
 }
-/**
- * @deprecated use {@link applyCaseOptions} with {@link StringCaseEnum} instead
- * @param s `string` - the string to handle case options for
- * @param caseOptions — {@link DEP_StringCaseOptions} - `optional` case options to apply to the string
- * = `{ toUpper: boolean, toLower: boolean, toTitle: boolean }`
- * - applies the first case option that is `true` and ignores the rest
- * @returns **`s`** - the string with case options applied
- */
-function DEP_applyCaseOptions(s, caseOptions = { toUpper: false, toLower: false, toTitle: false }) {
-    if (!s)
-        return '';
-    const { toUpper, toLower, toTitle } = caseOptions;
-    if (toUpper) {
-        s = s.toUpperCase();
-    }
-    else if (toLower) {
-        s = s.toLowerCase();
-    }
-    else if (toTitle) {
-        s = toTitleCase(s);
-    }
-    return s;
-}
-function DEP_clean(s, arg2, arg3, arg4, arg5) {
-    if (!s)
-        return '';
-    const { strip: stripOptions, case: caseOptions, pad: padOptions, replace: replaceOptions } = ((0, types_1.DEP_isCleanStringOptions)(arg2)
-        ? arg2
-        : {
-            strip: arg2,
-            case: arg3,
-            pad: arg4,
-            replace: arg5
-        });
-    s = String(s).trim() || '';
-    s = s.replace(/\s+/g, ' ')
-        .replace(/\.{2,}/g, '.')
-        .replace(/,{2,}/g, ',');
-    if ((0, typeValidation_1.isNonEmptyArray)(replaceOptions)) {
-        s = applyReplaceParams(s, replaceOptions);
-    }
-    if (stripOptions) {
-        s = DEP_applyStripOptions(s, stripOptions);
-    }
-    if (caseOptions) {
-        s = DEP_applyCaseOptions(s, caseOptions);
-    }
-    if (padOptions && padOptions.padLength) {
-        s = DEP_applyPadOptions(s, padOptions);
-    }
-    return s.trim().replace(/,$/g, '');
-}
-/**
- * @TODO convert
- * `s = s.replace(/\s+/g, ' ').replace(/\.{2,}/g, '.').replace(/,{2,}/g, ',');`
- * to StringReplaceOptions and test to ensure consistent output
- * */
-const CLEAN_BASIC_REPLACE_OPTIONS = [];

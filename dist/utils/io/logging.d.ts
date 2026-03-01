@@ -9,6 +9,7 @@ import { ILogObj, ILogObjMeta } from "tslog";
  */
 export declare function getSourceString(fileName: string, func: string | Function, funcInfo?: any, startLine?: number, endLine?: number): string;
 /**
+ * @deprecated
  * Auto-formats debug logs at the end of application execution.
  * Call this function when your main application is finishing.
  * @param filePaths `string[]` - optional, specific file paths to format.
@@ -17,6 +18,7 @@ export declare function getSourceString(fileName: string, func: string | Functio
  */
 export declare function autoFormatLogsOnExit(filePaths?: string[]): void;
 /**
+ * @deprecated
  * Formats a debug log file from JSON format to a more readable text format.
  * Removes the numeric keys and properly handles escape sequences.
  * @param inputPath `string` - path to the input log file (e.g., DEBUG.txt)
@@ -26,6 +28,7 @@ export declare function autoFormatLogsOnExit(filePaths?: string[]): void;
  */
 export declare function formatDebugLogFile(inputPath: string, outputPath?: string): void;
 /**
+ * @deprecated
  * Formats all debug log files in the log directory.
  * Looks for .txt files and creates .FORMATTED.txt versions.
  * @param logDirectory `string` - optional, path to the log directory.
@@ -34,6 +37,7 @@ export declare function formatDebugLogFile(inputPath: string, outputPath?: strin
  */
 export declare function formatAllDebugLogs(logDirectory: string): void;
 /**
+ * @deprecated
  * reduce metadata to two entries, then return stringified `logObj`
  * @param logObj {@link ILogObj}
  * @returns `string`

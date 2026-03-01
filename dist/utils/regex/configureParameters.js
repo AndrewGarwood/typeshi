@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.REPLACE_EM_HYPHEN = exports.ENSURE_SPACE_AROUND_HYPHEN = exports.UNCONDITIONAL_STRIP_DOT_OPTIONS = exports.STRIP_DOT_IF_NOT_END_WITH_ABBREVIATION = void 0;
+exports.REPLACE_EM_HYPHEN = exports.ENSURE_SPACE_AROUND_HYPHEN = exports.STRIP_DOT_UNCONDITIONAL = exports.STRIP_DOT_IF_NOT_ABBREVIATION = void 0;
 exports.doesNotEndWithKnownAbbreviation = doesNotEndWithKnownAbbreviation;
 /**
  * @file src/utils/regex/configureParameters.ts
@@ -21,22 +21,16 @@ function doesNotEndWithKnownAbbreviation(s) {
         && !(0, _1.stringEndsWithAnyOf)(s, _1.COMPANY_ABBREVIATION_PATTERN, _1.RegExpFlagsEnum.IGNORE_CASE)
         && !(0, _1.stringEndsWithAnyOf)(s, initialsPattern, _1.RegExpFlagsEnum.IGNORE_CASE));
 }
-/** strip leading `.` and (trailing `.` if satisfy stripRightCondition: {@link doesNotEndWithKnownAbbreviation}) */
-exports.STRIP_DOT_IF_NOT_END_WITH_ABBREVIATION = {
+/** strip leading `.` and (trailing `.` if satisfy right.condition: {@link doesNotEndWithKnownAbbreviation}) */
+exports.STRIP_DOT_IF_NOT_ABBREVIATION = {
     char: '.',
-    escape: true,
-    stripLeftCondition: undefined,
-    leftArgs: undefined,
-    stripRightCondition: doesNotEndWithKnownAbbreviation,
+    left: undefined,
+    right: {
+        condition: doesNotEndWithKnownAbbreviation
+    }
 };
-/** always strip leading and trailing `.` from a `string` */
-exports.UNCONDITIONAL_STRIP_DOT_OPTIONS = {
-    char: '.',
-    escape: true,
-    stripLeftCondition: undefined,
-    leftArgs: undefined,
-    stripRightCondition: undefined,
-    rightArgs: undefined
+exports.STRIP_DOT_UNCONDITIONAL = {
+    char: '.'
 };
 /**
  * add space around hyphen if it already has one on a single side,

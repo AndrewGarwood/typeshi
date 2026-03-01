@@ -72,7 +72,7 @@ export declare const DEFAULT_TIMEZONE = "America/Los_Angeles";
  * @example "2025-04-16T00:00:00.000Z"
  * @note dateFormat === DateFormatEnum.LOCALE -> use {@link DEFAULT_LOCALE} and {@link DEFAULT_TIMEZONE}
  */
-export declare function getDateFromUnixTimestamp(unixTimestamp: number, dateFormat: DateFormatEnum): string | null;
+export declare function getDateStringFromUnixTimestamp(unixTimestamp: number, dateFormat: DateFormatEnum): string | null;
 /**
  * @param ds1 first date `string` `(required)` - must be in {@link DateFormatEnum.ISO} format or {@link DateFormatEnum.LOCALE} format. @TODO test other formats
  * @param ds2 second date `string` `(optional)` - defaults to current date and time in Pacific Time

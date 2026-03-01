@@ -1,7 +1,6 @@
 /**
  * @file src/utils/io/Io.ts
  */
-import { DEP_StringCaseOptions, StringPadOptions, DEP_StringStripOptions } from "../../regex/index";
 export type WriteJsonOptions = {
     data: Record<string, any> | string;
     filePath: string;
@@ -26,31 +25,9 @@ export type RowDictionary = {
     [rowIndex: number]: Record<string, any>;
 };
 /**
- * @deprecated
- * @typedefn **`ParseOneToManyOptions`**
- * @property {StringStripOptions} keyStripOptions - options for stripping characters from the key
- * @property {StringStripOptions} valueStripOptions - options for stripping characters from the value
- * @property {StringCaseOptions} keyCaseOptions - options for changing the case of the key
- * @property {StringCaseOptions} valueCaseOptions - options for changing the case of the value
- * @property {StringPadOptions} keyPadOptions - options for padding values read from the `keyColumn`
- * @property {StringPadOptions} valuePadOptions - options for padding values read from the `valueColumn`
- *
- * - {@link DEP_StringStripOptions} = `{ char: string, escape?: boolean, stripLeftCondition?: (s: string, ...args: any[]) => boolean, leftArgs?: any[], stripRightCondition?: (s: string, ...args: any[]) => boolean, rightArgs?: any[] }`
- * - {@link DEP_StringCaseOptions}  = `{ toUpper: boolean, toLower: boolean, toTitle: boolean }`
- * - {@link StringPadOptions} = `{ padLength: number, padChar: string, padLeft: boolean, padRight: boolean }`
- */
-export type ParseOneToManyOptions = {
-    keyStripOptions?: DEP_StringStripOptions;
-    valueStripOptions?: DEP_StringStripOptions;
-    keyCaseOptions?: DEP_StringCaseOptions;
-    valueCaseOptions?: DEP_StringCaseOptions;
-    keyPadOptions?: StringPadOptions;
-    valuePadOptions?: StringPadOptions;
-};
-/**
  * common file extensions handled as input/output
  */
-export type FileExtension = '.csv' | '.tsv' | '.txt' | '.json' | '.xlsx' | '.xls' | '.xml' | '.yaml' | '.yml';
+export type FileExtension = '.csv' | '.tsv' | '.txt' | '.json' | '.xlsx' | '.xls' | '.xml' | '.yaml' | '.yml' | (string & {});
 /**
  * @interface **`DirectoryFileOptions`** `getDirectoryFiles(parentDir: string, options: DirectoryFileOptions)`
  */

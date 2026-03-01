@@ -4,7 +4,7 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Milliseconds = exports.DEFAULT_TIMEZONE = exports.DEFAULT_LOCALE = exports.LOCALE_PATTERN = exports.UTC_PATTERN = exports.ISO_PATTERN = exports.TimeUnitEnum = exports.DateFormatEnum = void 0;
-exports.getDateFromUnixTimestamp = getDateFromUnixTimestamp;
+exports.getDateStringFromUnixTimestamp = getDateStringFromUnixTimestamp;
 exports.calculateDifferenceOfDateStrings = calculateDifferenceOfDateStrings;
 exports.getUnixTimestampFromISO = getUnixTimestampFromISO;
 exports.localeStringToDate = localeStringToDate;
@@ -79,7 +79,7 @@ exports.DEFAULT_TIMEZONE = 'America/Los_Angeles';
  * @example "2025-04-16T00:00:00.000Z"
  * @note dateFormat === DateFormatEnum.LOCALE -> use {@link DEFAULT_LOCALE} and {@link DEFAULT_TIMEZONE}
  */
-function getDateFromUnixTimestamp(unixTimestamp, dateFormat) {
+function getDateStringFromUnixTimestamp(unixTimestamp, dateFormat) {
     if (!unixTimestamp) {
         console.error('No unixTimestamp provided');
         return null;

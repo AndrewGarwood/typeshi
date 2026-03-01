@@ -9,7 +9,7 @@ exports.extractSource = extractSource;
  * @file src/utils/regex/stringOperations.ts
  */
 const config_1 = require("../../config");
-const cleaning_1 = require("./cleaning");
+const _1 = require(".");
 const fastest_levenshtein_1 = require("fastest-levenshtein");
 const typeValidation_1 = require("../typeValidation");
 /**
@@ -30,9 +30,8 @@ function stringEndsWithAnyOf(s, suffixes, ...flags) {
         return false;
     }
     let regex = undefined;
-    if (typeof suffixes === 'string') {
+    if (typeof suffixes === 'string')
         suffixes = [suffixes];
-    }
     let flagString = ((0, typeValidation_1.isNonEmptyArray)(flags)
         ? flags.join('')
         : suffixes instanceof RegExp && (0, typeValidation_1.isNonEmptyString)(suffixes.flags)
@@ -150,13 +149,11 @@ function equivalentAlphanumericStrings(s1, s2, tolerance = 0.90) {
     if (!s1 || !s2)
         return false;
     const cleanOptions = {
-        case: { toLower: true },
-        replace: [
-            { searchValue: /[^A-Za-z0-9]/g, replaceValue: '' }
-        ]
+        case: 'lower',
+        replace: [{ searchValue: /[^A-Za-z0-9]/g, replaceValue: '' }]
     };
-    let s1Alphabetical = (0, cleaning_1.DEP_clean)(s1, cleanOptions).split('').sort().join('');
-    let s2Alphabetical = (0, cleaning_1.DEP_clean)(s2, cleanOptions).split('').sort().join('');
+    let s1Alphabetical = (0, _1.clean)(s1, cleanOptions).split('').sort().join('');
+    let s2Alphabetical = (0, _1.clean)(s2, cleanOptions).split('').sort().join('');
     if (s1Alphabetical.length === 0 || s2Alphabetical.length === 0) {
         return false;
     }
@@ -198,7 +195,7 @@ function extractSource(regex) {
     const REMOVE_UNESCAPED_QUESTION_MARK = {
         searchValue: /(?<!\\)\?/g, replaceValue: ''
     };
-    let source = (0, cleaning_1.DEP_clean)(regex.source, {
+    let source = (0, _1.clean)(regex.source, {
         replace: [
             REMOVE_ENDPOINT_CHARS,
             REPLACE_ESCAPED_DOT,

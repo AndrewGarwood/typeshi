@@ -1,4 +1,4 @@
-import { DEP_StringCaseOptions, DEP_StringStripOptions, DEP_CleanStringOptions, DEP_StringPadOptions } from "../regex";
+import { StringCleanOptions } from "../regex";
 import { DirectoryFileOptions, FileData, FileExtension } from "./types/Io";
 import { DelimiterCharacterEnum } from "./types";
 /** checks if `pathString (value)` points to an existing directory */
@@ -47,7 +47,7 @@ export declare function readFileToArraySync(filePath: string, separator?: string
  * @param expectedExtension `string | `{@link FileExtension}
  * @returns **`validatedFilePath`** `string`
  */
-export declare function coerceFileExtension(filePath: string, expectedExtension: string | FileExtension): string;
+export declare function coerceFileExtension(filePath: string, expectedExtension: FileExtension): string;
 /**
  * - {@link getDirectoryFiles}
  * @param arg1 `Array<`{@link FileData}` | string> | string`
@@ -95,7 +95,7 @@ export declare function getCsvRows(arg1: FileData | string): Promise<Record<stri
  * @param valueColumn `string` - the column name whose contents will be used as values in the dictionary.
  * @returns **`dict`** `Record<string, string>`
  */
-export declare function getOneToOneDictionary(arg1: string | Record<string, any>[] | FileData, keyColumn: string, valueColumn: string, keyOptions?: DEP_CleanStringOptions, valueOptions?: DEP_CleanStringOptions, requireIncludeAllRows?: boolean): Promise<Record<string, string>>;
+export declare function getOneToOneDictionary(arg1: string | Record<string, any>[] | FileData, keyColumn: string, valueColumn: string, keyOptions?: StringCleanOptions, valueOptions?: StringCleanOptions, requireIncludeAllRows?: boolean): Promise<Record<string, string>>;
 /**
  * @param arg1 `string | FileData | Record<string, any>[]` - the `filePath` to a CSV file or an array of rows.
  * @param columnName `string` - the column name whose values will be returned.
@@ -159,129 +159,12 @@ export declare function getDirectoryFiles(dir: string, options: DirectoryFileOpt
  * @param dataSource `string | FileData | Record<string, any>[]`
  * @param keyColumn `string`
  * @param valueColumn `string`
- * @param keyOptions {@link DEP_CleanStringOptions} `(optional)`
- * @param valueOptions {@link DEP_CleanStringOptions}`(optional)`
- * @param sheetName `string`
+ * @param keyOptions {@link StringCleanOptions} `(optional)`
+ * @param valueOptions {@link StringCleanOptions} `(optional)`
+ * @param sheetName `string` `(optional)`
  * @returns **`dict`** `Promise<Record<string, string[]>>`
  */
-export declare function getOneToManyDictionary(dataSource: string | FileData | Record<string, any>[], keyColumn: string, valueColumn: string, keyOptions?: DEP_CleanStringOptions, valueOptions?: DEP_CleanStringOptions, sheetName?: string): Promise<Record<string, string[]>>;
-/**
- * @deprecated `use `{@link getOneToManyDictionary}
- * @param filePath `string`
- * @param sheetName `string`
- * @param keyColumn `string`
- * @param valueColumn `string`
- * @param options - {@link ParseOneToManyOptions}
- * = `{ keyStripOptions`?: {@link DEP_StringStripOptions}, `valueStripOptions`?: {@link DEP_StringStripOptions}, keyCaseOptions`?: {@link StringCaseOptions}, `valueCaseOptions`?: {@link StringCaseOptions}, `keyPadOptions`?: {@link StringPadOptions}, `valuePadOptions`?: {@link StringPadOptions} `}`
- * - {@link DEP_StringStripOptions} = `{ char`: `string`, `escape`?: `boolean`, `stripLeftCondition`?: `(s: string, ...args: any[]) => boolean`, `leftArgs`?: `any[]`, `stripRightCondition`?: `(s: string, ...args: any[]) => boolean`, `rightArgs`?: `any[] }`
- * - {@link DEP_StringCaseOptions} = `{ toUpper`?: `boolean`, `toLower`?: `boolean`, `toTitle`?: `boolean }`
- * - {@link StringPadOptions} = `{ padLength`: `number`, `padChar`?: `string`, `padLeft`?: `boolean`, `padRight`?: `boolean }`
- * @returns **`dict`** `Record<string, Array<string>>` — key-value pairs where key is from `keyColumn` and value is an array of values from `valueColumn`
- */
-export declare function parseExcelForOneToMany(filePath: string, sheetName: string, keyColumn: string, valueColumn: string, options?: {
-    keyStripOptions?: DEP_StringStripOptions;
-    valueStripOptions?: DEP_StringStripOptions;
-    keyCaseOptions?: DEP_StringCaseOptions;
-    valueCaseOptions?: DEP_StringCaseOptions;
-    keyPadOptions?: DEP_StringPadOptions;
-    valuePadOptions?: DEP_StringPadOptions;
-}): Record<string, Array<string>>;
-/**
- * @deprecated -> use {@link getOneToManyDictionary}
- * @param filePath `string`
- * @param keyColumn `string`
- * @param valueColumn `string`
- * @param delimiter {@link DelimiterCharacters} | `string`
- * @param options {@link ParseOneToManyOptions}
- * = `{ keyCaseOptions`?: {@link DEP_StringCaseOptions}, `valueCaseOptions`?: {@link DEP_StringCaseOptions}, `keyPadOptions`?: {@link StringPadOptions}, `valuePadOptions`?: {@link StringPadOptions} `}`
- * - {@link DEP_StringCaseOptions} = `{ toUpper`?: `boolean`, `toLower`?: `boolean`, `toTitle`?: `boolean }`
- * - {@link StringPadOptions} = `{ padLength`: `number`, `padChar`?: `string`, `padLeft`?: `boolean`, `padRight`?: `boolean }`
- * @returns `Record<string, Array<string>>` - key-value pairs where key is from `keyColumn` and value is an array of values from `valueColumn`
- */
-export declare function parseCsvForOneToMany(filePath: string, keyColumn: string, valueColumn: string, delimiter?: DelimiterCharacterEnum | string, options?: {
-    keyStripOptions?: DEP_StringStripOptions;
-    valueStripOptions?: DEP_StringStripOptions;
-    keyCaseOptions?: DEP_StringCaseOptions;
-    valueCaseOptions?: DEP_StringCaseOptions;
-    keyPadOptions?: DEP_StringPadOptions;
-    valuePadOptions?: DEP_StringPadOptions;
-}): Record<string, Array<string>>;
-export interface CsvValidationOptions {
-    allowEmptyRows?: boolean;
-    allowInconsistentColumns?: boolean;
-    maxRowsToCheck?: number;
-}
-/**
- * @notimplemented
- * @TODO
- * @param arg1
- * @param requiredHeaders
- * @param options
- * @returns
- */
-export declare function isValidCsv(arg1: string | FileData | Record<string, any>[], requiredHeaders?: string[], options?: CsvValidationOptions): Promise<boolean>;
-/**
- * @problem has trouble handling case where column value contains a single double quote;
- * e.g. when it's used as the inches unit after a number
- *
- * `sync`
- * @param filePath `string` - must be a string to an existing file, otherwise return `false`.
- * @param requiredHeaders `string[]` - `optional` array of headers that must be present in the CSV file.
- * - If provided, the function checks if all required headers are present in the CSV header row
- * @param options `object` - optional configuration
- * - `allowEmptyRows`: `boolean` - if true, allows rows with all empty fields (default: true)
- * - `allowInconsistentColumns`: `boolean` - if true, allows rows with different column counts (default: false)
- * - `maxRowsToCheck`: `number` - maximum number of rows to validate (default: all rows)
- * @returns **`isValidCsv`** `boolean`
- * - **`true`** `if` the CSV file at `filePath` is valid (proper structure and formatting),
- * - **`false`** `otherwise`.
- */
-export declare function isValidCsvSync(filePath: string, requiredHeaders?: string[], options?: CsvValidationOptions): boolean;
-/**
- * Analyzes a CSV file and returns detailed validation information
- * @param filePath `string` - path to the CSV file
- * @param options `object` - validation options
- * @returns **`analysis`** `object` - detailed analysis of the CSV file
- */
-export declare function analyzeCsv(filePath: string, options?: {
-    sampleSize?: number;
-    checkEncoding?: boolean;
-    detectDelimiter?: boolean;
-}): {
-    isValid: boolean;
-    issues: string[];
-    warnings: string[];
-    stats: {
-        totalRows: number;
-        headerCount: number;
-        maxRowLength: number;
-        minRowLength: number;
-        emptyRows: number;
-        encoding: string | null;
-        detectedDelimiter: string | null;
-    };
-    headers: string[];
-};
-/**
- * Attempts to repair common CSV formatting issues
- * @param filePath `string` - path to the CSV file to repair
- * @param outputPath `string` - path where the repaired CSV will be saved
- * @param options `object` - repair options
- * @returns **`repairResult`** `object` - result of the repair operation
- */
-export declare function repairCsv(filePath: string, outputPath: string, options?: {
-    fixQuoting?: boolean;
-    removeEmptyRows?: boolean;
-    standardizeLineEndings?: boolean;
-    fillMissingColumns?: boolean;
-    fillValue?: string;
-}): {
-    success: boolean;
-    repairsMade: string[];
-    errors: string[];
-};
-/** paths to folders or files */
-export declare function validatePath(...paths: string[]): Promise<void>;
+export declare function getOneToManyDictionary(dataSource: string | FileData | Record<string, any>[], keyColumn: string, valueColumn: string, keyOptions?: StringCleanOptions, valueOptions?: StringCleanOptions, sheetName?: string): Promise<Record<string, string[]>>;
 /**
  * @param rowSource `string | Record<string, any>[]`
  * @param targetColumn `string`

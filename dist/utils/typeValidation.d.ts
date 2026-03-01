@@ -2,38 +2,12 @@
  * @file src/utils/typeValidation.ts
  */
 /**
- * - alias for {@link isNullLike}
- * ... maybe should just change name of isNullLike but that might break things...
- * @param value `any` the value to check
- * @returns **`isNullLike`** `boolean` = `value is '' | (Array<any> & { length: 0 }) | null | undefined | Record<string, never>`
- * - **`true`** `if` the `value` is null, undefined, empty object (no keys), empty array, or empty string
- * - **`false`** `otherwise`
- */
-export declare const isEmpty: typeof isNullLike;
-/**
- * @param value `any` the value to check
- * @returns **`isNullLike`** `boolean` = `value is '' | (Array<any> & { length: 0 }) | null | undefined | Record<string, never>`
- * - **`true`** `if` the `value` is null, undefined, empty object (no keys), empty array, or empty string
- * - **`false`** `otherwise`
- */
-export declare function isNullLike(value: any): value is '' | null | undefined | (Array<any> & {
-    length: 0;
-}) | Record<string, never>;
-/**
- * @deprecated no type predicate b/c "A type predicate cannot reference a rest parameter.ts(1229)"
- * @param values `any[]`
- * @returns `values.some(v => `{@link isNullLike}`(v))`
- * - **`true`** `if` any of the values are null, undefined, empty object (no keys), empty array, or empty string
- * - **`false`** `otherwise`.
- */
-export declare function anyNull(...values: any[]): boolean;
-/**
  * @param value
  * @returns **`isNonEmptyArray`** `boolean` = `value is Array<T> & { length: number }`
  * - **`true`** if `value` is an array and has at least one element,
  * - **`false`** otherwise.
  */
-export declare function isNonEmptyArray<T = any>(value: any): value is Array<T> & {
+export declare function isNonEmptyArray<T>(value: any): value is Array<T> & {
     length: number;
 };
 /**
@@ -42,7 +16,7 @@ export declare function isNonEmptyArray<T = any>(value: any): value is Array<T> 
  * - **`true`** if `value` is an array and has no elements,
  * - **`false`** `otherwise`
  */
-export declare function isEmptyArray<T = any>(value: any): value is Array<T> & {
+export declare function isEmptyArray<T>(value: any): value is Array<T> & {
     length: 0;
 };
 /**
@@ -64,12 +38,12 @@ export declare function isIntegerArray(value: any, requireNonNegative?: boolean,
  * - `if` `false` then `value` can be empty array
  * @returns **`isStringArray`** `boolean` = `value is Array<string> & { length: number }`
  */
-export declare function isStringArray(value: any, requireNonEmpty?: boolean): value is Array<string> & {
+export declare function isStringArray(value: any, requireNonEmpty?: boolean): value is string[] & {
     length: number;
 };
 /**
  * @note **passing in an array will return `false`.**
- * @note a value is considered trivial if {@link isNullLike}`(value)` returns `true` and vice versa
+ * @note a value is considered trivial if {@link isEmpty}`(value)` returns `true` and vice versa
  * @param obj `any` The object to check.
  * @param requireAll `boolean` - flag indicating whether all values must be nontrivial or not
  * @returns **`hasNonTrivialKeys`** `boolean`
@@ -236,6 +210,15 @@ export declare class isUndefinedOr {
     static function: (value: any) => value is Function | undefined;
 }
 /**
+ * @param value `any` the value to check
+ * @returns **`isEmpty`** `boolean` = `value is '' | (Array<any> & { length: 0 }) | null | undefined | Record<string, never>`
+ * - **`true`** `if` the `value` is null, undefined, empty object (no keys), empty array, or empty string
+ * - **`false`** `otherwise`
+ */
+export declare function isEmpty(value: any): value is '' | null | undefined | (Array<any> & {
+    length: 0;
+}) | Record<string, never>;
+/**
  * these may be unnecessary, but added for completeness
  */
 /**
@@ -248,6 +231,11 @@ export declare function isBoolean(value: any): value is boolean;
  * @returns **`isFunction`** `boolean`
  */
 export declare function isFunction(value: any): value is Function;
+/**
+ * @param value
+ * @returns `value === null`
+ */
+export declare function isNull(value: unknown): value is null;
 /**
  * - passing in `null` returns `false`
  * @param value `any`

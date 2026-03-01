@@ -77,7 +77,8 @@ Str.pad = cleaning_1.applyPadOptions;
 Str.replace = cleaning_1.applyReplaceParams;
 /**
  * @param s `string`
- * @param options {@link StringStripOptions} = `{ char?: string, left?: StringStripCondition, right?: StringStripCondition }`
+ * @param options {@link StringStripOptions}
+ * = `{ char?: string, left?: `{@link StringStripCondition}`, right?: StringStripCondition }`
  * @returns **`s`**
  */
 Str.strip = cleaning_1.applyStripOptions;

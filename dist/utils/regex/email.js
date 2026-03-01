@@ -22,10 +22,5 @@ function isValidEmail(email, excludeSubstrings) {
 function extractEmail(email) {
     if (!email)
         return null;
-    email = email.trim();
-    const match = email.match(exports.EMAIL_REGEX);
-    if (match) {
-        return match;
-    }
-    return null;
+    return email.trim().match(exports.EMAIL_REGEX);
 }

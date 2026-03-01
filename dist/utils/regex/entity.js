@@ -60,7 +60,7 @@ function extractName(name, includeJobTitleSuffix = true) {
         return { first: '', middle: '', last: '' };
     const originalName = name;
     const jobTitleSuffix = extractJobTitleSuffix(name);
-    name = (0, cleaning_1.DEP_clean)(name, { replace: exports.CLEAN_NAME_REPLACE_OPTIONS })
+    name = (0, cleaning_1.clean)(name, { replace: exports.CLEAN_NAME_REPLACE_OPTIONS })
         .replace(exports.JOB_TITLE_SUFFIX_PATTERN, ''); // redundant
     const containsInvalidCharsOrCompanyKeywords = ((0, stringOperations_1.stringContainsAnyOf)(name, /[0-9!#&@]/)
         || (0, stringOperations_1.stringContainsAnyOf)(name, exports.COMPANY_KEYWORDS_PATTERN, StringOptions_1.RegExpFlagsEnum.IGNORE_CASE));
@@ -81,8 +81,8 @@ function extractName(name, includeJobTitleSuffix = true) {
         // move last name to the end
         nameSplit.push(nameSplit.shift() || '');
     }
-    nameSplit.map((namePart) => (0, cleaning_1.DEP_clean)(namePart, {
-        strip: _1.STRIP_DOT_IF_NOT_END_WITH_ABBREVIATION,
+    nameSplit.map((namePart) => (0, cleaning_1.clean)(namePart, {
+        strip: _1.STRIP_DOT_IF_NOT_ABBREVIATION,
         replace: [{ searchValue: /(^[-+])*/g, replaceValue: '' }]
     }));
     config_1.typeshiHiddenLogger.debug([`nameSplit.length === ${nameSplit.length},`,
@@ -149,7 +149,7 @@ function extractName(name, includeJobTitleSuffix = true) {
 function extractJobTitleSuffix(s) {
     if (!s || typeof s !== 'string')
         return '';
-    s = (0, cleaning_1.DEP_clean)(s, { replace: [
+    s = (0, cleaning_1.clean)(s, { replace: [
             exports.REMOVE_ATTN_SALUTATION_PREFIX,
             { searchValue: /,$/g, replaceValue: '' }
         ] });

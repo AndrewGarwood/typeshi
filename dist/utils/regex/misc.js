@@ -39,7 +39,10 @@ exports.FILE_NAME_WITH_EXTENSION_PATTERN = /^[^/\\:*?"<>|]+(\.[^/\\:*?"<>|]+)$/;
  * 2. matches `MM/DD/YYYY` format. assumes `MM/DD/YYYY` format if the first part is less than or equal to 12 I think.
  */
 exports.DATE_STRING_PATTERN = new RegExp(/^\s*(\d{4}-\d{2}-\d{2}|\d{1,2}[\/-]\d{1,2}[\/-]\d{4})\s*$/);
-/** e.g. `"Pangyo-ro, Bundag-Gu, Seongnam-si"` */
+/**
+ * - e.g. `"Pangyo-ro, Bundag-Gu, Seongnam-si"`
+ * `re` = `/^\s*([a-zA-Z]{2,}-[a-zA-Z]{2,},\s*){1,}[a-zA-Z]{2,}-[a-zA-Z]{2,}\s*$/`
+ * */
 exports.KOREA_ADDRESS_LATIN_TEXT_PATTERN = new RegExp(/^\s*([a-zA-Z]{2,}-[a-zA-Z]{2,},\s*){1,}[a-zA-Z]{2,}-[a-zA-Z]{2,}\s*$/);
 /**
  * @param value `string` - the string value from which to extract `leaf`

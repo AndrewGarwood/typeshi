@@ -20,7 +20,10 @@ export declare const FILE_NAME_WITH_EXTENSION_PATTERN: RegExp;
  * 2. matches `MM/DD/YYYY` format. assumes `MM/DD/YYYY` format if the first part is less than or equal to 12 I think.
  */
 export declare const DATE_STRING_PATTERN: RegExp;
-/** e.g. `"Pangyo-ro, Bundag-Gu, Seongnam-si"` */
+/**
+ * - e.g. `"Pangyo-ro, Bundag-Gu, Seongnam-si"`
+ * `re` = `/^\s*([a-zA-Z]{2,}-[a-zA-Z]{2,},\s*){1,}[a-zA-Z]{2,}-[a-zA-Z]{2,}\s*$/`
+ * */
 export declare const KOREA_ADDRESS_LATIN_TEXT_PATTERN: RegExp;
 /**
  * @param value `string` - the string value from which to extract `leaf`

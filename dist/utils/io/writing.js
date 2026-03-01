@@ -33,9 +33,8 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.writeArraysToCsvSync = exports.writeJsonSync = void 0;
-exports.writeObjectToJsonSync = writeObjectToJsonSync;
-exports.writeListsToCsvSync = writeListsToCsvSync;
+exports.writeJsonSync = writeJsonSync;
+exports.writeArraysToCsvSync = writeArraysToCsvSync;
 exports.writeArrayToFileSync = writeArrayToFileSync;
 exports.writeRowsToCsvSync = writeRowsToCsvSync;
 exports.trimFileSync = trimFileSync;
@@ -54,10 +53,11 @@ const reading_1 = require("./reading");
 const types_1 = require("./types");
 const typeValidation_1 = require("../typeValidation");
 const logging_1 = require("./logging");
-function writeObjectToJsonSync(
+/** `writeObjectToJsonSync` */
+function writeJsonSync(
 /** {@link WriteJsonOptions} `| Record<string, any> | string`, */
 arg1, filePath, indent = 4, enableOverwrite = true) {
-    const source = (0, logging_1.getSourceString)(__filename, writeObjectToJsonSync.name);
+    const source = (0, logging_1.getSourceString)(__filename, writeJsonSync.name);
     if (!arg1) {
         setupLog_1.typeshiLogger.error(`${source} No data to write to JSON file'`);
         return;
@@ -106,22 +106,21 @@ arg1, filePath, indent = 4, enableOverwrite = true) {
         else {
             fs.appendFileSync(outputPath, jsonData, { flag: 'a' });
         }
-        // mlog.info(`[writing.writeObjectToJson()] file saved to '${outputPath}'`)
+        setupLog_1.typeshiHiddenLogger.info(`${source} file saved to '${outputPath}'`);
     }
     catch (error) {
         setupLog_1.typeshiLogger.error(`${source} Error writing to JSON file'`, error);
         throw error;
     }
 }
-exports.writeJsonSync = writeObjectToJsonSync;
-exports.writeArraysToCsvSync = writeListsToCsvSync;
 /**
+ * `writeListsToCsvSync`
  * @param listData `Record<string, Array<string>>` map col names to col values
  * @param outputPath `string`
  * @param delimiter `string` - optional, default=`'\t'`
  * @param columnDelimiter `string` - optional, default=`''`
  */
-function writeListsToCsvSync(listData, outputPath, delimiter = types_1.DelimiterCharacterEnum.TAB, columnDelimiter = '') {
+function writeArraysToCsvSync(listData, outputPath, delimiter = types_1.DelimiterCharacterEnum.TAB, columnDelimiter = '') {
     const listNames = Object.keys(listData);
     const listValues = Object.values(listData);
     const maxLength = Math.max(...listValues.map(list => list.length));
@@ -220,7 +219,7 @@ function trimFileSync(maxMB = 5, ...filePaths) {
         }
         catch (e) {
             setupLog_1.typeshiLogger.error('Error trimming file to last 10MB', e);
-            throw e;
+            // throw e;
         }
     }
 }
@@ -248,7 +247,7 @@ async function trimFile(maxMB = 5, ...filePaths) {
         }
         catch (e) {
             setupLog_1.typeshiLogger.error('Error trimming file to last 10MB', e);
-            throw e;
+            // throw e;
         }
     }
     await (0, env_1.DELAY)(1000, `[trimFile()] Releasing file handles...`);

@@ -3,7 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PHONE_REGEX_LIST = exports.KOREA_PHONE_REGEX = exports.JAPAN_PHONE_REGEX = exports.CHINA_PHONE_REGEX = exports.HONG_KONG_PHONE_REGEX = exports.PHONE_REGEX = void 0;
 exports.extractPhone = extractPhone;
 exports.formatPhone = formatPhone;
-const cleaning_1 = require("./cleaning");
+/**
+ * @file src/utils/regex/phone.ts
+ */
+const _1 = require(".");
 const StringOptions_1 = require("./types/StringOptions");
 /**
  * @param phone - `string` - phone number to test
@@ -68,8 +71,9 @@ function formatPhone(phone, re, groupFormat) {
     if (groupFormat) {
         result = result.replace(re, groupFormat);
     }
-    return (0, cleaning_1.DEP_clean)(result, { char: '-', escape: false })
-        .replace(/([a-zA-Z]+\s*$)/, '').trim();
+    return (0, _1.clean)(result, { strip: { char: '-' } })
+        .replace(/([a-zA-Z]+\s*$)/, '')
+        .trim();
 }
 // https://en.wikipedia.org/wiki/List_of_telephone_country_codes
 /**
