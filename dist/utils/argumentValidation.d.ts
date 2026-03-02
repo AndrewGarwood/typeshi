@@ -152,7 +152,7 @@ export declare function objectArgument(source: string,
 labeledArgs: ObjectArgumentOptions | {
     [label: string]: any | ((value: any) => boolean);
 }, allowEmpty?: boolean): void;
-type EnumObject = Record<string, string> | Record<string, number>;
+type EnumObject = Record<string, string> | Record<string, string | number>;
 /**
  * Object with 2 entries:
  * 1. `valueLabel` mapped to `valueToCheck`

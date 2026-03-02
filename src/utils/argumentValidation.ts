@@ -1,5 +1,6 @@
 /**
  * @file src/utils/argumentValidation.ts
+ * @note these functions can be useful for sanity checks
  * @description moved the content of parameter type checks at the start of 
  * functions to here. use these when you want your function to throw a fit when
  * it receives bad input.
@@ -8,9 +9,7 @@
  * @TODO add boolean value configurable by a setter function that specifies if errors should be thrown or only logged
  * - maybe add a configurable value that the validation functions should return if the validation test fails
  * - change the validation functions such that they return the validated value, if possible?
- * - or maybe have them return boolean type predicates ? 
- * - -> maybe have to make a class
- * - research the thingy where a type is after the function name and before parens
+ * - or maybe have them return boolean type predicates ?
  */
 import { 
     isNonEmptyString, 
@@ -19,6 +18,7 @@ import {
     isObject,
     isStringArray,
     isInteger,
+    isPositveInteger,
 } from "./typeValidation";
 import { 
     typeshiLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL 
@@ -61,6 +61,8 @@ export function stringArgument(
         }
         label = keys[0];
         value = arg2[label];
+    } else if (isNonEmptyString(arg2)) {
+        label = arg2;
     }
     if (!isNonEmptyString(value)) {
         let msg = [`${source} Invalid argument: '${label}'`,
@@ -243,6 +245,8 @@ export function numberArgument(
         if (typeof arg3 === 'boolean') {
             requireInteger = arg3;
         }
+    } else if (isNonEmptyString(arg2)) {
+        label = arg2;
     }
     if (typeof value !== 'number' || isNaN(value)) {
         let msg = [`${source} Invalid argument: '${label}'`,
@@ -706,18 +710,26 @@ export function objectArgument(
     return;
 }
 
-type EnumObject = Record<string, string> | Record<string, number>;
-
-
-
-function isEnumObject(value: any): value is EnumObject {
+type EnumObject = Record<string, string> | Record<string, string | number>;
+// @TODO be more rigorous and make check String(v) mapped to k 
+function isStringEnum(value: unknown): value is Record<string, string> {
     return (isObject(value) 
-        && Object.keys(value).length > 0
-        && (Object.values(value).every(v => typeof v === 'string')
-            || 
-            Object.values(value).every(v => typeof v === 'number')
-        )
-    )
+        && Object.values(value).every(v => typeof v === 'string')
+    );
+}
+
+// because enums also store String(v) mapped to k
+// @TODO be more rigorous and make check String(v) mapped to k 
+function isNumberEnum(value: unknown): value is Record<string, string | number> {
+    return (isObject(value) && Object.keys(value).every(k=> 
+        isNumeric(k, true, true) 
+            ? isNonEmptyString(value[k]) 
+            : !Number.isNaN(value[k])
+    ));
+}
+function isEnumObject(value: any): value is EnumObject {
+    return isStringEnum(value) || isNumberEnum(value);
+    
 }
 function isEnumArgumentOptions(value: any): value is EnumArgumentOptions {
     if (!isObject(value)) {
@@ -836,7 +848,7 @@ export function enumArgument(
         if (!enumLabel) {
             let msg = [`${source} -> ${vSource} Invalid parameter: arg2 as EnumArgumentOptions`,
                 `EnumArgumentOptions does not contain an entry with a value that is an EnumObject or isEnumFunction`,
-                `Expected arg2 to have single entry of format [label: string]: EnumObject | Function`
+                `Expected: arg2 to have single entry of format [label: string]: EnumObject | Function`
             ].join(TAB);
             mlog.error(msg);
             throw new Error(msg);
@@ -844,25 +856,26 @@ export function enumArgument(
         enumObject = arg2[enumLabel] as EnumObject;
     } else {
         let msg =[`${source} -> ${vSource} Invalid parameter 'arg2'`,
-            `Expected 'arg2' to be either label (string) | labeledArgs (EnumArgumentOptions)`,
-            `Received ${typeof arg2} = ${arg2}`
+            `Expected: 'arg2' to be either label (string) | labeledArgs (EnumArgumentOptions)`,
+            `Received: ${typeof arg2} = ${arg2}`
         ].join(TAB);
         mlog.error(msg);
         throw new Error(msg);
     }
     if (!isEnumObject(enumObject)) {
         let msg = [`${source} -> ${vSource}.verbose: Invalid EnumObject for '${enumLabel}'`,
-            `Expected non-empty object Record<string, number> | Record<string, string>`,
+            `Expected: non-empty object Record<string, number> | Record<string, string>`,
+            `Received: ${typeof enumObject} = ${enumObject} = ${JSON.stringify(enumObject)}`
         ].join(TAB);
         mlog.error(msg);
         throw new Error(msg);
     }
     const enumKeys = Object.keys(enumObject);
     const enumValues = Object.values(enumObject);
-    const isStringEnum = enumValues.every(val => typeof val === 'string');
-    const isNumberEnum = enumValues.every(val => typeof val === 'number');
+    const isStringEnumObject = isStringEnum(enumObject);
+    const isNumberEnumObject = isNumberEnum(enumObject);
     let matchedValue: string | number | undefined;
-    if (isStringEnum) {
+    if (isStringEnumObject) {
         // For string enums, check both keys and values with case-insensitive matching
         if (typeof valueToCheck === 'string') {
             const lowerValueToCheck = valueToCheck.toLowerCase();
@@ -884,7 +897,7 @@ export function enumArgument(
                 matchedValue = valueToCheck as string;
             }
         }
-    } else if (isNumberEnum) {
+    } else if (isNumberEnumObject) {
         // For number enums, check if value is a number or string key
         if (typeof valueToCheck === 'number' && enumValues.includes(valueToCheck)) {
             matchedValue = valueToCheck;
@@ -897,10 +910,11 @@ export function enumArgument(
     }
     if (matchedValue === undefined) {
         let msg = [`${source} Invalid argument: '${valueLabel}'`,
-            `Expected '${valueLabel}' to be: valid ${enumLabel} enum ${isStringEnum 
+            `Expected '${valueLabel}' to be: valid ${enumLabel} enum ${isStringEnumObject 
                 ? 'key (string) or value (string)' : 'key (string) or value (number)'
             }`,
-            `Received '${valueLabel}' value: ${valueToCheck} (${typeof valueToCheck})`,
+            `Received '${valueLabel}' (${typeof valueToCheck}) = ${valueToCheck}`,
+            ``
         ].join(TAB);
         mlog.error(msg);
         throw new Error(msg);

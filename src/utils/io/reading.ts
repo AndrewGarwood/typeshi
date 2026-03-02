@@ -63,21 +63,14 @@ export function getDelimiterFromFilePath(
 }
 
 /**
- * @param filePath `string`
- * @returns **`jsonData`** — `T extends Record<string, any>` - JSON data as an object
- * @note returns empty object if error occurred while reading `filepath` or parsing json
- * - use {@link readJsonSyncOrThrow} if throwing error is desired behavior
- */
-export const readJsonSync = readJsonFileAsObject;
-/**
  * a.k.a. `readJsonSync`
  * @param filePath `string`
  * @returns **`jsonData`** — `T extends Record<string, any>` - JSON data as an object
  * @note returns empty object if error occurred while reading `filepath` or parsing json
  * - use {@link readJsonSyncOrThrow} if throwing error is desired behavior
  */
-export function readJsonFileAsObject<T extends Record<string, any> = {}>(filePath: string): T {
-    const source = getSourceString(__filename, readJsonFileAsObject.name);
+export function readJsonSync<T extends Record<string, any> = {}>(filePath: string): T {
+    const source = getSourceString(__filename, readJsonSync.name);
     try {
         filePath = coerceFileExtension(filePath, 'json');
         const data = fs.readFileSync(filePath, 'utf8');

@@ -13,20 +13,13 @@ export declare function isFile(value: string): value is string;
  */
 export declare function getDelimiterFromFilePath(filePath: string): DelimiterCharacterEnum | string;
 /**
- * @param filePath `string`
- * @returns **`jsonData`** — `T extends Record<string, any>` - JSON data as an object
- * @note returns empty object if error occurred while reading `filepath` or parsing json
- * - use {@link readJsonSyncOrThrow} if throwing error is desired behavior
- */
-export declare const readJsonSync: typeof readJsonFileAsObject;
-/**
  * a.k.a. `readJsonSync`
  * @param filePath `string`
  * @returns **`jsonData`** — `T extends Record<string, any>` - JSON data as an object
  * @note returns empty object if error occurred while reading `filepath` or parsing json
  * - use {@link readJsonSyncOrThrow} if throwing error is desired behavior
  */
-export declare function readJsonFileAsObject<T extends Record<string, any> = {}>(filePath: string): T;
+export declare function readJsonSync<T extends Record<string, any> = {}>(filePath: string): T;
 /**
  * @param filePath `string`
  * @returns **`jsonData`** — `T extends Record<string, any>`

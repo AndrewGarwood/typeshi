@@ -127,13 +127,13 @@ function calculateDifferenceOfDateStrings(ds1, ds2 = getCurrentPacificTime(), un
         case exports.TimeUnitEnum.MILLISECONDS:
             return diffInMs;
         case exports.TimeUnitEnum.SECONDS:
-            return exports.Milliseconds.from.seconds(diffInMs);
+            return Milliseconds.from.seconds(diffInMs);
         case exports.TimeUnitEnum.MINUTES:
-            return exports.Milliseconds.from.minutes(diffInMs);
+            return Milliseconds.from.minutes(diffInMs);
         case exports.TimeUnitEnum.HOURS:
-            return exports.Milliseconds.from.hours(diffInMs);
+            return Milliseconds.from.hours(diffInMs);
         case exports.TimeUnitEnum.DAYS:
-            return exports.Milliseconds.from.days(diffInMs);
+            return Milliseconds.from.days(diffInMs);
         default:
             console.error('Invalid time unit specified. Use TimeUnitEnum.MILLISECONDS, TimeUnitEnum.SECONDS, TimeUnitEnum.MINUTES, TimeUnitEnum.HOURS, or TimeUnitEnum.DAYS');
             return null;
@@ -208,122 +208,144 @@ function toPacificTime(initialDateString) {
     const pacificTime = initialDate.toLocaleString(exports.DEFAULT_LOCALE, { timeZone: exports.DEFAULT_TIMEZONE });
     return pacificTime;
 }
-exports.Milliseconds = {
-    from: {
-        /**
-         * @param n `number`
-         * @returns `n * (1000 * 60 * 60 * 24)` number of milliseconds in `n` days
-         */
-        days: (n) => {
-            return n * (1000 * 60 * 60 * 24);
-        },
-        /**
-         * @param n `number`
-         * @returns `n * (1000 * 60 * 60)` number of milliseconds in `n` hours
-         */
-        hours: (n) => {
-            return n * (1000 * 60 * 60);
-        },
-        /**
-         * @param n `number`
-         * @returns `n * (1000 * 60)` number of milliseconds in `n` minutes
-         */
-        minutes: (n) => {
-            return n * (1000 * 60);
-        },
-        /**
-         * @param n `number`
-         * @returns `n * (1000)` number of milliseconds in `n` seconds
-         */
-        seconds: (n) => {
-            return n * (1000);
-        },
-        /**
-         * @param d `Date` object
-         * @returns `number` = `d.getTime()` = milliseconds since epoch
-         */
-        date: (d) => {
-            return d.getTime();
-        },
-        /**
-         * @param s `string` date string to pass into Date Constructor (e.g. ISO, UTC, Locale, etc.)
-         * @returns `number` milliseconds since epoch or `null` if invalid (i.e. Date constructor can't parse it)
-         */
-        string: (s) => {
-            try {
-                const date = new Date(s);
-                if (isNaN(date.getTime())) {
-                    throw new Error(`Invalid date string: '${s}'`);
-                }
-                return date.getTime();
-            }
-            catch (error) {
-                console.error(`Failed to parse date string: '${s}'`, error);
-                return null;
-            }
-        },
+class Milliseconds {
+}
+exports.Milliseconds = Milliseconds;
+Milliseconds.from = {
+    /**
+     * @param n `number`
+     * @param withLeapTime `boolean (optional)` `default = true`
+     * @returns `n * (1000 * 60 * 60 * 24) * (withLeapTime ? 365.25 : 365)`
+     */
+    years: (n, withLeapTime = true) => {
+        return n * (1000 * 60 * 60 * 24) * (withLeapTime ? 365.25 : 365);
     },
-    to: {
-        /**
-         * @param n `number`
-         * @returns `number` days in `n` milliseconds
-         */
-        days: (n) => {
-            return n / (1000 * 60 * 60 * 24);
-        },
-        /**
-         * @param n `number`
-         * @returns `number` hours in `n` milliseconds
-         */
-        hours: (n) => {
-            return n / (1000 * 60 * 60);
-        },
-        /**
-         * @param n `number`
-         * @returns `number` minutes in `n` milliseconds
-         */
-        minutes: (n) => {
-            return n / (1000 * 60);
-        },
-        /**
-         * @param n `number`
-         * @returns `number` seconds in `n` milliseconds
-         */
-        seconds: (n) => {
-            return n / (1000);
-        },
-        /**
-         * interprets `n` as milliseconds since epoch
-         * @param n `number` milliseconds
-         * @returns `Date` object
-         */
-        date: (n) => {
-            return new Date(n);
-        },
-        /**
-         * @param n `number`
-         * @param format {@link DateFormatEnum} default = {@link DateFormatEnum.ISO}
-         * @param locale `string` default = `'en-US'` (only used if format = {@link DateFormatEnum.LOCALE})
-         * @param timeZone `string` default = `'America/Los_Angeles'` (only used if format = {@link DateFormatEnum.LOCALE})
-         * @returns `string` formatted date string or empty string if error
-         */
-        string: (n, format = exports.DateFormatEnum.ISO, locale = exports.DEFAULT_LOCALE, timeZone = exports.DEFAULT_TIMEZONE) => {
-            const date = new Date(n);
+    /**
+     * @param n `number`
+     * @returns `n * (1000 * 60 * 60 * 24)` number of milliseconds in `n` days
+     */
+    days: (n) => {
+        return n * (1000 * 60 * 60 * 24);
+    },
+    /**
+     * @param n `number`
+     * @returns `n * (1000 * 60 * 60)` number of milliseconds in `n` hours
+     */
+    hours: (n) => {
+        return n * (1000 * 60 * 60);
+    },
+    /**
+     * @param n `number`
+     * @returns `n * (1000 * 60)` number of milliseconds in `n` minutes
+     */
+    minutes: (n) => {
+        return n * (1000 * 60);
+    },
+    /**
+     * @param n `number`
+     * @returns `n * (1000)` number of milliseconds in `n` seconds
+     */
+    seconds: (n) => {
+        return n * (1000);
+    },
+    /**
+     * @param d `Date` object
+     * @returns `number` = `d.getTime()` = milliseconds since epoch
+     */
+    date: (d) => {
+        return d.getTime();
+    },
+    /**
+     * @param s `string` date string to pass into Date Constructor (e.g. ISO, UTC, Locale, etc.)
+     * @returns `number` milliseconds since epoch or `null` if invalid (i.e. Date constructor can't parse it)
+     */
+    string: (s) => {
+        try {
+            const date = new Date(s);
             if (isNaN(date.getTime())) {
-                console.error(`Invalid milliseconds value: '${n}'`);
+                throw new Error(`Invalid date string: '${s}'`);
+            }
+            return date.getTime();
+        }
+        catch (error) {
+            console.error(`[Milliseconds.from.string()] Failed to parse date string: '${s}'`, error);
+            return null;
+        }
+    },
+};
+Milliseconds.to = {
+    /**
+     * @param n `number`
+     * @param withLeapTime `boolean (optional)` `default = true`
+     * @returns `number` years in `n` milliseconds
+     * = `n / (1000 * 60 * 60 * 24 * (withLeapTime ? 365.25 : 365))`
+     */
+    years: (n, withLeapTime = true) => {
+        return n / (1000 * 60 * 60 * 24 * (withLeapTime ? 365.25 : 365));
+    },
+    /**
+     * @param n `number`
+     * @returns `number` days in `n` milliseconds
+     * = `n / (1000 * 60 * 60 * 24)`
+     */
+    days: (n) => {
+        return n / (1000 * 60 * 60 * 24);
+    },
+    /**
+     * @param n `number`
+     * @returns `number` hours in `n` milliseconds
+     * = `n / (1000 * 60 * 60)`
+     */
+    hours: (n) => {
+        return n / (1000 * 60 * 60);
+    },
+    /**
+     * @param n `number`
+     * @returns `number` minutes in `n` milliseconds
+     * = `n / (1000 * 60)`
+     */
+    minutes: (n) => {
+        return n / (1000 * 60);
+    },
+    /**
+     * @param n `number`
+     * @returns `number` seconds in `n` milliseconds
+     * = `n / (1000)`
+     */
+    seconds: (n) => {
+        return n / (1000);
+    },
+    /**
+     * interprets `n` as milliseconds since epoch
+     * @param n `number` milliseconds
+     * @returns `Date` object
+     */
+    date: (n) => {
+        return new Date(n);
+    },
+    /**
+     * @param n `number`
+     * @param format {@link DateFormatEnum} `default` = {@link DateFormatEnum.ISO}
+     * @param locale `string` `default` = `'en-US'` (only used if `format` = `DateFormatEnum.LOCALE`)
+     * @param timeZone `string` `default` = `'America/Los_Angeles'` (only used if `format` = `DateFormatEnum.LOCALE`)
+     * @returns `string` formatted date string or empty string if error
+     */
+    string: (n, format = exports.DateFormatEnum.ISO, locale = exports.DEFAULT_LOCALE, timeZone = exports.DEFAULT_TIMEZONE) => {
+        const date = new Date(n);
+        if (isNaN(date.getTime())) {
+            console.error(`[Milliseconds.to.string()] Invalid milliseconds value: '${n}'`);
+            return ``;
+        }
+        switch (format) {
+            case exports.DateFormatEnum.ISO:
+                return date.toISOString();
+            case exports.DateFormatEnum.UTC:
+                return date.toUTCString();
+            case exports.DateFormatEnum.LOCALE:
+                return date.toLocaleString(locale, { timeZone });
+            default:
+                console.error(`[Milliseconds.to.string()] Invalid date format specified: '${format}'.`, `Use DateFormatEnum.ISO, DateFormatEnum.UTC, or DateFormatEnum.LOCALE`);
                 return ``;
-            }
-            switch (format) {
-                case exports.DateFormatEnum.ISO:
-                    return date.toISOString();
-                case exports.DateFormatEnum.UTC:
-                    return date.toUTCString();
-                case exports.DateFormatEnum.LOCALE:
-                    return date.toLocaleString(locale, { timeZone });
-                default:
-                    console.error(`Invalid date format specified: '${format}'.`, `Use DateFormatEnum.ISO, DateFormatEnum.UTC, or DateFormatEnum.LOCALE`);
-                    return ``;
-            }
-        },
+        }
     },
 };

@@ -13,7 +13,7 @@ const cases = {
 
 describe('typeValidation Module', () => {
     test('isStringArray(mixedElements)', () => {
-        expect(TV.isStringArray(cases.stringArray.mixedElements)).toBe(false)
+        expect(TV.isStringArray(cases.stringArray.mixedElements)).toBe(false);
     })
 });
 

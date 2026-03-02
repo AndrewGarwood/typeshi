@@ -107,73 +107,90 @@ export declare function getCurrentPacificTime(): string;
  * @returns {string} The date string in Pacific Time
  */
 export declare function toPacificTime(initialDateString: string): string;
-export declare const Milliseconds: {
-    readonly from: {
+export declare class Milliseconds {
+    static readonly from: {
+        /**
+         * @param n `number`
+         * @param withLeapTime `boolean (optional)` `default = true`
+         * @returns `n * (1000 * 60 * 60 * 24) * (withLeapTime ? 365.25 : 365)`
+         */
+        years: (n: number, withLeapTime?: boolean) => number;
         /**
          * @param n `number`
          * @returns `n * (1000 * 60 * 60 * 24)` number of milliseconds in `n` days
          */
-        readonly days: (n: number) => number;
+        days: (n: number) => number;
         /**
          * @param n `number`
          * @returns `n * (1000 * 60 * 60)` number of milliseconds in `n` hours
          */
-        readonly hours: (n: number) => number;
+        hours: (n: number) => number;
         /**
          * @param n `number`
          * @returns `n * (1000 * 60)` number of milliseconds in `n` minutes
          */
-        readonly minutes: (n: number) => number;
+        minutes: (n: number) => number;
         /**
          * @param n `number`
          * @returns `n * (1000)` number of milliseconds in `n` seconds
          */
-        readonly seconds: (n: number) => number;
+        seconds: (n: number) => number;
         /**
          * @param d `Date` object
          * @returns `number` = `d.getTime()` = milliseconds since epoch
          */
-        readonly date: (d: Date) => number;
+        date: (d: Date) => number;
         /**
          * @param s `string` date string to pass into Date Constructor (e.g. ISO, UTC, Locale, etc.)
          * @returns `number` milliseconds since epoch or `null` if invalid (i.e. Date constructor can't parse it)
          */
-        readonly string: (s: string) => number | null;
+        string: (s: string) => number | null;
     };
-    readonly to: {
+    static readonly to: {
+        /**
+         * @param n `number`
+         * @param withLeapTime `boolean (optional)` `default = true`
+         * @returns `number` years in `n` milliseconds
+         * = `n / (1000 * 60 * 60 * 24 * (withLeapTime ? 365.25 : 365))`
+         */
+        years: (n: number, withLeapTime?: boolean) => number;
         /**
          * @param n `number`
          * @returns `number` days in `n` milliseconds
+         * = `n / (1000 * 60 * 60 * 24)`
          */
-        readonly days: (n: number) => number;
+        days: (n: number) => number;
         /**
          * @param n `number`
          * @returns `number` hours in `n` milliseconds
+         * = `n / (1000 * 60 * 60)`
          */
-        readonly hours: (n: number) => number;
+        hours: (n: number) => number;
         /**
          * @param n `number`
          * @returns `number` minutes in `n` milliseconds
+         * = `n / (1000 * 60)`
          */
-        readonly minutes: (n: number) => number;
+        minutes: (n: number) => number;
         /**
          * @param n `number`
          * @returns `number` seconds in `n` milliseconds
+         * = `n / (1000)`
          */
-        readonly seconds: (n: number) => number;
+        seconds: (n: number) => number;
         /**
          * interprets `n` as milliseconds since epoch
          * @param n `number` milliseconds
          * @returns `Date` object
          */
-        readonly date: (n: number) => Date;
+        date: (n: number) => Date;
         /**
          * @param n `number`
-         * @param format {@link DateFormatEnum} default = {@link DateFormatEnum.ISO}
-         * @param locale `string` default = `'en-US'` (only used if format = {@link DateFormatEnum.LOCALE})
-         * @param timeZone `string` default = `'America/Los_Angeles'` (only used if format = {@link DateFormatEnum.LOCALE})
+         * @param format {@link DateFormatEnum} `default` = {@link DateFormatEnum.ISO}
+         * @param locale `string` `default` = `'en-US'` (only used if `format` = `DateFormatEnum.LOCALE`)
+         * @param timeZone `string` `default` = `'America/Los_Angeles'` (only used if `format` = `DateFormatEnum.LOCALE`)
          * @returns `string` formatted date string or empty string if error
          */
-        readonly string: (n: number, format?: DateFormatEnum, locale?: string, timeZone?: string) => string;
+        string: (n: number, format?: DateFormatEnum, locale?: string, timeZone?: string) => string;
     };
-};
+}

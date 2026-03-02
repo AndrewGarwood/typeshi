@@ -36,11 +36,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.readJsonSync = void 0;
 exports.isDirectory = isDirectory;
 exports.isFile = isFile;
 exports.getDelimiterFromFilePath = getDelimiterFromFilePath;
-exports.readJsonFileAsObject = readJsonFileAsObject;
+exports.readJsonSync = readJsonSync;
 exports.readJsonSyncOrThrow = readJsonSyncOrThrow;
 exports.readFileToArraySync = readFileToArraySync;
 exports.coerceFileExtension = coerceFileExtension;
@@ -101,21 +100,14 @@ function getDelimiterFromFilePath(filePath) {
     }
 }
 /**
- * @param filePath `string`
- * @returns **`jsonData`** — `T extends Record<string, any>` - JSON data as an object
- * @note returns empty object if error occurred while reading `filepath` or parsing json
- * - use {@link readJsonSyncOrThrow} if throwing error is desired behavior
- */
-exports.readJsonSync = readJsonFileAsObject;
-/**
  * a.k.a. `readJsonSync`
  * @param filePath `string`
  * @returns **`jsonData`** — `T extends Record<string, any>` - JSON data as an object
  * @note returns empty object if error occurred while reading `filepath` or parsing json
  * - use {@link readJsonSyncOrThrow} if throwing error is desired behavior
  */
-function readJsonFileAsObject(filePath) {
-    const source = (0, logging_1.getSourceString)(__filename, readJsonFileAsObject.name);
+function readJsonSync(filePath) {
+    const source = (0, logging_1.getSourceString)(__filename, readJsonSync.name);
     try {
         filePath = coerceFileExtension(filePath, 'json');
         const data = fs_1.default.readFileSync(filePath, 'utf8');

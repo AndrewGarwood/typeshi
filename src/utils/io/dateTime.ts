@@ -220,8 +220,16 @@ export function toPacificTime(initialDateString: string): string {
     return pacificTime
 }
 
-export const Milliseconds = {
-    from: {
+export class Milliseconds {
+    static readonly from = {
+        /**
+         * @param n `number`
+         * @param withLeapTime `boolean (optional)` `default = true`
+         * @returns `n * (1000 * 60 * 60 * 24) * (withLeapTime ? 365.25 : 365)`
+         */
+        years: (n: number, withLeapTime: boolean = true) => {
+            return n * (1000 * 60 * 60 * 24) * (withLeapTime ? 365.25 : 365); 
+        },
         /**
          * @param n `number`
          * @returns `n * (1000 * 60 * 60 * 24)` number of milliseconds in `n` days
@@ -269,15 +277,25 @@ export const Milliseconds = {
                 }
                 return date.getTime();
             } catch (error) {
-                console.error(`Failed to parse date string: '${s}'`, error);
+                console.error(`[Milliseconds.from.string()] Failed to parse date string: '${s}'`, error);
                 return null;
             }
         },
-    },
-    to: {
+    };
+    static readonly to = {
+        /**
+         * @param n `number` 
+         * @param withLeapTime `boolean (optional)` `default = true`
+         * @returns `number` years in `n` milliseconds
+         * = `n / (1000 * 60 * 60 * 24 * (withLeapTime ? 365.25 : 365))`
+         */
+        years: (n: number, withLeapTime: boolean = true): number => {
+            return n / (1000 * 60 * 60 * 24 * (withLeapTime ? 365.25 : 365)); 
+        },
         /**
          * @param n `number`
          * @returns `number` days in `n` milliseconds
+         * = `n / (1000 * 60 * 60 * 24)`
          */
         days: (n: number): number => {
             return n / (1000 * 60 * 60 * 24);
@@ -285,6 +303,7 @@ export const Milliseconds = {
         /**
          * @param n `number`
          * @returns `number` hours in `n` milliseconds
+         * = `n / (1000 * 60 * 60)`
          */
         hours: (n: number): number => {
             return n / (1000 * 60 * 60);
@@ -292,6 +311,7 @@ export const Milliseconds = {
         /**
          * @param n `number`
          * @returns `number` minutes in `n` milliseconds
+         * = `n / (1000 * 60)`
          */
         minutes: (n: number): number => {
             return n / (1000 * 60);
@@ -299,6 +319,7 @@ export const Milliseconds = {
         /**
          * @param n `number`
          * @returns `number` seconds in `n` milliseconds
+         * = `n / (1000)`
          */
         seconds: (n: number): number => {
             return n / (1000);
@@ -313,9 +334,9 @@ export const Milliseconds = {
         },
         /**
          * @param n `number`
-         * @param format {@link DateFormatEnum} default = {@link DateFormatEnum.ISO}
-         * @param locale `string` default = `'en-US'` (only used if format = {@link DateFormatEnum.LOCALE})
-         * @param timeZone `string` default = `'America/Los_Angeles'` (only used if format = {@link DateFormatEnum.LOCALE})
+         * @param format {@link DateFormatEnum} `default` = {@link DateFormatEnum.ISO}
+         * @param locale `string` `default` = `'en-US'` (only used if `format` = `DateFormatEnum.LOCALE`)
+         * @param timeZone `string` `default` = `'America/Los_Angeles'` (only used if `format` = `DateFormatEnum.LOCALE`)
          * @returns `string` formatted date string or empty string if error
          */
         string: (
@@ -326,7 +347,7 @@ export const Milliseconds = {
         ): string => {
             const date = new Date(n);
             if (isNaN(date.getTime())) {
-                console.error(`Invalid milliseconds value: '${n}'`);
+                console.error(`[Milliseconds.to.string()] Invalid milliseconds value: '${n}'`);
                 return ``;
             }
             switch (format) {
@@ -337,11 +358,11 @@ export const Milliseconds = {
                 case DateFormatEnum.LOCALE:
                     return date.toLocaleString(locale, {timeZone});
                 default:
-                    console.error(`Invalid date format specified: '${format}'.`,
+                    console.error(`[Milliseconds.to.string()] Invalid date format specified: '${format}'.`,
                         `Use DateFormatEnum.ISO, DateFormatEnum.UTC, or DateFormatEnum.LOCALE`
                     );
                     return ``;
             }
         },
-    },
-} as const;
+    }
+}
