@@ -21,3 +21,4 @@ __exportStar(require("./io"), exports);
 __exportStar(require("./regex"), exports);
 __exportStar(require("./argumentValidation"), exports);
 __exportStar(require("./typeValidation"), exports);
+__exportStar(require("./object"), exports);
