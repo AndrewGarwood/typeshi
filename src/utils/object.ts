@@ -59,14 +59,14 @@ export class Restrict {
  * and `source[sourceKey]` is `undefined`
  */
 export type TransformationSchema<T extends object, S extends object = any> = { 
-    [K in keyof T]?: ((val: S[keyof S]) => T[K]) | TransformOptions<T, K, S>; 
+    [K in keyof T]?: ((val: any) => T[K]) | TransformOptions<T, K, S>; 
 };
 export type TransformOptions<
     T extends object, 
     K extends keyof T, 
     S extends object = any
 > = {
-    transform?: (val: S[keyof S], ...args: any[]) => T[K];
+    transform?: (val: any, ...args: any[]) => T[K];
     args?: any[];
     defaultValue?: T[K];
     sourceKey?: keyof S;
@@ -93,9 +93,9 @@ export function sanitizeAndMap<T extends object, S extends object = any>(
             : key
         ) as keyof S;
         if (hasDefinedEntry(obj, sourceKey)) {
-            if (isFunction(schemaValue)) { // schemaValue is ((val: S[keyof S]) => T[K])
+            if (isFunction(schemaValue)) { // schemaValue is ((val: any) => T[K])
                 data[key] = schemaValue(obj[sourceKey]);
-            } else if (isFunction(schemaValue.transform)) { // schemaValue is { transform?: (val: S[keyof S], ...args: any[]) => T[K]; args?: any[]; sourceKey?: keyof S}
+            } else if (isFunction(schemaValue.transform)) { // schemaValue is { transform?: (val: any, ...args: any[]) => T[K]; args?: any[]; sourceKey?: keyof S}
                 data[key] = schemaValue.transform(obj[sourceKey], ...(schemaValue.args ?? []));
             }
         } else if (!isFunction(schemaValue) && 'defaultValue' in schemaValue) {  

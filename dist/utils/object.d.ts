@@ -38,10 +38,10 @@ export declare class Restrict {
  * and `source[sourceKey]` is `undefined`
  */
 export type TransformationSchema<T extends object, S extends object = any> = {
-    [K in keyof T]?: ((val: S[keyof S]) => T[K]) | TransformOptions<T, K, S>;
+    [K in keyof T]?: ((val: any) => T[K]) | TransformOptions<T, K, S>;
 };
 export type TransformOptions<T extends object, K extends keyof T, S extends object = any> = {
-    transform?: (val: S[keyof S], ...args: any[]) => T[K];
+    transform?: (val: any, ...args: any[]) => T[K];
     args?: any[];
     defaultValue?: T[K];
     sourceKey?: keyof S;

@@ -58,10 +58,10 @@ function sanitizeAndMap(obj, schema, passThroughKeys = []) {
             ? schemaValue.sourceKey
             : key);
         if (hasDefinedEntry(obj, sourceKey)) {
-            if ((0, typeValidation_1.isFunction)(schemaValue)) { // schemaValue is ((val: S[keyof S]) => T[K])
+            if ((0, typeValidation_1.isFunction)(schemaValue)) { // schemaValue is ((val: any) => T[K])
                 data[key] = schemaValue(obj[sourceKey]);
             }
-            else if ((0, typeValidation_1.isFunction)(schemaValue.transform)) { // schemaValue is { transform?: (val: S[keyof S], ...args: any[]) => T[K]; args?: any[]; sourceKey?: keyof S}
+            else if ((0, typeValidation_1.isFunction)(schemaValue.transform)) { // schemaValue is { transform?: (val: any, ...args: any[]) => T[K]; args?: any[]; sourceKey?: keyof S}
                 data[key] = schemaValue.transform(obj[sourceKey], ...(schemaValue.args ?? []));
             }
         }
