@@ -42,9 +42,9 @@ Restrict.keys = hasValidKeysOnly;
  */
 Restrict.toPicked = picked;
 /**
- * @param obj `any` - source object (e.g., Request Body)
- * @param schema {@link TransformationSchema}`<T>` - map of keys to transformation functions
- * @param passThroughKeys `(keyof T)[]` - keys to move over without transformation (Identity mapping)
+ * @param obj `S` - source object (e.g., Request Body)
+ * @param schema {@link TransformationSchema}`<T, S>` - map of keys to transformation functions.
+ * @param passThroughKeys `(keyof T)[] (optional)` - keys to move over without transformation (Identity mapping)
  * @returns **`data`** `T` - new object with keys/values from generated from `schema` & `passThroughKeys`
  */
 function sanitizeAndMap(obj, schema, passThroughKeys = []) {
@@ -54,15 +54,17 @@ function sanitizeAndMap(obj, schema, passThroughKeys = []) {
         const schemaValue = schema[key];
         if (!schemaValue)
             continue;
-        if (hasDefinedEntry(obj, key)) {
-            if ((0, typeValidation_1.isFunction)(schemaValue)) {
-                data[key] = schemaValue(obj[key]);
+        const sourceKey = 'sourceKey' in schemaValue && schemaValue.sourceKey ? schemaValue.sourceKey : key;
+        if (hasDefinedEntry(obj, sourceKey)) {
+            if ((0, typeValidation_1.isFunction)(schemaValue)) { // schemaValue is ((val: S[keyof S]) => T[K])
+                data[key] = schemaValue(obj[sourceKey]);
             }
-            else if ((0, typeValidation_1.isFunction)(schemaValue.transform)) {
-                data[key] = schemaValue.transform(obj[key], ...(schemaValue.args ?? []));
+            else if ((0, typeValidation_1.isFunction)(schemaValue.transform)) { // schemaValue is { transform?: (val: S[keyof S], ...args: any[]) => T[K]; args?: any[]; sourceKey?: keyof S}
+                data[key] = schemaValue.transform(obj[sourceKey], ...(schemaValue.args ?? []));
             }
         }
-        else if (!(0, typeValidation_1.isFunction)(schemaValue) && 'defaultValue' in schemaValue) { // can apply defaultValue
+        else if (!(0, typeValidation_1.isFunction)(schemaValue) && 'defaultValue' in schemaValue) {
+            // `obj[K]` is `undefined`, can apply defaultValue
             data[key] = schemaValue.defaultValue;
         }
     }

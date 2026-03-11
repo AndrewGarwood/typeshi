@@ -43,36 +43,44 @@ export class Restrict {
     static toPicked = picked;
 }
 
-/**
- * define a `TransformationSchema<T>` to use in `sanitizeAndMap` to convert 
- * an initial object `any` to `T`. the `"initial"` object is assumed to share props with `T` 
- * (hence the need to transform its values)
- * 
- * values are either:
- * 1. a `function` where only need to pass in `initial[K]` to get the transformed value `T[K]`
- * 2. an `object` with props: 
- * - `transform (function, optional)` - function that uses `initial[K]` & `args` to compute `T[K]`
- * - `args (any[], optional)` - the array of arguments passed into `transform` using the spread operator.
- * - `defaultValue (T[K], optional)` - assign this value to `K` when `transform` is `undefined` 
- * and `initial[K]` is `undefined`
- */
-export type TransformationSchema<T> = { 
-    [K in keyof T]?: ((val: any) => T[K]) | {
-        transform?: (val: any, ...args: any[]) => T[K];
-        args?: any[];
-        defaultValue?: T[K];
-    }; 
-};
 
 /**
- * @param obj `any` - source object (e.g., Request Body)
- * @param schema {@link TransformationSchema}`<T>` - map of keys to transformation functions
- * @param passThroughKeys `(keyof T)[]` - keys to move over without transformation (Identity mapping)
+ * define a `TransformationSchema<T, S>` to use in `sanitizeAndMap`, where entries from
+ * a `source` object `S` are mapped to a new object `T`
+ * 
+ * `values` are either:
+ * 1. a `function` where only need to pass in `source[K]` to get the transformed value `T[K]`
+ * 2. {@link TransformOptions}, an object with props:
+ * - `sourceKey (keyof S, optional)` - indicates that should transform `source[sourceKey]` to `T[K]`.
+ * `sourceKey = TransformOptions.sourceKey ?? K`
+ * - `transform (function, optional)` - `function` that uses `source[sourceKey]` & `args` to compute `T[K]`
+ * - `args (any[], optional)` - the array of arguments passed into `transform` using the spread operator, i.e. `transform(source[sourceKey], ...args)`
+ * - `defaultValue (T[K], optional)` - assign this value to `K` **only when** `transform` is `undefined` 
+ * and `source[sourceKey]` is `undefined`
+ */
+export type TransformationSchema<T extends object, S extends Record<keyof any, unknown> = any> = { 
+    [K in keyof T]?: ((val: S[keyof S]) => T[K]) | TransformOptions<T, K, S>; 
+};
+export type TransformOptions<
+    T extends object, 
+    K extends keyof T, 
+    S extends Record<keyof any, unknown> = any
+> = {
+    transform?: (val: S[keyof S], ...args: any[]) => T[K];
+    args?: any[];
+    defaultValue?: T[K];
+    sourceKey?: keyof S;
+}; 
+
+/**
+ * @param obj `S` - source object (e.g., Request Body)
+ * @param schema {@link TransformationSchema}`<T, S>` - map of keys to transformation functions.
+ * @param passThroughKeys `(keyof T)[] (optional)` - keys to move over without transformation (Identity mapping)
  * @returns **`data`** `T` - new object with keys/values from generated from `schema` & `passThroughKeys`
  */
-export function sanitizeAndMap<T extends object>(
-    obj: any,
-    schema: TransformationSchema<T>,
+export function sanitizeAndMap<T extends object, S extends Record<keyof any, unknown> = any>(
+    obj: S,
+    schema: TransformationSchema<T, S>,
     passThroughKeys: (keyof T)[] = []
 ): T {
     const data = {} as any;
@@ -80,13 +88,15 @@ export function sanitizeAndMap<T extends object>(
     for (const key in schema) {
         const schemaValue = schema[key];
         if (!schemaValue) continue;
-        if (hasDefinedEntry(obj, key as keyof T)) {
-            if (isFunction(schemaValue)) {
-                data[key] = schemaValue(obj[key]);
-            } else if (isFunction(schemaValue.transform)) {
-                data[key] = schemaValue.transform(obj[key], ...(schemaValue.args ?? []));
+        const sourceKey = 'sourceKey' in schemaValue && schemaValue.sourceKey ? schemaValue.sourceKey : key;
+        if (hasDefinedEntry(obj, sourceKey)) {
+            if (isFunction(schemaValue)) { // schemaValue is ((val: S[keyof S]) => T[K])
+                data[key] = schemaValue(obj[sourceKey]);
+            } else if (isFunction(schemaValue.transform)) { // schemaValue is { transform?: (val: S[keyof S], ...args: any[]) => T[K]; args?: any[]; sourceKey?: keyof S}
+                data[key] = schemaValue.transform(obj[sourceKey], ...(schemaValue.args ?? []));
             }
-        } else if (!isFunction(schemaValue) && 'defaultValue' in schemaValue) {  // can apply defaultValue
+        } else if (!isFunction(schemaValue) && 'defaultValue' in schemaValue) {  
+            // `obj[K]` is `undefined`, can apply defaultValue
             data[key] = schemaValue.defaultValue;
         }
     }
