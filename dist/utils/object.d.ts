@@ -23,8 +23,17 @@ export declare class Restrict {
      */
     static toPicked: typeof picked;
 }
+/**
+ * **`values`** are either:
+ * - a `function` where only need to pass in single value to get the transformed value `T[K]`
+ * - an object with two props: `transform` & `args` where `args` is the array of arguments
+ * passed into `transform` using the spread operator.
+ */
 export type TransformationSchema<T> = {
-    [K in keyof T]?: (val: any) => T[K];
+    [K in keyof T]?: ((val: any) => T[K]) | {
+        transform: (val: any, ...args: any[]) => T[K];
+        args: any[];
+    };
 };
 /**
  * @param obj `any` - source object (e.g., Request Body)

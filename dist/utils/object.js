@@ -9,6 +9,7 @@ exports.hasValidKeysOnly = hasValidKeysOnly;
 exports.picked = picked;
 exports.sanitizeAndMap = sanitizeAndMap;
 exports.hasDefinedEntry = hasDefinedEntry;
+const typeValidation_1 = require("./typeValidation");
 /**
  * @returns `boolean`
  * - `true` if all keys in obj are also in validKeys
@@ -51,7 +52,12 @@ function sanitizeAndMap(obj, schema, passThroughKeys = []) {
     // 1. Handle explicit transformations
     for (const key in schema) {
         if (schema[key] && hasDefinedEntry(obj, key)) {
-            data[key] = schema[key](obj[key]);
+            if ((0, typeValidation_1.isFunction)(schema[key])) {
+                data[key] = schema[key](obj[key]);
+            }
+            else {
+                data[key] = schema[key].transform(obj[key], ...schema[key].args);
+            }
         }
     }
     // 2. Handle simple pass-throughs (Identity mapping)
