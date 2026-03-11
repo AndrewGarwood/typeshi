@@ -44,7 +44,7 @@ Restrict.toPicked = picked;
 /**
  * @param obj `S` - source object (e.g., Request Body)
  * @param schema {@link TransformationSchema}`<T, S>` - map of keys to transformation functions.
- * @param passThroughKeys `(keyof T)[] (optional)` - keys to move over without transformation (Identity mapping)
+ * @param passThroughKeys `(keyof T & keyof S)[] (optional)` - keys to move over without transformation (Identity mapping)
  * @returns **`data`** `T` - new object with keys/values from generated from `schema` & `passThroughKeys`
  */
 function sanitizeAndMap(obj, schema, passThroughKeys = []) {
@@ -54,7 +54,9 @@ function sanitizeAndMap(obj, schema, passThroughKeys = []) {
         const schemaValue = schema[key];
         if (!schemaValue)
             continue;
-        const sourceKey = 'sourceKey' in schemaValue && schemaValue.sourceKey ? schemaValue.sourceKey : key;
+        const sourceKey = ('sourceKey' in schemaValue && schemaValue.sourceKey
+            ? schemaValue.sourceKey
+            : key);
         if (hasDefinedEntry(obj, sourceKey)) {
             if ((0, typeValidation_1.isFunction)(schemaValue)) { // schemaValue is ((val: S[keyof S]) => T[K])
                 data[key] = schemaValue(obj[sourceKey]);

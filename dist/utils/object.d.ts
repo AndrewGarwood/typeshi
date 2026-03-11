@@ -37,10 +37,10 @@ export declare class Restrict {
  * - `defaultValue (T[K], optional)` - assign this value to `K` **only when** `transform` is `undefined`
  * and `source[sourceKey]` is `undefined`
  */
-export type TransformationSchema<T extends object, S extends Record<keyof any, unknown> = any> = {
+export type TransformationSchema<T extends object, S extends object = any> = {
     [K in keyof T]?: ((val: S[keyof S]) => T[K]) | TransformOptions<T, K, S>;
 };
-export type TransformOptions<T extends object, K extends keyof T, S extends Record<keyof any, unknown> = any> = {
+export type TransformOptions<T extends object, K extends keyof T, S extends object = any> = {
     transform?: (val: S[keyof S], ...args: any[]) => T[K];
     args?: any[];
     defaultValue?: T[K];
@@ -49,11 +49,11 @@ export type TransformOptions<T extends object, K extends keyof T, S extends Reco
 /**
  * @param obj `S` - source object (e.g., Request Body)
  * @param schema {@link TransformationSchema}`<T, S>` - map of keys to transformation functions.
- * @param passThroughKeys `(keyof T)[] (optional)` - keys to move over without transformation (Identity mapping)
+ * @param passThroughKeys `(keyof T & keyof S)[] (optional)` - keys to move over without transformation (Identity mapping)
  * @returns **`data`** `T` - new object with keys/values from generated from `schema` & `passThroughKeys`
  */
-export declare function sanitizeAndMap<T extends object, S extends Record<keyof any, unknown> = any>(obj: S, schema: TransformationSchema<T, S>, passThroughKeys?: (keyof T)[]): T;
+export declare function sanitizeAndMap<T extends object, S extends object = any>(obj: S, schema: TransformationSchema<T, S>, passThroughKeys?: (keyof T & keyof S)[]): T;
 /**
  * @returns `Object.prototype.hasOwnProperty.call(obj, key) && obj[key] !== undefined;`
  */
-export declare function hasDefinedEntry<T extends object>(obj: any, key: keyof T): boolean;
+export declare function hasDefinedEntry<T extends object>(obj: any, key: keyof T | keyof any): boolean;
