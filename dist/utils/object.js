@@ -51,13 +51,19 @@ function sanitizeAndMap(obj, schema, passThroughKeys = []) {
     const data = {};
     // 1. Handle explicit transformations
     for (const key in schema) {
-        if (schema[key] && hasDefinedEntry(obj, key)) {
-            if ((0, typeValidation_1.isFunction)(schema[key])) {
-                data[key] = schema[key](obj[key]);
+        const schemaValue = schema[key];
+        if (!schemaValue)
+            continue;
+        if (hasDefinedEntry(obj, key)) {
+            if ((0, typeValidation_1.isFunction)(schemaValue)) {
+                data[key] = schemaValue(obj[key]);
             }
-            else {
-                data[key] = schema[key].transform(obj[key], ...schema[key].args);
+            else if ((0, typeValidation_1.isFunction)(schemaValue.transform)) {
+                data[key] = schemaValue.transform(obj[key], ...(schemaValue.args ?? []));
             }
+        }
+        else if (!(0, typeValidation_1.isFunction)(schemaValue) && 'defaultValue' in schemaValue) { // can apply defaultValue
+            data[key] = schemaValue.defaultValue;
         }
     }
     // 2. Handle simple pass-throughs (Identity mapping)

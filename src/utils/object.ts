@@ -3,7 +3,7 @@
  * @TODO just use zod instead
  */
 
-import { isFunction } from "./typeValidation";
+import { isFunction, } from "./typeValidation";
 
 /**
  * @returns `boolean`
@@ -44,15 +44,23 @@ export class Restrict {
 }
 
 /**
- * **`values`** are either:
- * - a `function` where only need to pass in single value to get the transformed value `T[K]`
- * - an object with two props: `transform` & `args` where `args` is the array of arguments
- * passed into `transform` using the spread operator. 
+ * define a `TransformationSchema<T>` to use in `sanitizeAndMap` to convert 
+ * an initial object `any` to `T`. the `"initial"` object is assumed to share props with `T` 
+ * (hence the need to transform its values)
+ * 
+ * values are either:
+ * 1. a `function` where only need to pass in `initial[K]` to get the transformed value `T[K]`
+ * 2. an `object` with props: 
+ * - `transform (function, optional)` - function that uses `initial[K]` & `args` to compute `T[K]`
+ * - `args (any[], optional)` - the array of arguments passed into `transform` using the spread operator.
+ * - `defaultValue (T[K], optional)` - assign this value to `K` when `transform` is `undefined` 
+ * and `initial[K]` is `undefined`
  */
 export type TransformationSchema<T> = { 
     [K in keyof T]?: ((val: any) => T[K]) | {
-        transform: (val: any, ...args: any[]) => T[K];
-        args: any[]
+        transform?: (val: any, ...args: any[]) => T[K];
+        args?: any[];
+        defaultValue?: T[K];
     }; 
 };
 
@@ -70,12 +78,16 @@ export function sanitizeAndMap<T extends object>(
     const data = {} as any;
     // 1. Handle explicit transformations
     for (const key in schema) {
-        if (schema[key] && hasDefinedEntry(obj, key as keyof T)) {
-            if (isFunction(schema[key])) {
-                data[key] = schema[key](obj[key]);
-            } else {
-                data[key] = schema[key].transform(obj[key], ...schema[key].args)
+        const schemaValue = schema[key];
+        if (!schemaValue) continue;
+        if (hasDefinedEntry(obj, key as keyof T)) {
+            if (isFunction(schemaValue)) {
+                data[key] = schemaValue(obj[key]);
+            } else if (isFunction(schemaValue.transform)) {
+                data[key] = schemaValue.transform(obj[key], ...(schemaValue.args ?? []));
             }
+        } else if (!isFunction(schemaValue) && 'defaultValue' in schemaValue) {  // can apply defaultValue
+            data[key] = schemaValue.defaultValue;
         }
     }
     // 2. Handle simple pass-throughs (Identity mapping)
