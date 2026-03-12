@@ -5,42 +5,11 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Restrict = void 0;
-exports.hasValidKeysOnly = hasValidKeysOnly;
-exports.picked = picked;
 exports.sanitizeAndMap = sanitizeAndMap;
 exports.hasDefinedEntry = hasDefinedEntry;
+exports.hasValidKeysOnly = hasValidKeysOnly;
+exports.picked = picked;
 const typeValidation_1 = require("./typeValidation");
-/**
- * @returns `boolean`
- * - `true` if all keys in obj are also in validKeys
- * - `false` if there exists a key in obj that is not in validKeys
- */
-function hasValidKeysOnly(obj, validKeys) {
-    return Object.keys(obj).every(key => validKeys.includes(key));
-}
-/**
- * @returns a new object containing only the specified keys.
- */
-function picked(obj, keys) {
-    const result = {};
-    for (const key of keys) {
-        if (key in obj && obj[key] !== undefined)
-            result[key] = obj[key];
-    }
-    return result;
-}
-class Restrict {
-}
-exports.Restrict = Restrict;
-/**
- * `hasValidKeysOnly`
- * @returns `boolean` - `true` if `obj` contains ONLY keys found in `validKeys`
- */
-Restrict.keys = hasValidKeysOnly;
-/**
- * @returns a new object containing only the specified keys.
- */
-Restrict.toPicked = picked;
 /**
  * @param obj `S` - source object (e.g., Request Body)
  * @param schema {@link TransformationSchema}`<T, S>` - map of keys to transformation functions.
@@ -72,8 +41,16 @@ function sanitizeAndMap(obj, schema, passThroughKeys = []) {
     }
     // 2. Handle simple pass-throughs (Identity mapping)
     for (const key of passThroughKeys) {
-        if (!data[key] && hasDefinedEntry(obj, key)) {
+        if (key in data)
+            continue; // already handled
+        if (hasDefinedEntry(obj, key)) {
             data[key] = obj[key];
+        }
+        else if (key in schema && schema[key]) { // no value available to pass through, but can assign defaultValue
+            const schemaValue = schema[key];
+            if (!(0, typeValidation_1.isFunction)(schemaValue) && 'defaultValue' in schemaValue) {
+                data[key] = schemaValue.defaultValue;
+            }
         }
     }
     return data;
@@ -84,3 +61,34 @@ function sanitizeAndMap(obj, schema, passThroughKeys = []) {
 function hasDefinedEntry(obj, key) {
     return Object.prototype.hasOwnProperty.call(obj, key) && obj[key] !== undefined;
 }
+/**
+ * @returns `boolean`
+ * - `true` if all keys in obj are also in validKeys
+ * - `false` if there exists a key in obj that is not in validKeys
+ */
+function hasValidKeysOnly(obj, validKeys) {
+    return Object.keys(obj).every(key => validKeys.includes(key));
+}
+/**
+ * @returns a new object containing only the specified keys.
+ */
+function picked(obj, keys) {
+    const result = {};
+    for (const key of keys) {
+        if (key in obj && obj[key] !== undefined)
+            result[key] = obj[key];
+    }
+    return result;
+}
+class Restrict {
+}
+exports.Restrict = Restrict;
+/**
+ * `hasValidKeysOnly`
+ * @returns `boolean` - `true` if `obj` contains ONLY keys found in `validKeys`
+ */
+Restrict.keys = hasValidKeysOnly;
+/**
+ * @returns a new object containing only the specified keys.
+ */
+Restrict.toPicked = picked;

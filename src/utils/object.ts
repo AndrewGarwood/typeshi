@@ -3,45 +3,7 @@
  * @TODO just use zod instead
  */
 
-import { isFunction, isUndefined, } from "./typeValidation";
-
-/**
- * @returns `boolean`
- * - `true` if all keys in obj are also in validKeys
- * - `false` if there exists a key in obj that is not in validKeys
- */
-export function hasValidKeysOnly<T extends object>(
-    obj: object, 
-    validKeys: readonly (keyof T)[]
-): obj is T {
-    return Object.keys(obj).every(key => validKeys.includes(key as keyof T));
-}
-
-/**
- * @returns a new object containing only the specified keys.
- */
-export function picked<T extends object, K extends keyof T>(
-    obj: T,
-    keys: K[]
-): Pick<T, K> {
-    const result = {} as Pick<T, K>;    
-    for (const key of keys) {
-        if (key in obj && obj[key] !== undefined) result[key] = obj[key];
-    }
-    return result;
-}
-
-export class Restrict {
-    /**
-     * `hasValidKeysOnly`
-     * @returns `boolean` - `true` if `obj` contains ONLY keys found in `validKeys`
-     */
-    static keys = hasValidKeysOnly;
-    /**
-     * @returns a new object containing only the specified keys.
-     */
-    static toPicked = picked;
-}
+import { isFunction } from "./typeValidation";
 
 
 /**
@@ -105,8 +67,14 @@ export function sanitizeAndMap<T extends object, S extends object = any>(
     }
     // 2. Handle simple pass-throughs (Identity mapping)
     for (const key of passThroughKeys) {
-        if (!data[key] && hasDefinedEntry(obj, key)) {
+        if (key in data) continue; // already handled
+        if (hasDefinedEntry(obj, key)) {
             data[key] = obj[key];
+        } else if (key in schema && schema[key]) { // no value available to pass through, but can assign defaultValue
+            const schemaValue = schema[key];
+            if (!isFunction(schemaValue) && 'defaultValue' in schemaValue) {
+                data[key] = schemaValue.defaultValue;
+            }
         }
     }
     return data as T;
@@ -117,4 +85,41 @@ export function sanitizeAndMap<T extends object, S extends object = any>(
  */
 export function hasDefinedEntry<T extends object>(obj: any, key: keyof T | keyof any): boolean { // obj is Record<keyof T, any> 
     return Object.prototype.hasOwnProperty.call(obj, key) && obj[key] !== undefined;
+}
+/**
+ * @returns `boolean`
+ * - `true` if all keys in obj are also in validKeys
+ * - `false` if there exists a key in obj that is not in validKeys
+ */
+export function hasValidKeysOnly<T extends object>(
+    obj: object, 
+    validKeys: readonly (keyof T)[]
+): obj is T {
+    return Object.keys(obj).every(key => validKeys.includes(key as keyof T));
+}
+
+/**
+ * @returns a new object containing only the specified keys.
+ */
+export function picked<T extends object, K extends keyof T>(
+    obj: T,
+    keys: K[]
+): Pick<T, K> {
+    const result = {} as Pick<T, K>;    
+    for (const key of keys) {
+        if (key in obj && obj[key] !== undefined) result[key] = obj[key];
+    }
+    return result;
+}
+
+export class Restrict {
+    /**
+     * `hasValidKeysOnly`
+     * @returns `boolean` - `true` if `obj` contains ONLY keys found in `validKeys`
+     */
+    static keys = hasValidKeysOnly;
+    /**
+     * @returns a new object containing only the specified keys.
+     */
+    static toPicked = picked;
 }

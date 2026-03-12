@@ -3,27 +3,6 @@
  * @TODO just use zod instead
  */
 /**
- * @returns `boolean`
- * - `true` if all keys in obj are also in validKeys
- * - `false` if there exists a key in obj that is not in validKeys
- */
-export declare function hasValidKeysOnly<T extends object>(obj: object, validKeys: readonly (keyof T)[]): obj is T;
-/**
- * @returns a new object containing only the specified keys.
- */
-export declare function picked<T extends object, K extends keyof T>(obj: T, keys: K[]): Pick<T, K>;
-export declare class Restrict {
-    /**
-     * `hasValidKeysOnly`
-     * @returns `boolean` - `true` if `obj` contains ONLY keys found in `validKeys`
-     */
-    static keys: typeof hasValidKeysOnly;
-    /**
-     * @returns a new object containing only the specified keys.
-     */
-    static toPicked: typeof picked;
-}
-/**
  * define a `TransformationSchema<T, S>` to use in `sanitizeAndMap`, where entries from
  * a `source` object `S` are mapped to a new object `T`
  *
@@ -57,3 +36,24 @@ export declare function sanitizeAndMap<T extends object, S extends object = any>
  * @returns `Object.prototype.hasOwnProperty.call(obj, key) && obj[key] !== undefined;`
  */
 export declare function hasDefinedEntry<T extends object>(obj: any, key: keyof T | keyof any): boolean;
+/**
+ * @returns `boolean`
+ * - `true` if all keys in obj are also in validKeys
+ * - `false` if there exists a key in obj that is not in validKeys
+ */
+export declare function hasValidKeysOnly<T extends object>(obj: object, validKeys: readonly (keyof T)[]): obj is T;
+/**
+ * @returns a new object containing only the specified keys.
+ */
+export declare function picked<T extends object, K extends keyof T>(obj: T, keys: K[]): Pick<T, K>;
+export declare class Restrict {
+    /**
+     * `hasValidKeysOnly`
+     * @returns `boolean` - `true` if `obj` contains ONLY keys found in `validKeys`
+     */
+    static keys: typeof hasValidKeysOnly;
+    /**
+     * @returns a new object containing only the specified keys.
+     */
+    static toPicked: typeof picked;
+}
