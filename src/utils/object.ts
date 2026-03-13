@@ -81,12 +81,6 @@ export function sanitizeAndMap<T extends object, S extends object = any>(
 }
 
 /**
- * @returns `Object.prototype.hasOwnProperty.call(obj, key) && obj[key] !== undefined;`
- */
-export function hasDefinedEntry<T extends object>(obj: any, key: keyof T | keyof any): boolean { // obj is Record<keyof T, any> 
-    return Object.prototype.hasOwnProperty.call(obj, key) && obj[key] !== undefined;
-}
-/**
  * @returns `boolean`
  * - `true` if all keys in obj are also in validKeys
  * - `false` if there exists a key in obj that is not in validKeys
@@ -112,6 +106,64 @@ export function picked<T extends object, K extends keyof T>(
     return result;
 }
 
+
+
+
+// @TODO could try to generalize enforceMaxLength to handle objects operating on Object.keys()/Object.entries()
+// but I don't think hashed keys of dicts/objects retain consistent information on what order they were added to object...
+/**
+ * @param arr `T[]`
+ * @param maxLength `number` an integer greater than or equal to `0`
+ * - the original array is returned if `maxLength < 0`
+ * - converts `float` to `int` with `Math.floor()`;
+ * @note **original array is returned if `arr.length <= Math.floor(maxLength)`**
+ * @param principle `'LIFO' | 'FIFO' (optional)` `default = 'LIFO'`
+ * `(if arr.length > maxLength)` indicate from which end of array to remove elements 
+ * - `'LIFO'` - remove elements from end (`'Last-In-First-Out'`)
+ * - `'FIFO'` - remove elements from front (`'First-In-First-Out'`)
+ * @note **assumes newest elements were pushed to end** i.e. `stack.push()` or `queue.enque()`
+ * @param inPlace `boolean (optional)` `default = true`
+ * - `true` - modify and return original array with: `arr.length = maxLength (LIFO)` or `arr.splice() (FIFO)`
+ * - - if `'LIFO'`, can use JS trick by setting `arr.length = maxLength`
+ * - `false` - return new array with: `arr.slice()` `arr.slice(0, maxLength) (LIFO) or arr.slice(i, n) (FIFO)` where `n - i === maxLength`
+ * @returns **`arr`** `T[]` where `arr.length <= maxLength`
+ */
+export function enforceMaxLength<T = unknown>(
+    arr: T[], 
+    maxLength: number, 
+    principle: 'LIFO' | 'FIFO' = 'LIFO',
+    inPlace: boolean = true
+): T[] {
+    if (maxLength < 0) return arr;
+    maxLength = Math.floor(maxLength);
+    if (maxLength === 0) {
+        if (inPlace) {
+            arr.length = 0;
+            return arr;
+        } else {
+            return [];
+        }
+    }
+    const n = arr.length;
+    if (n <= maxLength) return arr;
+    const excess = n - maxLength;
+    if (inPlace) {
+        if (principle === 'LIFO') {
+            arr.length = maxLength;
+        } else {
+            arr.splice(0, excess);
+        }
+        return arr;
+    } else {
+        if (principle === 'LIFO') {
+            return arr.slice(0, maxLength);
+        } else {
+            return arr.slice(excess);
+        }
+    }
+}
+
+
 export class Restrict {
     /**
      * `hasValidKeysOnly`
@@ -122,4 +174,46 @@ export class Restrict {
      * @returns a new object containing only the specified keys.
      */
     static toPicked = picked;
+    
+    /**
+     * @param arr `T[]`
+     * @param maxLength `number` an integer greater than or equal to `0`
+     * - the original array is returned if `maxLength < 0`
+     * - converts `float` to `int` with `Math.floor()`;
+     * @note **original array is returned if `arr.length <= Math.floor(maxLength)`**
+     * @param principle `'LIFO' | 'FIFO' (optional)` `default = 'LIFO'`
+     * `(if arr.length > maxLength)` indicate from which end of array to remove elements 
+     * - `'LIFO'` - remove elements from end (`'Last-In-First-Out'`)
+     * - `'FIFO'` - remove elements from front (`'First-In-First-Out'`)
+     * @note **assumes newest elements were pushed to end** i.e. `stack.push()` or `queue.enque()`
+     * @param inPlace `boolean (optional)` `default = true`
+     * - `true` - modify and return original array with: `arr.length = maxLength (LIFO)` or `arr.splice() (FIFO)`
+     * - - if `'LIFO'`, can use JS trick by setting `arr.length = maxLength`
+     * - `false` - return new array with: `arr.slice()` `arr.slice(0, maxLength) (LIFO) or arr.slice(i, n) (FIFO)` where `n - i === maxLength`
+     * @returns **`arr`** `T[]` where `arr.length <= maxLength`
+     */
+    static arrayLength = enforceMaxLength;
+}
+
+
+/**
+ * @returns `Object.prototype.hasOwnProperty.call(obj, key) && obj[key] !== undefined;`
+ */
+export function hasDefinedEntry<T extends object>(obj: any, key: keyof T | keyof any): boolean { // obj is Record<keyof T, any> 
+    return Object.prototype.hasOwnProperty.call(obj, key) && obj[key] !== undefined;
+}
+
+/** 
+ * @returns **`containsKey`** `boolean = obj is { [K in keyof T]: T[K] }`
+ * - `true` if **`all`** `k` in `keys` return true for `Object.prototype.hasOwnProperty.call(obj, k)`
+ * - `false` otherwise
+ */
+export function containsKey<T extends object, K extends (keyof T | (keyof any & {})) = any>(
+    obj: T, 
+    ...keys: K[]
+): obj is { [K in keyof T]: T[K] } {
+    for (let k of keys) {
+        if (!Object.prototype.hasOwnProperty.call(obj, k)) return false; 
+    }
+    return true;
 }

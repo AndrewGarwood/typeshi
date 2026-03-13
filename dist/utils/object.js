@@ -6,9 +6,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Restrict = void 0;
 exports.sanitizeAndMap = sanitizeAndMap;
-exports.hasDefinedEntry = hasDefinedEntry;
 exports.hasValidKeysOnly = hasValidKeysOnly;
 exports.picked = picked;
+exports.enforceMaxLength = enforceMaxLength;
+exports.hasDefinedEntry = hasDefinedEntry;
+exports.containsKey = containsKey;
 const typeValidation_1 = require("./typeValidation");
 /**
  * @param obj `S` - source object (e.g., Request Body)
@@ -56,12 +58,6 @@ function sanitizeAndMap(obj, schema, passThroughKeys = []) {
     return data;
 }
 /**
- * @returns `Object.prototype.hasOwnProperty.call(obj, key) && obj[key] !== undefined;`
- */
-function hasDefinedEntry(obj, key) {
-    return Object.prototype.hasOwnProperty.call(obj, key) && obj[key] !== undefined;
-}
-/**
  * @returns `boolean`
  * - `true` if all keys in obj are also in validKeys
  * - `false` if there exists a key in obj that is not in validKeys
@@ -80,6 +76,60 @@ function picked(obj, keys) {
     }
     return result;
 }
+// @TODO could try to generalize enforceMaxLength to handle objects operating on Object.keys()/Object.entries()
+// but I don't think hashed keys of dicts/objects retain consistent information on what order they were added to object...
+/**
+ * @param arr `T[]`
+ * @param maxLength `number` an integer greater than or equal to `0`
+ * - the original array is returned if `maxLength < 0`
+ * - converts `float` to `int` with `Math.floor()`;
+ * @note **original array is returned if `arr.length <= Math.floor(maxLength)`**
+ * @param principle `'LIFO' | 'FIFO' (optional)` `default = 'LIFO'`
+ * `(if arr.length > maxLength)` indicate from which end of array to remove elements
+ * - `'LIFO'` - remove elements from end (`'Last-In-First-Out'`)
+ * - `'FIFO'` - remove elements from front (`'First-In-First-Out'`)
+ * @note **assumes newest elements were pushed to end** i.e. `stack.push()` or `queue.enque()`
+ * @param inPlace `boolean (optional)` `default = true`
+ * - `true` - modify and return original array with: `arr.length = maxLength (LIFO)` or `arr.splice() (FIFO)`
+ * - - if `'LIFO'`, can use JS trick by setting `arr.length = maxLength`
+ * - `false` - return new array with: `arr.slice()` `arr.slice(0, maxLength) (LIFO) or arr.slice(i, n) (FIFO)` where `n - i === maxLength`
+ * @returns **`arr`** `T[]` where `arr.length <= maxLength`
+ */
+function enforceMaxLength(arr, maxLength, principle = 'LIFO', inPlace = true) {
+    if (maxLength < 0)
+        return arr;
+    maxLength = Math.floor(maxLength);
+    if (maxLength === 0) {
+        if (inPlace) {
+            arr.length = 0;
+            return arr;
+        }
+        else {
+            return [];
+        }
+    }
+    const n = arr.length;
+    if (n <= maxLength)
+        return arr;
+    const excess = n - maxLength;
+    if (inPlace) {
+        if (principle === 'LIFO') {
+            arr.length = maxLength;
+        }
+        else {
+            arr.splice(0, excess);
+        }
+        return arr;
+    }
+    else {
+        if (principle === 'LIFO') {
+            return arr.slice(0, maxLength);
+        }
+        else {
+            return arr.slice(excess);
+        }
+    }
+}
 class Restrict {
 }
 exports.Restrict = Restrict;
@@ -92,3 +142,39 @@ Restrict.keys = hasValidKeysOnly;
  * @returns a new object containing only the specified keys.
  */
 Restrict.toPicked = picked;
+/**
+ * @param arr `T[]`
+ * @param maxLength `number` an integer greater than or equal to `0`
+ * - the original array is returned if `maxLength < 0`
+ * - converts `float` to `int` with `Math.floor()`;
+ * @note **original array is returned if `arr.length <= Math.floor(maxLength)`**
+ * @param principle `'LIFO' | 'FIFO' (optional)` `default = 'LIFO'`
+ * `(if arr.length > maxLength)` indicate from which end of array to remove elements
+ * - `'LIFO'` - remove elements from end (`'Last-In-First-Out'`)
+ * - `'FIFO'` - remove elements from front (`'First-In-First-Out'`)
+ * @note **assumes newest elements were pushed to end** i.e. `stack.push()` or `queue.enque()`
+ * @param inPlace `boolean (optional)` `default = true`
+ * - `true` - modify and return original array with: `arr.length = maxLength (LIFO)` or `arr.splice() (FIFO)`
+ * - - if `'LIFO'`, can use JS trick by setting `arr.length = maxLength`
+ * - `false` - return new array with: `arr.slice()` `arr.slice(0, maxLength) (LIFO) or arr.slice(i, n) (FIFO)` where `n - i === maxLength`
+ * @returns **`arr`** `T[]` where `arr.length <= maxLength`
+ */
+Restrict.arrayLength = enforceMaxLength;
+/**
+ * @returns `Object.prototype.hasOwnProperty.call(obj, key) && obj[key] !== undefined;`
+ */
+function hasDefinedEntry(obj, key) {
+    return Object.prototype.hasOwnProperty.call(obj, key) && obj[key] !== undefined;
+}
+/**
+ * @returns **`containsKey`** `boolean = obj is { [K in keyof T]: T[K] }`
+ * - `true` if **`all`** `k` in `keys` return true for `Object.prototype.hasOwnProperty.call(obj, k)`
+ * - `false` otherwise
+ */
+function containsKey(obj, ...keys) {
+    for (let k of keys) {
+        if (!Object.prototype.hasOwnProperty.call(obj, k))
+            return false;
+    }
+    return true;
+}

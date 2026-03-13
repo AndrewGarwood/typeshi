@@ -33,10 +33,6 @@ export type TransformOptions<T extends object, K extends keyof T, S extends obje
  */
 export declare function sanitizeAndMap<T extends object, S extends object = any>(obj: S, schema: TransformationSchema<T, S>, passThroughKeys?: (keyof T & keyof S)[]): T;
 /**
- * @returns `Object.prototype.hasOwnProperty.call(obj, key) && obj[key] !== undefined;`
- */
-export declare function hasDefinedEntry<T extends object>(obj: any, key: keyof T | keyof any): boolean;
-/**
  * @returns `boolean`
  * - `true` if all keys in obj are also in validKeys
  * - `false` if there exists a key in obj that is not in validKeys
@@ -46,6 +42,24 @@ export declare function hasValidKeysOnly<T extends object>(obj: object, validKey
  * @returns a new object containing only the specified keys.
  */
 export declare function picked<T extends object, K extends keyof T>(obj: T, keys: K[]): Pick<T, K>;
+/**
+ * @param arr `T[]`
+ * @param maxLength `number` an integer greater than or equal to `0`
+ * - the original array is returned if `maxLength < 0`
+ * - converts `float` to `int` with `Math.floor()`;
+ * @note **original array is returned if `arr.length <= Math.floor(maxLength)`**
+ * @param principle `'LIFO' | 'FIFO' (optional)` `default = 'LIFO'`
+ * `(if arr.length > maxLength)` indicate from which end of array to remove elements
+ * - `'LIFO'` - remove elements from end (`'Last-In-First-Out'`)
+ * - `'FIFO'` - remove elements from front (`'First-In-First-Out'`)
+ * @note **assumes newest elements were pushed to end** i.e. `stack.push()` or `queue.enque()`
+ * @param inPlace `boolean (optional)` `default = true`
+ * - `true` - modify and return original array with: `arr.length = maxLength (LIFO)` or `arr.splice() (FIFO)`
+ * - - if `'LIFO'`, can use JS trick by setting `arr.length = maxLength`
+ * - `false` - return new array with: `arr.slice()` `arr.slice(0, maxLength) (LIFO) or arr.slice(i, n) (FIFO)` where `n - i === maxLength`
+ * @returns **`arr`** `T[]` where `arr.length <= maxLength`
+ */
+export declare function enforceMaxLength<T = unknown>(arr: T[], maxLength: number, principle?: 'LIFO' | 'FIFO', inPlace?: boolean): T[];
 export declare class Restrict {
     /**
      * `hasValidKeysOnly`
@@ -56,4 +70,34 @@ export declare class Restrict {
      * @returns a new object containing only the specified keys.
      */
     static toPicked: typeof picked;
+    /**
+     * @param arr `T[]`
+     * @param maxLength `number` an integer greater than or equal to `0`
+     * - the original array is returned if `maxLength < 0`
+     * - converts `float` to `int` with `Math.floor()`;
+     * @note **original array is returned if `arr.length <= Math.floor(maxLength)`**
+     * @param principle `'LIFO' | 'FIFO' (optional)` `default = 'LIFO'`
+     * `(if arr.length > maxLength)` indicate from which end of array to remove elements
+     * - `'LIFO'` - remove elements from end (`'Last-In-First-Out'`)
+     * - `'FIFO'` - remove elements from front (`'First-In-First-Out'`)
+     * @note **assumes newest elements were pushed to end** i.e. `stack.push()` or `queue.enque()`
+     * @param inPlace `boolean (optional)` `default = true`
+     * - `true` - modify and return original array with: `arr.length = maxLength (LIFO)` or `arr.splice() (FIFO)`
+     * - - if `'LIFO'`, can use JS trick by setting `arr.length = maxLength`
+     * - `false` - return new array with: `arr.slice()` `arr.slice(0, maxLength) (LIFO) or arr.slice(i, n) (FIFO)` where `n - i === maxLength`
+     * @returns **`arr`** `T[]` where `arr.length <= maxLength`
+     */
+    static arrayLength: typeof enforceMaxLength;
 }
+/**
+ * @returns `Object.prototype.hasOwnProperty.call(obj, key) && obj[key] !== undefined;`
+ */
+export declare function hasDefinedEntry<T extends object>(obj: any, key: keyof T | keyof any): boolean;
+/**
+ * @returns **`containsKey`** `boolean = obj is { [K in keyof T]: T[K] }`
+ * - `true` if **`all`** `k` in `keys` return true for `Object.prototype.hasOwnProperty.call(obj, k)`
+ * - `false` otherwise
+ */
+export declare function containsKey<T extends object, K extends (keyof T | (keyof any & {})) = any>(obj: T, ...keys: K[]): obj is {
+    [K in keyof T]: T[K];
+};

@@ -1,15 +1,7 @@
 /**
  * @file src/utils/argumentValidation.ts
- * @note these functions can be useful for sanity checks
- * @description moved the content of parameter type checks at the start of 
- * functions to here. use these when you want your function to throw a fit when
+ * @description functions useful for sanity checks. use if want function to throw a fit when
  * it receives bad input.
- * @example
- * import * as validate from "@typeshi/argumentValidation";
- * @TODO add boolean value configurable by a setter function that specifies if errors should be thrown or only logged
- * - maybe add a configurable value that the validation functions should return if the validation test fails
- * - change the validation functions such that they return the validated value, if possible?
- * - or maybe have them return boolean type predicates ?
  */
 import { 
     isNonEmptyString, 
@@ -18,10 +10,9 @@ import {
     isObject,
     isStringArray,
     isInteger,
-    isPositveInteger,
 } from "./typeValidation";
 import { 
-    typeshiLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL 
+    typeshiLogger as mlog, INDENT_LOG_LINE, 
 } from "../config/setupLog";
 import { RegExpFlagsEnum, stringEndsWithAnyOf } from "./regex";
 import * as fs from "fs";
@@ -55,7 +46,7 @@ export function stringArgument(
             let msg = [`${source} -> ${vSource} Invalid 'arg2' as labeledString`,
                 `Expected: object with single string key`,
                 `Received: ${typeof arg2} = ${JSON.stringify(arg2)}`
-            ].join(TAB)
+            ].join(INDENT_LOG_LINE)
             mlog.error(msg);
             throw new Error(msg);
         }
@@ -68,7 +59,7 @@ export function stringArgument(
         let msg = [`${source} Invalid argument: '${label}'`,
             `Expected '${label}' to be: non-empty string`,
             `Received '${label}' value: ${typeof value} = '${value}'`
-        ].join(TAB);
+        ].join(INDENT_LOG_LINE);
         mlog.error(msg)
         throw new Error(msg);
     }
@@ -128,7 +119,7 @@ export function existingFileArgument(
                 ? `one of the following extensions: ${JSON.stringify(extension)}`
                 : `extension: '${extension}'`),
             `Received '${label}' value: ${typeof value} = '${value}'`
-        ].join(TAB);
+        ].join(INDENT_LOG_LINE);
         mlog.error(msg);
         throw new Error(msg);
     }
@@ -154,7 +145,7 @@ export function existingDirectoryArgument(
         let msg = [`${source} Invalid argument: '${label}'`,
             `Expected '${label}' to be: existing directory`,
             `Received '${label}' value: ${typeof value} = '${value}'`
-        ].join(TAB);
+        ].join(INDENT_LOG_LINE);
         mlog.error(msg);
         throw new Error(msg);
     }
@@ -192,7 +183,7 @@ export function numericStringArgument(
             ` --     requireInteger ? ${requireInteger}`,
             ` -- requireNonNegative ? ${requireNonNegative}`,
             `Received '${label}' value: ${typeof value} = '${value}'`,
-        ].join(TAB);
+        ].join(INDENT_LOG_LINE);
         mlog.error(msg);
         throw new Error(msg);
     }
@@ -252,7 +243,7 @@ export function numberArgument(
         let msg = [`${source} Invalid argument: '${label}'`,
             `Expected '${label}' to be: number`,
             `Received '${label}' value: ${typeof value} = '${value}'`
-        ].join(TAB);
+        ].join(INDENT_LOG_LINE);
         mlog.error(msg);
         throw new Error(msg);
     }
@@ -260,7 +251,7 @@ export function numberArgument(
         let msg = [`${source} Invalid argument: '${label}'`,
             `Expected '${label}' to be: integer`,
             `Received '${label}' value: ${typeof value} = '${value}'`
-        ].join(TAB);
+        ].join(INDENT_LOG_LINE);
         mlog.error(msg);
         throw new Error(msg);
     }
@@ -297,7 +288,7 @@ export function booleanArgument(
         throw new Error([`${bracketed(source)} Invalid argument: '${label}'`,
             `Expected '${label}' to be: boolean`,
             `Received '${label}' value: ${typeof value} = '${value}'`
-        ].join(TAB));
+        ].join(INDENT_LOG_LINE));
     }
 }
 
@@ -327,7 +318,7 @@ export function functionArgument(
             let msg = [`${source} -> ${vSource} Invalid arg2 as labeledFunction`,
                 `Expected: object with single key-value pair`,
                 `Received: '${JSON.stringify(arg2)}'`,
-            ].join(TAB);
+            ].join(INDENT_LOG_LINE);
             mlog.error(msg);
             throw new Error(msg);
         }
@@ -338,7 +329,7 @@ export function functionArgument(
         let msg = [`${source} Invalid argument: '${label}'`,
             `Expected '${label}' to be: function`,
             `Received '${label}' value: ${typeof value} = '${value}'`
-        ].join(TAB);
+        ].join(INDENT_LOG_LINE);
         mlog.error(msg);
         throw new Error(msg);
     }
@@ -447,7 +438,7 @@ export function arrayArgument(
                 +`{ [arrayLabel: string]: valueToCheck; [typeGuardFunctionName: string]?: typeGuardFunction }`,
                 `Received: object with ${keys.length} key(s)`,
                 `arg2: ${JSON.stringify(arg2)}`
-            ].join(TAB);
+            ].join(INDENT_LOG_LINE);
             mlog.error(msg);
             throw new Error(msg);
         }
@@ -457,7 +448,7 @@ export function arrayArgument(
             let msg = [`${source} -> ${vSource} Invalid parameter: arg2 as labeledArgs`,
                 `Expected: object of size 2 with exactly 1 key whose value is a typeGuard function`,
                 `Received: Object.values(arg2) = ${JSON.stringify(Object.values(arg2))}`
-            ].join(TAB);
+            ].join(INDENT_LOG_LINE);
             mlog.error(msg);
             throw new Error(msg);
         }
@@ -475,7 +466,7 @@ export function arrayArgument(
         let msg = [`${source} -> ${vSource} Invalid parameter: 'arg2'`,
             `Expected: label (string) | labeledArgs ({ [label: string]: any | ((value: any) => boolean) })`,
             `Received: ${typeof arg2} = ${arg2}`
-        ].join(TAB);
+        ].join(INDENT_LOG_LINE);
         mlog.error(msg);
         throw new Error(msg);
     }
@@ -483,7 +474,7 @@ export function arrayArgument(
         let msg = [`${source} Invalid Array Argument: '${label}'`,
             `Expected '${label}' to be: Array`+(elementType ? `<${elementType}>`:''),
             `Received '${label}' value: ${typeof value} = '${value}'`
-        ].join(TAB);
+        ].join(INDENT_LOG_LINE);
         mlog.error(msg);
         throw new Error(msg);
     }
@@ -491,7 +482,7 @@ export function arrayArgument(
         let msg = [`${source} Invalid Array Argument: '${label}'`,
             `Expected '${label}' to be: non-empty Array`+(elementType ? `<${elementType}>`:''),
             `Received '${label}' value: empty array`
-        ].join(TAB);
+        ].join(INDENT_LOG_LINE);
         mlog.error(msg);
         throw new Error(msg);
     } else if (allowEmpty && isEmptyArray(value)) { 
@@ -517,7 +508,7 @@ export function arrayArgument(
             `Expected '${label}' to be: Array`+(elementType ? `<${elementType}>`:'')+
             ` (typeGuard used = '${elementTypeGuard.name}')`,
             `Received '${label}' value: Array with invalid element`,
-        ].join(TAB);
+        ].join(INDENT_LOG_LINE);
         mlog.error(msg);
         throw new Error(msg);
     } else if (typeof elementTypeGuard === 'function') { 
@@ -529,7 +520,7 @@ export function arrayArgument(
                     ` (typeGuard used = '${elementTypeGuard.name}')`,
                     `Received '${label}' value: Array with invalid element at index ${i}`,
                     `array[i]: ${typeof value[i]} = ${JSON.stringify(value[i])}`
-                ].join(TAB);
+                ].join(INDENT_LOG_LINE);
                 mlog.error(msg);
                 throw new Error(msg);
             }
@@ -645,7 +636,7 @@ export function objectArgument(
             let msg = [`${source} -> ${vSource} Invalid parameter: arg2 as ObjectArgumentOptions`,
                 `Expected: object with labeledObject entry and optional labledTypeGuard entry`,
                 `Received: Object.values(arg2) = ${JSON.stringify(Object.values(arg2))}`
-            ].join(TAB);
+            ].join(INDENT_LOG_LINE);
             mlog.error(msg);
             throw new Error(msg);
         }
@@ -661,7 +652,7 @@ export function objectArgument(
         let msg = [`${source} -> ${vSource} Invalid parameter: 'arg2'`,
             `Expected: label (string) | labeledArgs (ObjectArgumentOptions | { [label: string]: any | ((value: any) => boolean) })`,
             `Received: ${typeof arg2} = ${JSON.stringify(arg2)}`
-        ].join(TAB);
+        ].join(INDENT_LOG_LINE);
         mlog.error(msg);
         throw new Error(msg);
     }
@@ -670,7 +661,7 @@ export function objectArgument(
         let msg = [`${source} Invalid Object Argument: '${label}'`,
             `Expected '${label}' to be: object of type '${objectTypeName}'`,
             `Received '${label}' value: ${typeof value} = '${value}'`
-        ].join(TAB);
+        ].join(INDENT_LOG_LINE);
         mlog.error(msg);
         throw new Error(msg);
     }
@@ -678,7 +669,7 @@ export function objectArgument(
         let msg = [`${source} Invalid Object Argument: '${label}' is null or undefined`,
             `Expected '${label}' to be: object of type '${objectTypeName}'`,
             `Received '${label}' value: ${value}`
-        ].join(TAB);
+        ].join(INDENT_LOG_LINE);
         mlog.error(msg);
         throw new Error(msg);
     } 
@@ -692,7 +683,7 @@ export function objectArgument(
         let msg = [`${source} Invalid Object Argument: '${label}' is an Array`,
             `Expected '${label}' to be: object of type '${objectTypeName}'`,
             `Received '${label}' value: array of length ${value.length}`
-        ].join(TAB);
+        ].join(INDENT_LOG_LINE);
         mlog.error(msg);
         throw new Error(msg);
     }
@@ -702,7 +693,7 @@ export function objectArgument(
             `Expected: object of type '${objectTypeName} '`+
             `(typeGuard used = '${objectTypeGuard.name}')`,
             `Received: ${typeof value} = ${JSON.stringify(value, null, 4)}`
-        ].join(TAB);
+        ].join(INDENT_LOG_LINE);
         mlog.error(msg);
         throw new Error(msg);
     }
@@ -820,7 +811,7 @@ export function enumArgument(
             let msg = [`${source} -> ${vSource} Invalid parameter: arg2 as EnumArgumentOptions`,
                 `EnumArgumentOptions does not contain a value comparable to values of an EnumObject`,
                 `Expected arg2 to have single entry of format [valueLabel: string]: (string | number)`
-            ].join(TAB);
+            ].join(INDENT_LOG_LINE);
             mlog.error(msg);
             throw new Error(msg);
         }
@@ -835,7 +826,7 @@ export function enumArgument(
                 let msg = [`${source} Invalid enum value Argument: '${valueLabel}'`,
                     `Expected '${valueLabel}' to be: `+(isNonEmptyString(enumLabel) ? enumLabel : `value satisfying ${functionKey}`),
                     `Received '${valueLabel}' value: ${typeof valueToCheck} = '${valueToCheck}'`,
-                ].join(TAB);
+                ].join(INDENT_LOG_LINE);
                 mlog.error(msg);
                 throw new Error(msg);
             } else { // isEnumFunction(valueToCheck) === true
@@ -849,7 +840,7 @@ export function enumArgument(
             let msg = [`${source} -> ${vSource} Invalid parameter: arg2 as EnumArgumentOptions`,
                 `EnumArgumentOptions does not contain an entry with a value that is an EnumObject or isEnumFunction`,
                 `Expected: arg2 to have single entry of format [label: string]: EnumObject | Function`
-            ].join(TAB);
+            ].join(INDENT_LOG_LINE);
             mlog.error(msg);
             throw new Error(msg);
         }
@@ -858,7 +849,7 @@ export function enumArgument(
         let msg =[`${source} -> ${vSource} Invalid parameter 'arg2'`,
             `Expected: 'arg2' to be either label (string) | labeledArgs (EnumArgumentOptions)`,
             `Received: ${typeof arg2} = ${arg2}`
-        ].join(TAB);
+        ].join(INDENT_LOG_LINE);
         mlog.error(msg);
         throw new Error(msg);
     }
@@ -866,7 +857,7 @@ export function enumArgument(
         let msg = [`${source} -> ${vSource}.verbose: Invalid EnumObject for '${enumLabel}'`,
             `Expected: non-empty object Record<string, number> | Record<string, string>`,
             `Received: ${typeof enumObject} = ${enumObject} = ${JSON.stringify(enumObject)}`
-        ].join(TAB);
+        ].join(INDENT_LOG_LINE);
         mlog.error(msg);
         throw new Error(msg);
     }
@@ -915,7 +906,7 @@ export function enumArgument(
             }`,
             `Received '${valueLabel}' (${typeof valueToCheck}) = ${valueToCheck}`,
             ``
-        ].join(TAB);
+        ].join(INDENT_LOG_LINE);
         mlog.error(msg);
         throw new Error(msg);
     }
@@ -941,7 +932,7 @@ export function existingPathArgument(
             let msg = [`${source} -> ${vSource} Invalid argument: '${JSON.stringify(arg2)}'`,
                 `Expected: object with a single key`,
                 `Received: ${keys.length}`
-            ].join(TAB);
+            ].join(INDENT_LOG_LINE);
             mlog.error(msg);
             throw new Error(msg);
         }
@@ -956,7 +947,7 @@ export function existingPathArgument(
             `Expected '${label}' to be: existing path` 
             + (isNonEmptyString(extension) ? ` with extension '${extension}'` : ``),
             `Received '${label}' value: ${typeof value} = '${value}'`
-        ].join(TAB);
+        ].join(INDENT_LOG_LINE);
         mlog.error(msg);
         throw new Error(msg);
     }

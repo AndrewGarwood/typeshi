@@ -30,13 +30,13 @@ export function isEmptyArray<T>(value: any): value is Array<T> & { length: 0 } {
  * @param requireNonEmpty `boolean` `default = true`
  * - `if` `true` then `value` must be array with at least 1 element
  * - `if` `false` then `value` can be empty array
- * @returns **`isIntegerArray`** `boolean` = `value is Array<number> & { length: number }`
+ * @returns **`isIntegerArray`** `boolean` = `value is number[] & { length: number }`
  */
 export function isIntegerArray(
     value: any, 
     requireNonNegative: boolean = false, 
     requireNonEmpty: boolean = true
-): value is Array<number> & { length: number } {
+): value is number[] & { length: number } {
     return (requireNonEmpty 
         ? isNonEmptyArray(value) && value.every(el=>isInteger(el, requireNonNegative))
         : isEmptyArray(value)
@@ -50,7 +50,7 @@ export function isIntegerArray(
  * @param requireNonEmpty `boolean` `default = true`
  * - `if` `true` then `value` must be array with at least 1 element and every element `isNonEmptyString`
  * - `if` `false` then `value` can be empty array
- * @returns **`isStringArray`** `boolean` = `value is Array<string> & { length: number }`
+ * @returns **`isStringArray`** `boolean` = `value is string[] & { length: number }`
  */
 export function isStringArray(
     value: any,
@@ -62,27 +62,31 @@ export function isStringArray(
     );
 }
 
+// maybe deprecate this
 /**
+ * `fka hasNonTrivialKeys`
  * @note **passing in an array will return `false`.**
  * @note a value is considered trivial if {@link isEmpty}`(value)` returns `true` and vice versa
  * @param obj `any` The object to check.
  * @param requireAll `boolean` - flag indicating whether all values must be nontrivial or not
- * @returns **`hasNonTrivialKeys`** `boolean`
+ * @returns **`hasNonTrivialEntries`** `boolean`
  * - **`true`** `if` the `obj` has non-empty keys, 
  * - **`false`** `otherwise`
  */
-export function hasNonTrivialKeys(
-    obj: any,
+export function hasNonTrivialEntries<T extends object>(
+    obj: T,
     requireAll: boolean = false
-): obj is Record<string, any> {
+): obj is T {
     if (!isObject(obj)) { return false }
     return (requireAll 
         ? Object.values(obj).every(v=>!isEmpty(v)) 
         : Object.values(obj).some(v=>!isEmpty(v))
     );
 }
+
+// @TODO add overload on param `keys` where keys = `{ required: string[], optional: string[] }`
+// maybe deprecate this
 /**
- * @TODO add overload on param `keys` where keys = `{ required: string[], optional: string[] }`
  * @note uses `key in obj` for each element of param `keys`
  * @param obj `T extends Object` the object to check
  * @param keys `Array<keyof T> | string[] | string` the list of keys that obj must have
@@ -101,12 +105,12 @@ export function hasKeys<T extends object>(
     keys: Array<keyof T> | string[] | string, 
     requireAll: boolean = true,
     restrictKeys: boolean = false
-): boolean { // obj is object & Record<keyof T | string, any>
+): boolean {
     if (!obj || typeof obj !== 'object') {
         return false;
     }
     if (keys === null || keys === undefined) {
-        throw new Error('[hasKeys()] no keys provided: param `keys` must be defined');
+        return false;
     }
     if (!isNonEmptyArray(keys)) {
         keys = [keys] as Array<keyof T>; // Convert string (assumed to be single key) to array of keys
@@ -171,14 +175,14 @@ export function areEquivalentObjects(
  * @param requireNonNegative `boolean` `default = false`
  * @returns **`isNumeric`** `value is string | number`
  * - **`true`** `if` `value` is either a `number` or a `string` that can be casted to a `number`
- * while also meeting the boolean parameter requirements
+ * while also meeting the other params
  * - **`false`** `otherwise`
  */
-export function isNumeric(
-    value: any, 
+export function isNumeric<T extends string | number = string>(
+    value: unknown, 
     requireInteger: boolean = false, 
     requireNonNegative: boolean = false
-): value is string | number {
+): value is T {
     let numValue: number;
     if (typeof value === 'number') {
         numValue = value;
@@ -201,7 +205,7 @@ export function isNumeric(
 }
 
 /**
- * @param value `any`
+ * @param value `unknown`
  * @param requireNonSpace `boolean (optional)` `default` = `false`
  * - `if true` then `value.trim()` must not result in empty string
  * - `if false` then allows for `value` to consist solely of whitespace characters
@@ -210,7 +214,7 @@ export function isNumeric(
  * - `false` `otherwise`.
  */
 export function isNonEmptyString(
-    value: any,
+    value: unknown,
     requireNonSpace: boolean = false
 ): value is string & { length: number } {
     return (typeof value === 'string' 
@@ -223,7 +227,7 @@ export function isNonEmptyString(
 
 
 export function isPrimitiveValue(
-    value: any
+    value: unknown
 ): value is string | number | boolean | null | undefined {
     if (value === null || value === undefined) {
         return true; // null and undefined are considered primitive
@@ -235,13 +239,13 @@ export function isPrimitiveValue(
 }
 
 /**
- * @param value `any` 
+ * @param value `unknown` 
  * @param requireNonNegative `boolean`
  * - `if` `true` then require that `value` be an integer `>= 0`
  * - `if` `false` then the sign of the number doesn't matter
  * @returns **`isInteger`** `boolean`
  */
-export function isInteger(value: any, requireNonNegative: boolean = false): value is number {
+export function isInteger(value: unknown, requireNonNegative: boolean = false): value is number {
     return (typeof value === 'number' 
         && Number.isInteger(value)
         && (requireNonNegative ? value >= 0 : true)
@@ -249,27 +253,27 @@ export function isInteger(value: any, requireNonNegative: boolean = false): valu
 }
 
 /**
- * @param value `any` 
+ * @param value `unknown` 
  * @param requireNonEmpty `boolean` `default = true`
  * - `if` `true` then `value` must have at least 1 key
  * - `if` `false` then `value` is allowed to be an empty object
  * @param requireNonArray `boolean` `default = true`
  * - `if` `true` then `value` must not be an array
  * - `if` `false` then `value` is allowed to be an array
- * @returns **`isObject`** `boolean` `value is Record<string, any>`
+ * @returns **`isObject`** `boolean` `value is T`
  */
-export function isObject(
-    value: any, 
+export function isObject<T extends object = Record<string, any>>(
+    value: unknown, 
     requireNonEmpty: boolean = true,
     requireNonArray: boolean = true
-): value is Record<string, any> {
-    return (value && typeof value === 'object'
+): value is T {
+    return Boolean(value && typeof value === 'object'
         && (requireNonArray ? !Array.isArray(value) : true)
         && (requireNonEmpty ? Object.keys(value).length > 0 : true)
     );
 }
 // isPosInt
-export function isPositveInteger(value: any): value is number {
+export function isPositveInteger(value: unknown): value is number {
     return (typeof value === 'number' 
         && Number.isInteger(value) 
         && value > 0
@@ -280,6 +284,7 @@ export const isType = <T>(value: any, guard: (v: any, ...args: any[]) => v is T,
     return guard(value, ...args);
 }
 
+//  * - rename to isNullable ?
 /**
  * - calls {@link isUndefinedOrNull}`(value)` which allows for value to be `undefined` or `null`
  * - use {@link isUndefinedOr} if you want `value is T | undefined`
