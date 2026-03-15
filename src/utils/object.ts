@@ -123,8 +123,7 @@ export function picked<T extends object, K extends keyof T>(
  * - `'FIFO'` - remove elements from front (`'First-In-First-Out'`)
  * @note **assumes newest elements were pushed to end** i.e. `stack.push()` or `queue.enque()`
  * @param inPlace `boolean (optional)` `default = true`
- * - `true` - modify and return original array with: `arr.length = maxLength (LIFO)` or `arr.splice() (FIFO)`
- * - - if `'LIFO'`, can use JS trick by setting `arr.length = maxLength`
+ * - `true` - modify and return original array using: `arr.length = maxLength (LIFO)` or `arr.splice() (FIFO)`
  * - `false` - return new array with: `arr.slice()` `arr.slice(0, maxLength) (LIFO) or arr.slice(i, n) (FIFO)` where `n - i === maxLength`
  * @returns **`arr`** `T[]` where `arr.length <= maxLength`
  */
@@ -150,14 +149,14 @@ export function enforceMaxLength<T = unknown>(
     if (inPlace) {
         if (principle === 'LIFO') {
             arr.length = maxLength;
-        } else {
+        } else { // 'FIFO'
             arr.splice(0, excess);
         }
         return arr;
     } else {
         if (principle === 'LIFO') {
             return arr.slice(0, maxLength);
-        } else {
+        } else { // 'FIFO'
             return arr.slice(excess);
         }
     }

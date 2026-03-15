@@ -580,7 +580,14 @@ export type Primitive = string | number | boolean | null | undefined;
 /** Get the union of all values of `T` (like `valueof T`) */
 export type ValueOf<T> = T[keyof T];
 
-/** Keys of `T` whose values extend a given type `U` */
-export type KeysOfType<T, U> = {
-    [K in keyof T]: T[K] extends U ? K : never
+/** 
+ * Keys of `T` whose values extend a given type `U` 
+ * @template T - The object type
+ * @template U - The type to check each `T[K]` against
+ * @template Required - Whether the key is required (allows for `undefined` values if `false`) `default = false`
+ */
+export type KeysOfType<T, U, Required extends boolean = false> = {
+    [K in keyof T]: Required extends true
+        ? (T[K] extends U ? K : never)
+        : (T[K] extends U | undefined ? K : never)
 }[keyof T][];
