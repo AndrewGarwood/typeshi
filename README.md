@@ -1,0 +1,1 @@
+Copy/paste into your project if you find something useful.

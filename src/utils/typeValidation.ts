@@ -2,7 +2,6 @@
  * @file src/utils/typeValidation.ts
  */
 
-import { equivalentAlphanumericStrings } from "./regex/index";
 
 
 /**
@@ -11,7 +10,7 @@ import { equivalentAlphanumericStrings } from "./regex/index";
  * - **`true`** if `value` is an array and has at least one element, 
  * - **`false`** otherwise.
  */
-export function isNonEmptyArray<T>(value: any): value is Array<T> & { length: number } {
+export function isNonEmptyArray<T>(value: unknown): value is Array<T> & { length: number } {
     return Array.isArray(value) && value.length > 0;
 }
 /**
@@ -20,7 +19,7 @@ export function isNonEmptyArray<T>(value: any): value is Array<T> & { length: nu
  * - **`true`** if `value` is an array and has no elements,
  * - **`false`** `otherwise`
  */
-export function isEmptyArray<T>(value: any): value is Array<T> & { length: 0 } {
+export function isEmptyArray<T>(value: unknown): value is Array<T> & { length: 0 } {
     return Array.isArray(value) && value.length === 0; 
 }
 
@@ -33,7 +32,7 @@ export function isEmptyArray<T>(value: any): value is Array<T> & { length: 0 } {
  * @returns **`isIntegerArray`** `boolean` = `value is number[] & { length: number }`
  */
 export function isIntegerArray(
-    value: any, 
+    value: unknown, 
     requireNonNegative: boolean = false, 
     requireNonEmpty: boolean = true
 ): value is number[] & { length: number } {
@@ -43,11 +42,10 @@ export function isIntegerArray(
     );
 }
 
-
+//  * @consideration add param to allow for empty strings?
 /**
- * @consideration add param to allow for empty strings?
  * @param value `any`
- * @param requireNonEmpty `boolean` `default = true`
+ * @param requireNonEmpty `boolean` `aka "requireNonEmptyArray"` `default = true`
  * - `if` `true` then `value` must be array with at least 1 element and every element `isNonEmptyString`
  * - `if` `false` then `value` can be empty array
  * @returns **`isStringArray`** `boolean` = `value is string[] & { length: number }`
@@ -62,112 +60,7 @@ export function isStringArray(
     );
 }
 
-// maybe deprecate this
-/**
- * `fka hasNonTrivialKeys`
- * @note **passing in an array will return `false`.**
- * @note a value is considered trivial if {@link isEmpty}`(value)` returns `true` and vice versa
- * @param obj `any` The object to check.
- * @param requireAll `boolean` - flag indicating whether all values must be nontrivial or not
- * @returns **`hasNonTrivialEntries`** `boolean`
- * - **`true`** `if` the `obj` has non-empty keys, 
- * - **`false`** `otherwise`
- */
-export function hasNonTrivialEntries<T extends object>(
-    obj: T,
-    requireAll: boolean = false
-): obj is T {
-    if (!isObject(obj)) { return false }
-    return (requireAll 
-        ? Object.values(obj).every(v=>!isEmpty(v)) 
-        : Object.values(obj).some(v=>!isEmpty(v))
-    );
-}
 
-// @TODO add overload on param `keys` where keys = `{ required: string[], optional: string[] }`
-// maybe deprecate this
-/**
- * @note uses `key in obj` for each element of param `keys`
- * @param obj `T extends Object` the object to check
- * @param keys `Array<keyof T> | string[] | string` the list of keys that obj must have
- * @param requireAll `boolean` defaults to `true` 
- * - `if` `true`, all keys must be present in the object; 
- * - `if` `false`, at least one key must be present
- * @param restrictKeys `boolean` defaults to `false`
- * - `if` `true`, only the keys provided in the `keys` param are allowed in the object;
- * - `if` `false`, the object can keys not included in the `keys` param.
- * @returns **`hasKeys`** `boolean` 
- * - **`true`** `if` `obj` is of type 'object' and has the required key(s), 
- * - **`false`** `otherwise`
- */
-export function hasKeys<T extends object>(
-    obj: T, 
-    keys: Array<keyof T> | string[] | string, 
-    requireAll: boolean = true,
-    restrictKeys: boolean = false
-): boolean {
-    if (!obj || typeof obj !== 'object') {
-        return false;
-    }
-    if (keys === null || keys === undefined) {
-        return false;
-    }
-    if (!isNonEmptyArray(keys)) {
-        keys = [keys] as Array<keyof T>; // Convert string (assumed to be single key) to array of keys
-    }
-    let numKeysFound = 0;
-    for (const key of keys) {
-        if (key in obj) {
-            numKeysFound++;
-            if (!requireAll && !restrictKeys) {
-                return true;
-            }
-        } else if (requireAll) { // and a key is not found
-            return false;
-        } 
-    }
-    if (restrictKeys) {
-        // If restrictKeys is true, check that no other keys are present in the object
-        const objKeys = Object.keys(obj);
-        const extraKeys = objKeys.filter(k => !keys.includes(k as keyof T & string));
-        if (extraKeys.length > 0) {
-            return false; // Found keys not in the allowed list
-        }
-    }
-    return requireAll ? numKeysFound === keys.length : numKeysFound > 0; 
-}
-
-
-/**
- * @param objA `Record<string, any>`
- * @param objB `Record<string, any>`
- * @returns **`areEquivalentObjects`** `boolean`
- * - `true` `if` `objA` and `objB` are equivalent objects (same keys and values, including nested objects and arrays),
- * - `false` `otherwise`.
- */
-export function areEquivalentObjects(
-    objA: Record<string, any>, 
-    objB: Record<string, any>
-): boolean {
-    if (!objA || typeof objA !== 'object' || !objB || typeof objB !== 'object') {
-        return false;
-    }
-    const keysA = Object.keys(objA);
-    const keysB = Object.keys(objB);
-    if (keysA.length !== keysB.length) return false;
-    return keysA.every(key => {
-        if (!hasKeys(objB, key)) return false; // key not in both objects
-        const valA = objA[key];
-        const valB = objB[key];
-        if (Array.isArray(valA) && Array.isArray(valB)) {
-            return valA.length === valB.length 
-                && valA.every((item) => valB.includes(item));
-        } else if (typeof valA === "object" && valA && typeof valB === "object" && valB) {
-            return areEquivalentObjects(valA, valB);
-        }
-        return equivalentAlphanumericStrings(valA, valB);
-    });
-}
 
 /**
  * @param value `any`
@@ -539,55 +432,77 @@ export function isUndefined(value: any): value is undefined {
 export function isUndefinedOrNull(value: unknown): value is undefined | null {
     return value === undefined || value === null;
 }
-
-// ============================================================================
-// Utility Types ... useful for auto-completion
-// ============================================================================
-
-export type NumberKeys<T, Required extends boolean = false> = {
-    [K in keyof T]: Required extends true
-        ? (T[K] extends number ? K : never)
-        : (T[K] extends number | undefined ? K : never)
-}[keyof T][];
-
-export type ArrayKeys<T, Required extends boolean = false> = {
-    [K in keyof T]: Required extends true
-        ? (T[K] extends Array<any> ? K : never)
-        : (T[K] extends Array<any> | undefined ? K : never)
-}[keyof T][];
-
-export type ArrayOfTypeKeys<T, U, Required extends boolean = false> = {
-    [K in keyof T]: Required extends true
-        ? (T[K] extends Array<U> ? K : never)
-        : (T[K] extends Array<U> | undefined ? K : never)
-}[keyof T][];
-
-export type StringKeys<T, Required extends boolean = false> = {
-    [K in keyof T]: Required extends true
-        ? (T[K] extends string ? K : never)
-        : (T[K] extends string | undefined ? K : never)
-}[keyof T][];
-
-
-export type PrimitiveKeys<T, Required extends boolean = false> = {
-    [K in keyof T]: Required extends true
-        ? (T[K] extends string | number | boolean | null ? K : never)
-        : (T[K] extends string | number | boolean | null | undefined ? K : never)
-}[keyof T][];
-
-export type Primitive = string | number | boolean | null | undefined;
-
-/** Get the union of all values of `T` (like `valueof T`) */
-export type ValueOf<T> = T[keyof T];
-
-/** 
- * Keys of `T` whose values extend a given type `U` 
- * @template T - The object type
- * @template U - The type to check each `T[K]` against
- * @template Required - Whether the key is required (allows for `undefined` values if `false`) `default = false`
+/**
+ * @deprecated
+ * `fka hasNonTrivialKeys`
+ * @note **passing in an array will return `false`.**
+ * @note a value is considered trivial if {@link isEmpty}`(value)` returns `true` and vice versa
+ * @param obj `any` The object to check.
+ * @param requireAll `boolean` - flag indicating whether all values must be nontrivial or not
+ * @returns **`hasNonTrivialEntries`** `boolean`
+ * - **`true`** `if` the `obj` has non-empty keys, 
+ * - **`false`** `otherwise`
  */
-export type KeysOfType<T, U, Required extends boolean = false> = {
-    [K in keyof T]: Required extends true
-        ? (T[K] extends U ? K : never)
-        : (T[K] extends U | undefined ? K : never)
-}[keyof T][];
+export function hasNonTrivialEntries<T extends object>(
+    obj: T,
+    requireAll: boolean = false
+): obj is T {
+    if (!isObject(obj)) { return false }
+    return (requireAll 
+        ? Object.values(obj).every(v=>!isEmpty(v)) 
+        : Object.values(obj).some(v=>!isEmpty(v))
+    );
+}
+
+// @TODO add overload on param `keys` where keys = `{ required: string[], optional: string[] }`
+/**
+ * @deprecated
+ * @note uses `key in obj` for each element of param `keys`
+ * @param obj `T extends Object` the object to check
+ * @param keys `Array<keyof T> | string[] | string` the list of keys that obj must have
+ * @param requireAll `boolean` defaults to `true` 
+ * - `if` `true`, all keys must be present in the object; 
+ * - `if` `false`, at least one key must be present
+ * @param restrictKeys `boolean` defaults to `false`
+ * - `if` `true`, only the keys provided in the `keys` param are allowed in the object;
+ * - `if` `false`, the object can keys not included in the `keys` param.
+ * @returns **`hasKeys`** `boolean` 
+ * - **`true`** `if` `obj` is of type 'object' and has the required key(s), 
+ * - **`false`** `otherwise`
+ */
+export function hasKeys<T extends object>(
+    obj: T, 
+    keys: Array<keyof T> | string[] | string, 
+    requireAll: boolean = true,
+    restrictKeys: boolean = false
+): boolean {
+    if (!obj || typeof obj !== 'object') {
+        return false;
+    }
+    if (keys === null || keys === undefined) {
+        return false;
+    }
+    if (!isNonEmptyArray(keys)) {
+        keys = [keys] as Array<keyof T>; // Convert string (assumed to be single key) to array of keys
+    }
+    let numKeysFound = 0;
+    for (const key of keys) {
+        if (key in obj) {
+            numKeysFound++;
+            if (!requireAll && !restrictKeys) {
+                return true;
+            }
+        } else if (requireAll) { // and a key is not found
+            return false;
+        } 
+    }
+    if (restrictKeys) {
+        // If restrictKeys is true, check that no other keys are present in the object
+        const objKeys = Object.keys(obj);
+        const extraKeys = objKeys.filter(k => !keys.includes(k as keyof T & string));
+        if (extraKeys.length > 0) {
+            return false; // Found keys not in the allowed list
+        }
+    }
+    return requireAll ? numKeysFound === keys.length : numKeysFound > 0; 
+}

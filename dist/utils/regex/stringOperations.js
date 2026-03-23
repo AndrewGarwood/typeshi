@@ -128,7 +128,7 @@ function stringContainsAnyOf(s, substrings, ...flags) {
         regex = new RegExp(substrings, flagString);
     }
     if (!regex) {
-        config_1.typeshiLogger.warn('containsAnyOf() Invalid substrings type. returning false.', config_1.INDENT_LOG_LINE + `Expected string, array of strings, or RegExp, but received: ${typeof substrings}, ${substrings}`);
+        config_1.typeshiLogger.warn('[containsAnyOf()] Invalid substrings type. returning false.', config_1.INDENT_LOG_LINE + `Expected string, array of strings, or RegExp, but received: ${typeof substrings}, ${substrings}`);
         return false; // Invalid substrings type
     }
     return regex.test(s);
@@ -178,8 +178,11 @@ function equivalentAlphanumericStrings(s1, s2, tolerance = 0.90) {
     }
     return false;
 }
-/** for simple regular expressions...
- * so like not ones that have parentheses, pipes, or curly braced numbers */
+/**
+ * @deprecated
+ * for simple regular expressions...
+ * so like not ones that have parentheses, pipes, or curly braced numbers
+ * */
 function extractSource(regex) {
     if (!regex)
         return '';

@@ -1,7 +1,7 @@
 /**
  * @file src/utils/regex/entity.ts
  */
-import { typeshiLogger as mlog, 
+import {
     INDENT_LOG_LINE as TAB, 
     NEW_LINE as NL, 
     typeshiHiddenLogger as hlog, 

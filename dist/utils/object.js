@@ -11,7 +11,9 @@ exports.picked = picked;
 exports.enforceMaxLength = enforceMaxLength;
 exports.hasDefinedEntry = hasDefinedEntry;
 exports.containsKey = containsKey;
+exports.areEquivalentObjects = areEquivalentObjects;
 const typeValidation_1 = require("./typeValidation");
+const index_1 = require("./regex/index");
 /**
  * @param obj `S` - source object (e.g., Request Body)
  * @param schema {@link TransformationSchema}`<T, S>` - map of keys to transformation functions.
@@ -176,4 +178,34 @@ function containsKey(obj, ...keys) {
             return false;
     }
     return true;
+}
+/**
+ * @deprecated
+ * @param objA `Record<string, any>`
+ * @param objB `Record<string, any>`
+ * @returns **`areEquivalentObjects`** `boolean`
+ * - `true` `if` `objA` and `objB` are equivalent objects (same keys and values, including nested objects and arrays),
+ * - `false` `otherwise`.
+ */
+function areEquivalentObjects(objA, objB) {
+    if (!(0, typeValidation_1.isObject)(objA) || !(0, typeValidation_1.isObject)(objB))
+        return false;
+    const keysA = Object.keys(objA);
+    const keysB = Object.keys(objB);
+    if (keysA.length !== keysB.length)
+        return false;
+    return keysA.every(key => {
+        if (!containsKey(objB, key))
+            return false; // key not in both objects
+        const valA = objA[key];
+        const valB = objB[key];
+        if (Array.isArray(valA) && Array.isArray(valB)) {
+            return valA.length === valB.length
+                && valA.every((item) => valB.includes(item));
+        }
+        else if (typeof valA === "object" && valA && typeof valB === "object" && valB) {
+            return areEquivalentObjects(valA, valB);
+        }
+        return (0, index_1.equivalentAlphanumericStrings)(valA, valB);
+    });
 }

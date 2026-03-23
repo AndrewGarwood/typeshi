@@ -40,6 +40,9 @@ export declare function stringContainsAnyOf(s: string, substrings: string | stri
  * - **`false`** `otherwise`.
  */
 export declare function equivalentAlphanumericStrings(s1: string, s2: string, tolerance?: number): boolean;
-/** for simple regular expressions...
- * so like not ones that have parentheses, pipes, or curly braced numbers */
+/**
+ * @deprecated
+ * for simple regular expressions...
+ * so like not ones that have parentheses, pipes, or curly braced numbers
+ * */
 export declare function extractSource(regex: RegExp): string;

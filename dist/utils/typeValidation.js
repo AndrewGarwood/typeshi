@@ -8,9 +8,6 @@ exports.isNonEmptyArray = isNonEmptyArray;
 exports.isEmptyArray = isEmptyArray;
 exports.isIntegerArray = isIntegerArray;
 exports.isStringArray = isStringArray;
-exports.hasNonTrivialEntries = hasNonTrivialEntries;
-exports.hasKeys = hasKeys;
-exports.areEquivalentObjects = areEquivalentObjects;
 exports.isNumeric = isNumeric;
 exports.isNonEmptyString = isNonEmptyString;
 exports.isPrimitiveValue = isPrimitiveValue;
@@ -23,7 +20,8 @@ exports.isFunction = isFunction;
 exports.isNull = isNull;
 exports.isUndefined = isUndefined;
 exports.isUndefinedOrNull = isUndefinedOrNull;
-const index_1 = require("./regex/index");
+exports.hasNonTrivialEntries = hasNonTrivialEntries;
+exports.hasKeys = hasKeys;
 /**
  * @param value
  * @returns **`isNonEmptyArray`** `boolean` = `value is Array<T> & { length: number }`
@@ -55,10 +53,10 @@ function isIntegerArray(value, requireNonNegative = false, requireNonEmpty = tru
         ? isNonEmptyArray(value) && value.every(el => isInteger(el, requireNonNegative))
         : isEmptyArray(value));
 }
+//  * @consideration add param to allow for empty strings?
 /**
- * @consideration add param to allow for empty strings?
  * @param value `any`
- * @param requireNonEmpty `boolean` `default = true`
+ * @param requireNonEmpty `boolean` `aka "requireNonEmptyArray"` `default = true`
  * - `if` `true` then `value` must be array with at least 1 element and every element `isNonEmptyString`
  * - `if` `false` then `value` can be empty array
  * @returns **`isStringArray`** `boolean` = `value is string[] & { length: number }`
@@ -67,103 +65,6 @@ function isStringArray(value, requireNonEmpty = true) {
     return (requireNonEmpty
         ? isNonEmptyArray(value) && value.every(el => isNonEmptyString(el))
         : isEmptyArray(value));
-}
-// maybe deprecate this
-/**
- * `fka hasNonTrivialKeys`
- * @note **passing in an array will return `false`.**
- * @note a value is considered trivial if {@link isEmpty}`(value)` returns `true` and vice versa
- * @param obj `any` The object to check.
- * @param requireAll `boolean` - flag indicating whether all values must be nontrivial or not
- * @returns **`hasNonTrivialEntries`** `boolean`
- * - **`true`** `if` the `obj` has non-empty keys,
- * - **`false`** `otherwise`
- */
-function hasNonTrivialEntries(obj, requireAll = false) {
-    if (!isObject(obj)) {
-        return false;
-    }
-    return (requireAll
-        ? Object.values(obj).every(v => !isEmpty(v))
-        : Object.values(obj).some(v => !isEmpty(v)));
-}
-// @TODO add overload on param `keys` where keys = `{ required: string[], optional: string[] }`
-// maybe deprecate this
-/**
- * @note uses `key in obj` for each element of param `keys`
- * @param obj `T extends Object` the object to check
- * @param keys `Array<keyof T> | string[] | string` the list of keys that obj must have
- * @param requireAll `boolean` defaults to `true`
- * - `if` `true`, all keys must be present in the object;
- * - `if` `false`, at least one key must be present
- * @param restrictKeys `boolean` defaults to `false`
- * - `if` `true`, only the keys provided in the `keys` param are allowed in the object;
- * - `if` `false`, the object can keys not included in the `keys` param.
- * @returns **`hasKeys`** `boolean`
- * - **`true`** `if` `obj` is of type 'object' and has the required key(s),
- * - **`false`** `otherwise`
- */
-function hasKeys(obj, keys, requireAll = true, restrictKeys = false) {
-    if (!obj || typeof obj !== 'object') {
-        return false;
-    }
-    if (keys === null || keys === undefined) {
-        return false;
-    }
-    if (!isNonEmptyArray(keys)) {
-        keys = [keys]; // Convert string (assumed to be single key) to array of keys
-    }
-    let numKeysFound = 0;
-    for (const key of keys) {
-        if (key in obj) {
-            numKeysFound++;
-            if (!requireAll && !restrictKeys) {
-                return true;
-            }
-        }
-        else if (requireAll) { // and a key is not found
-            return false;
-        }
-    }
-    if (restrictKeys) {
-        // If restrictKeys is true, check that no other keys are present in the object
-        const objKeys = Object.keys(obj);
-        const extraKeys = objKeys.filter(k => !keys.includes(k));
-        if (extraKeys.length > 0) {
-            return false; // Found keys not in the allowed list
-        }
-    }
-    return requireAll ? numKeysFound === keys.length : numKeysFound > 0;
-}
-/**
- * @param objA `Record<string, any>`
- * @param objB `Record<string, any>`
- * @returns **`areEquivalentObjects`** `boolean`
- * - `true` `if` `objA` and `objB` are equivalent objects (same keys and values, including nested objects and arrays),
- * - `false` `otherwise`.
- */
-function areEquivalentObjects(objA, objB) {
-    if (!objA || typeof objA !== 'object' || !objB || typeof objB !== 'object') {
-        return false;
-    }
-    const keysA = Object.keys(objA);
-    const keysB = Object.keys(objB);
-    if (keysA.length !== keysB.length)
-        return false;
-    return keysA.every(key => {
-        if (!hasKeys(objB, key))
-            return false; // key not in both objects
-        const valA = objA[key];
-        const valB = objB[key];
-        if (Array.isArray(valA) && Array.isArray(valB)) {
-            return valA.length === valB.length
-                && valA.every((item) => valB.includes(item));
-        }
-        else if (typeof valA === "object" && valA && typeof valB === "object" && valB) {
-            return areEquivalentObjects(valA, valB);
-        }
-        return (0, index_1.equivalentAlphanumericStrings)(valA, valB);
-    });
 }
 /**
  * @param value `any`
@@ -455,4 +356,71 @@ function isUndefined(value) {
 }
 function isUndefinedOrNull(value) {
     return value === undefined || value === null;
+}
+/**
+ * @deprecated
+ * `fka hasNonTrivialKeys`
+ * @note **passing in an array will return `false`.**
+ * @note a value is considered trivial if {@link isEmpty}`(value)` returns `true` and vice versa
+ * @param obj `any` The object to check.
+ * @param requireAll `boolean` - flag indicating whether all values must be nontrivial or not
+ * @returns **`hasNonTrivialEntries`** `boolean`
+ * - **`true`** `if` the `obj` has non-empty keys,
+ * - **`false`** `otherwise`
+ */
+function hasNonTrivialEntries(obj, requireAll = false) {
+    if (!isObject(obj)) {
+        return false;
+    }
+    return (requireAll
+        ? Object.values(obj).every(v => !isEmpty(v))
+        : Object.values(obj).some(v => !isEmpty(v)));
+}
+// @TODO add overload on param `keys` where keys = `{ required: string[], optional: string[] }`
+/**
+ * @deprecated
+ * @note uses `key in obj` for each element of param `keys`
+ * @param obj `T extends Object` the object to check
+ * @param keys `Array<keyof T> | string[] | string` the list of keys that obj must have
+ * @param requireAll `boolean` defaults to `true`
+ * - `if` `true`, all keys must be present in the object;
+ * - `if` `false`, at least one key must be present
+ * @param restrictKeys `boolean` defaults to `false`
+ * - `if` `true`, only the keys provided in the `keys` param are allowed in the object;
+ * - `if` `false`, the object can keys not included in the `keys` param.
+ * @returns **`hasKeys`** `boolean`
+ * - **`true`** `if` `obj` is of type 'object' and has the required key(s),
+ * - **`false`** `otherwise`
+ */
+function hasKeys(obj, keys, requireAll = true, restrictKeys = false) {
+    if (!obj || typeof obj !== 'object') {
+        return false;
+    }
+    if (keys === null || keys === undefined) {
+        return false;
+    }
+    if (!isNonEmptyArray(keys)) {
+        keys = [keys]; // Convert string (assumed to be single key) to array of keys
+    }
+    let numKeysFound = 0;
+    for (const key of keys) {
+        if (key in obj) {
+            numKeysFound++;
+            if (!requireAll && !restrictKeys) {
+                return true;
+            }
+        }
+        else if (requireAll) { // and a key is not found
+            return false;
+        }
+    }
+    if (restrictKeys) {
+        // If restrictKeys is true, check that no other keys are present in the object
+        const objKeys = Object.keys(obj);
+        const extraKeys = objKeys.filter(k => !keys.includes(k));
+        if (extraKeys.length > 0) {
+            return false; // Found keys not in the allowed list
+        }
+    }
+    return requireAll ? numKeysFound === keys.length : numKeysFound > 0;
 }

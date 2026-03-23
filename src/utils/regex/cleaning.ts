@@ -1,11 +1,11 @@
 /**
  * @file src/utils/regex/cleaning.ts
  */
-import { typeshiLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL } from "../../config";
+import { typeshiLogger as mlog, INDENT_LOG_LINE as TAB } from "../../config";
 import { isNonEmptyArray, isNonEmptyString, isPositveInteger } from "../typeValidation";
 import { 
     StringCaseEnum,
-    StringPadOptions, StringReplaceOptions, StringPadEnum, StringCleanOptions, StringReplaceParams, StringStripOptions,
+    StringPadOptions, StringCleanOptions, StringReplaceParams, StringStripOptions,
     isStringCleanOptions
 } from "./types";
 

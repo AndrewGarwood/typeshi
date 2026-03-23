@@ -3,7 +3,8 @@
  * @TODO just use zod instead
  */
 
-import { isFunction } from "./typeValidation";
+import { isFunction, isObject } from "./typeValidation";
+import { equivalentAlphanumericStrings } from "./regex/index";
 
 
 /**
@@ -215,4 +216,35 @@ export function containsKey<T extends object, K extends (keyof T | (keyof any & 
         if (!Object.prototype.hasOwnProperty.call(obj, k)) return false; 
     }
     return true;
+}
+
+
+/**
+ * @deprecated
+ * @param objA `Record<string, any>`
+ * @param objB `Record<string, any>`
+ * @returns **`areEquivalentObjects`** `boolean`
+ * - `true` `if` `objA` and `objB` are equivalent objects (same keys and values, including nested objects and arrays),
+ * - `false` `otherwise`.
+ */
+export function areEquivalentObjects(
+    objA: Record<string, any>, 
+    objB: Record<string, any>
+): boolean {
+    if (!isObject(objA) || !isObject(objB)) return false;
+    const keysA = Object.keys(objA);
+    const keysB = Object.keys(objB);
+    if (keysA.length !== keysB.length) return false;
+    return keysA.every(key => {
+        if (!containsKey(objB, key)) return false; // key not in both objects
+        const valA = objA[key];
+        const valB = objB[key];
+        if (Array.isArray(valA) && Array.isArray(valB)) {
+            return valA.length === valB.length 
+                && valA.every((item) => valB.includes(item));
+        } else if (typeof valA === "object" && valA && typeof valB === "object" && valB) {
+            return areEquivalentObjects(valA, valB);
+        }
+        return equivalentAlphanumericStrings(valA, valB);
+    });
 }

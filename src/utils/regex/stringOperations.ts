@@ -1,7 +1,7 @@
 /**
  * @file src/utils/regex/stringOperations.ts
  */
-import { typeshiLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL} from "../../config";
+import { typeshiLogger as mlog, INDENT_LOG_LINE as TAB } from "../../config";
 import { StringCleanOptions, clean } from ".";
 import { RegExpFlagsEnum, StringReplaceParams } from "./types/StringOptions";
 import { distance as levenshteinDistance } from "fastest-levenshtein";
@@ -143,7 +143,7 @@ export function stringContainsAnyOf(
     }
 
     if (!regex) {
-        mlog.warn('containsAnyOf() Invalid substrings type. returning false.', 
+        mlog.warn('[containsAnyOf()] Invalid substrings type. returning false.', 
         TAB + `Expected string, array of strings, or RegExp, but received: ${typeof substrings}, ${substrings}`);
         return false; // Invalid substrings type
     }
@@ -207,8 +207,11 @@ export function equivalentAlphanumericStrings(
 }
 
 
-/** for simple regular expressions... 
- * so like not ones that have parentheses, pipes, or curly braced numbers */
+/** 
+ * @deprecated
+ * for simple regular expressions... 
+ * so like not ones that have parentheses, pipes, or curly braced numbers 
+ * */
 export function extractSource(regex: RegExp): string {
     if (!regex) return '';
     const REMOVE_ENDPOINT_CHARS: StringReplaceParams = {

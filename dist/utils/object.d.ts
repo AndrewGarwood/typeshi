@@ -100,3 +100,12 @@ export declare function hasDefinedEntry<T extends object>(obj: any, key: keyof T
 export declare function containsKey<T extends object, K extends (keyof T | (keyof any & {})) = any>(obj: T, ...keys: K[]): obj is {
     [K in keyof T]: T[K];
 };
+/**
+ * @deprecated
+ * @param objA `Record<string, any>`
+ * @param objB `Record<string, any>`
+ * @returns **`areEquivalentObjects`** `boolean`
+ * - `true` `if` `objA` and `objB` are equivalent objects (same keys and values, including nested objects and arrays),
+ * - `false` `otherwise`.
+ */
+export declare function areEquivalentObjects(objA: Record<string, any>, objB: Record<string, any>): boolean;
