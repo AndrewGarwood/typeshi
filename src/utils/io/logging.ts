@@ -1,8 +1,8 @@
 /**
  * @file src/utils/io/logging.ts
  */
-import * as fs from "fs";
-import { typeshiLogger as mlog, INDENT_LOG_LINE as TAB, NEW_LINE as NL } from "../../config/setupLog";
+import fs from "node:fs";
+import { typeshiLogger as mlog, typeshiHiddenLogger as hlog } from "../../config/setupLog";
 import { isInteger, isNonEmptyString, isStringArray, } from "../typeValidation";
 import { extractFileName } from "../regex";
 import * as validate from "../argumentValidation";
@@ -10,7 +10,8 @@ import path from "node:path";
 import { ILogObj, ILogObjMeta, IMeta } from "tslog";
 
 /**
- * @param fileName `string` passed into `extractFileName()`
+ * @param base `string` - e.g. name of file or class
+ * - passed into `extractFileName()` if `/\\|\//.test(filename)` 
  * @param func `Function` - to get Function.name
  * @param funcInfo `any` `(optional)` - context or params of func (converted to string)
  * @param startLine `number` `(optional)`
@@ -18,13 +19,13 @@ import { ILogObj, ILogObjMeta, IMeta } from "tslog";
  * @returns **`sourceString`** `string` to use in log statements or argumentValidation calls
  */
 export function getSourceString(
-    fileName: string, 
+    base: string, 
     func: string | Function, 
     funcInfo?: any, 
     startLine?: number, 
     endLine?: number
 ): string {
-    fileName = extractFileName(fileName);
+    if (/\\|\//.test(base)) base = extractFileName(base);
     let lineNumberText = (isInteger(startLine) 
         ? `:${startLine}` 
         : ''
@@ -35,33 +36,23 @@ export function getSourceString(
         : ''
     ); 
     let funcName = typeof func === 'string' ? func : func.name
-    return `[${fileName}.${funcName}(${isNonEmptyString(funcInfo) ? ` ${funcInfo} `: ''})${lineNumberText}]`;
+    return `[${base}.${funcName}(${isNonEmptyString(funcInfo) ? ` ${funcInfo} `: ''})${lineNumberText}]`;
 }
 
 /**
  * @deprecated
  * Auto-formats debug logs at the end of application execution.
  * Call this function when your main application is finishing.
- * @param filePaths `string[]` - optional, specific file paths to format.
+ * @param filepaths `string[]` - optional, specific file paths to format.
  * If not provided, will format all .txt files in the log directory.
  * @returns `void`
  */
-export function autoFormatLogsOnExit(
-    filePaths?: string[]
-): void {
-    const source = getSourceString(__filename, autoFormatLogsOnExit.name, `Array<string>(${(filePaths ?? []).length})`)
-    if (!isStringArray(filePaths)) {
-        mlog.warn([`${source} Invalid param 'filePaths'`,
-            `Expected: string[] (array of filePaths)`,
-            `Received: ${typeof filePaths} = '${JSON.stringify(filePaths)}'`
-        ].join(TAB));
-        return;
-    }
+export function autoFormatLogsOnExit(filepaths?: string[]): void {
+    const source = getSourceString(__filename, autoFormatLogsOnExit.name, `Array<string>(${(filepaths ?? []).length})`)
     try {
-        for (const filePath of filePaths) {
-            if (fs.existsSync(filePath)) {
-                formatDebugLogFile(filePath);
-            }
+        validate.arrayArgument(source, {filepaths, isStringArray});
+        for (const filePath of filepaths ?? []) {
+            if (fs.existsSync(filePath)) formatDebugLogFile(filePath);
         }
     } catch (error) {
         // Don't throw errors during exit formatting to avoid disrupting the main flow
@@ -95,7 +86,7 @@ export function formatDebugLogFile(
         const fileContent = fs.readFileSync(inputPath, 'utf-8');
         const formattedContent = formatLogContent(fileContent);
         fs.writeFileSync(outputPath, formattedContent, { encoding: 'utf-8' });
-        // mlog.info(`[formatDebugLogFile()] Formatted log file saved to '${outputPath}'`);
+        hlog.info(`[formatDebugLogFile()] Formatted log file saved to '${outputPath}'`);
     } catch (error) {
         mlog.error(`${source} Error formatting log file:'`, error);
         throw error;
@@ -197,14 +188,11 @@ function formatSingleLogEntry(logObj: Record<string, any>): string {
  * @deprecated
  * Formats all debug log files in the log directory.
  * Looks for .txt files and creates .FORMATTED.txt versions.
- * @param logDirectory `string` - optional, path to the log directory. 
+ * @param logDir `string` - optional, path to the log directory. 
  * If not provided, uses LOCAL_LOG_DIR from setupLog.ts
  * @returns `void`
  */
-export function formatAllDebugLogs(
-    logDirectory: string
-): void {
-    let logDir: string = logDirectory;
+export function formatAllDebugLogs(logDir: string): void {
     if (!fs.existsSync(logDir)) {
         mlog.warn(`[formatAllDebugLogs()] Log directory does not exist: ${logDir}`);
         return;
@@ -222,7 +210,7 @@ export function formatAllDebugLogs(
             const inputPath = path.join(logDir, txtFile);
             try {
                 formatDebugLogFile(inputPath);
-                // mlog.info(`[formatAllDebugLogs()] Formatted: ${txtFile}`);
+                hlog.info(`[formatAllDebugLogs()] Formatted: ${txtFile}`);
             } catch (error) {
                 mlog.error(`[formatAllDebugLogs()] Failed to format ${txtFile}:`, error);
             }

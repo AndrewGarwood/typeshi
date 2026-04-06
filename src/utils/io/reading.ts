@@ -29,14 +29,14 @@ import * as validate from "../argumentValidation";
 import { getSourceString } from "./logging";
 
 /** checks if `pathString (value)` points to an existing directory */
-export function isDirectory(value: any): value is string {
+export function isDirectory(value: any): boolean {
     return (isNonEmptyString(value) 
         && fs.existsSync(value) 
         && fs.statSync(value).isDirectory()
     );
 }
 /** checks if `pathString (value)` points to an existing file */
-export function isFile(value: string): value is string {
+export function isFile(value: string): boolean {
     return (isNonEmptyString(value) 
         && fs.existsSync(value) 
         && fs.statSync(value).isFile()
@@ -469,8 +469,8 @@ export async function getColumnValues(
     allowDuplicates: boolean = false,
 ): Promise<Array<string>> {
     const source = getSourceString(__filename, getColumnValues.name);
-    validate.stringArgument(source, {columnName});
-    validate.booleanArgument(source, {allowDuplicates});
+    // validate.stringArgument(source, {columnName});
+    // validate.booleanArgument(source, {allowDuplicates});
     if (cleaner) validate.functionArgument(source, {cleaner})
     let rows: Record<string, any>[] = await handleFileArgument(
         arg1, getColumnValues.name, [columnName]
@@ -500,7 +500,7 @@ export async function getIndexedColumnValues(
     cleaner?: (s: string) => string | Promise<string>
 ): Promise<Record<string, number[]>> {
     const source = `[reading.getIndexedColumnValues()]`;
-    validate.stringArgument(source, {columnName});
+    // validate.stringArgument(source, {columnName});
     if (cleaner) validate.functionArgument(source, {cleaner})
     let rows: Record<string, any>[] = await handleFileArgument(
         arg1, getIndexedColumnValues.name, [columnName]

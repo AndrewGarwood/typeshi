@@ -8,21 +8,21 @@ import path from "node:path";
 /**
  * `extractFileNameFromPath` 
  * essentially a wrapper for path.basename() for short-hand convenience
- * @param filePath `string` e.g. pass in the node module variable  `__filename`
+ * @param filepath `string` e.g. pass in the node module variable  `__filename`
  * @param removeExtension `boolean` `optional, default = true` - flag indicating
- * whether or not to remove the file extension from the fileName
- * @returns **`fileName`** `string`
+ * whether or not to remove the file extension from the filename
+ * @returns **`filename`** `string`
  */
 export function extractFileName(
-    filePath: string, 
+    filepath: string, 
     removeExtension: boolean = true
 ): string {
-    if (!isNonEmptyString(filePath)) { return 'undefined' }
-    let fileName = path.basename(filePath)
+    if (!isNonEmptyString(filepath)) { return 'undefined' }
+    let filename = path.basename(filepath)
     if (removeExtension) {
-        fileName = fileName.replace(/(?<=.+)\.[a-z0-9]{1,}$/i, '');
+        filename = filename.replace(/(?<=.+)\.[a-z0-9]{1,}$/i, '');
     }
-    return fileName;
+    return filename;
 }
 
 /**
@@ -63,5 +63,37 @@ export function extractLeaf(
         result = classifierSplit[classifierSplit.length - 1];
     } 
     return result || value;
+}
 
+// @consideration rename keepParentheses to keepGroup or keepGrouping or keepGroupParentheses ?
+/**
+ * @param keepParentheses `boolean (optional)` `default = false`
+ * @returns **new RegExp** with same flags as `re` 
+ * - returns `re` if does not have `groupName`
+ * @example
+ * const re = /(?<name>)\s*abcdefg/;
+ * let groupName = 'name';
+ * let value = 'Bob';
+ * let result1 = replaceGroupWithLiteral(re, groupName, value, false); 
+ * // result1.source === 'Bob\\s*abcdefg'
+ * let result2 = replaceGroupWithLiteral(re, groupName, value, true); 
+ * // result2.source === '(Bob)\\s*abcdefg'
+ */
+export function replaceGroupWithLiteral(
+    re: RegExp, 
+    groupName: string, 
+    value: string, 
+    keepParentheses: boolean=false
+): RegExp {
+    let pat = (keepParentheses 
+        ? `(?<=\\\()` + `\\\?<${groupName}>` + `(?=\\\))` 
+        : `\\\(` + `\\\?<${groupName}>` + `\\\)`
+    );
+    let groupPattern = new RegExp(pat);
+    if (!groupPattern.test(re.source)) {  // re does not contain group
+        console.warn(`[regex.misc.replaceGroupWithLiteral()] re does not contain group '${groupName}'`) 
+        return re; 
+    }
+    let newSource = re.source.replace(groupPattern, value);
+    return new RegExp(newSource, re.flags);
 }

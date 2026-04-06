@@ -13,6 +13,7 @@ export interface ParsedEmailAddress {
     /** sender's display name if present in source string */
     displayName?: string;
 }
+// @TODO parameterize replacements in parsed displayName
 /**
  * @param s `string`
  * - e.g. `"{local}@{domain}"`, `"{displayName} <{local}@{domain}>"`

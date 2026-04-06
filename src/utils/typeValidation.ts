@@ -112,7 +112,7 @@ export function isNonEmptyString(
 ): value is string & { length: number } {
     return (typeof value === 'string' 
         && (requireNonSpace 
-            ? value.trim() !== '' 
+            ? value.trim() !== '' // Boolean(value.trim())
             : value.length > 0
         )
     );
@@ -155,7 +155,7 @@ export function isInteger(value: unknown, requireNonNegative: boolean = false): 
  * - `if` `false` then `value` is allowed to be an array
  * @returns **`isObject`** `boolean` `value is T`
  */
-export function isObject<T extends object = Record<string, any>>(
+export function isObject<T extends object = Record<keyof any, any>>(
     value: unknown, 
     requireNonEmpty: boolean = true,
     requireNonArray: boolean = true
@@ -454,7 +454,6 @@ export function hasNonTrivialEntries<T extends object>(
     );
 }
 
-// @TODO add overload on param `keys` where keys = `{ required: string[], optional: string[] }`
 /**
  * @deprecated
  * @note uses `key in obj` for each element of param `keys`
@@ -470,7 +469,7 @@ export function hasNonTrivialEntries<T extends object>(
  * - **`true`** `if` `obj` is of type 'object' and has the required key(s), 
  * - **`false`** `otherwise`
  */
-export function hasKeys<T extends object>(
+export function hasKeys<T extends object=any>(
     obj: T, 
     keys: Array<keyof T> | string[] | string, 
     requireAll: boolean = true,
