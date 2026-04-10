@@ -44,22 +44,24 @@ exports.formatLogObj = formatLogObj;
 /**
  * @file src/utils/io/logging.ts
  */
-const fs = __importStar(require("fs"));
+const node_fs_1 = __importDefault(require("node:fs"));
 const setupLog_1 = require("../../config/setupLog");
 const typeValidation_1 = require("../typeValidation");
 const regex_1 = require("../regex");
 const validate = __importStar(require("../argumentValidation"));
 const node_path_1 = __importDefault(require("node:path"));
 /**
- * @param fileName `string` passed into `extractFileName()`
+ * @param base `string` - e.g. name of file or class
+ * - passed into `extractFileName()` if `/\\|\//.test(filename)`
  * @param func `Function` - to get Function.name
  * @param funcInfo `any` `(optional)` - context or params of func (converted to string)
  * @param startLine `number` `(optional)`
  * @param endLine `number` `(optional)`
  * @returns **`sourceString`** `string` to use in log statements or argumentValidation calls
  */
-function getSourceString(fileName, func, funcInfo, startLine, endLine) {
-    fileName = (0, regex_1.extractFileName)(fileName);
+function getSourceString(base, func, funcInfo, startLine, endLine) {
+    if (/\\|\//.test(base))
+        base = (0, regex_1.extractFileName)(base);
     let lineNumberText = ((0, typeValidation_1.isInteger)(startLine)
         ? `:${startLine}`
         : '');
@@ -68,30 +70,23 @@ function getSourceString(fileName, func, funcInfo, startLine, endLine) {
         ? lineNumberText + `-${endLine}`
         : '');
     let funcName = typeof func === 'string' ? func : func.name;
-    return `[${fileName}.${funcName}(${(0, typeValidation_1.isNonEmptyString)(funcInfo) ? ` ${funcInfo} ` : ''})${lineNumberText}]`;
+    return `[${base}.${funcName}(${(0, typeValidation_1.isNonEmptyString)(funcInfo) ? ` ${funcInfo} ` : ''})${lineNumberText}]`;
 }
 /**
  * @deprecated
  * Auto-formats debug logs at the end of application execution.
  * Call this function when your main application is finishing.
- * @param filePaths `string[]` - optional, specific file paths to format.
+ * @param filepaths `string[]` - optional, specific file paths to format.
  * If not provided, will format all .txt files in the log directory.
  * @returns `void`
  */
-function autoFormatLogsOnExit(filePaths) {
-    const source = getSourceString(__filename, autoFormatLogsOnExit.name, `Array<string>(${(filePaths ?? []).length})`);
-    if (!(0, typeValidation_1.isStringArray)(filePaths)) {
-        setupLog_1.typeshiLogger.warn([`${source} Invalid param 'filePaths'`,
-            `Expected: string[] (array of filePaths)`,
-            `Received: ${typeof filePaths} = '${JSON.stringify(filePaths)}'`
-        ].join(setupLog_1.INDENT_LOG_LINE));
-        return;
-    }
+function autoFormatLogsOnExit(filepaths) {
+    const source = getSourceString(__filename, autoFormatLogsOnExit.name, `Array<string>(${(filepaths ?? []).length})`);
     try {
-        for (const filePath of filePaths) {
-            if (fs.existsSync(filePath)) {
+        validate.arrayArgument(source, { filepaths, isStringArray: typeValidation_1.isStringArray });
+        for (const filePath of filepaths ?? []) {
+            if (node_fs_1.default.existsSync(filePath))
                 formatDebugLogFile(filePath);
-            }
         }
     }
     catch (error) {
@@ -116,10 +111,10 @@ function formatDebugLogFile(inputPath, outputPath) {
             const parsedPath = node_path_1.default.parse(inputPath);
             outputPath = node_path_1.default.join(parsedPath.dir, `${parsedPath.name}.FORMATTED${parsedPath.ext}`);
         }
-        const fileContent = fs.readFileSync(inputPath, 'utf-8');
+        const fileContent = node_fs_1.default.readFileSync(inputPath, 'utf-8');
         const formattedContent = formatLogContent(fileContent);
-        fs.writeFileSync(outputPath, formattedContent, { encoding: 'utf-8' });
-        // mlog.info(`[formatDebugLogFile()] Formatted log file saved to '${outputPath}'`);
+        node_fs_1.default.writeFileSync(outputPath, formattedContent, { encoding: 'utf-8' });
+        setupLog_1.typeshiHiddenLogger.info(`[formatDebugLogFile()] Formatted log file saved to '${outputPath}'`);
     }
     catch (error) {
         setupLog_1.typeshiLogger.error(`${source} Error formatting log file:'`, error);
@@ -216,18 +211,17 @@ function formatSingleLogEntry(logObj) {
  * @deprecated
  * Formats all debug log files in the log directory.
  * Looks for .txt files and creates .FORMATTED.txt versions.
- * @param logDirectory `string` - optional, path to the log directory.
+ * @param logDir `string` - optional, path to the log directory.
  * If not provided, uses LOCAL_LOG_DIR from setupLog.ts
  * @returns `void`
  */
-function formatAllDebugLogs(logDirectory) {
-    let logDir = logDirectory;
-    if (!fs.existsSync(logDir)) {
+function formatAllDebugLogs(logDir) {
+    if (!node_fs_1.default.existsSync(logDir)) {
         setupLog_1.typeshiLogger.warn(`[formatAllDebugLogs()] Log directory does not exist: ${logDir}`);
         return;
     }
     try {
-        const files = fs.readdirSync(logDir);
+        const files = node_fs_1.default.readdirSync(logDir);
         const txtFiles = files.filter(file => file.endsWith('.txt') && !file.includes('.FORMATTED.'));
         if (txtFiles.length === 0) {
             setupLog_1.typeshiLogger.warn(`[formatAllDebugLogs()] No .txt log files found in ${logDir}`);
@@ -237,7 +231,7 @@ function formatAllDebugLogs(logDirectory) {
             const inputPath = node_path_1.default.join(logDir, txtFile);
             try {
                 formatDebugLogFile(inputPath);
-                // mlog.info(`[formatAllDebugLogs()] Formatted: ${txtFile}`);
+                setupLog_1.typeshiHiddenLogger.info(`[formatAllDebugLogs()] Formatted: ${txtFile}`);
             }
             catch (error) {
                 setupLog_1.typeshiLogger.error(`[formatAllDebugLogs()] Failed to format ${txtFile}:`, error);

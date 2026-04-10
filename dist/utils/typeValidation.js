@@ -110,7 +110,7 @@ function isNumeric(value, requireInteger = false, requireNonNegative = false) {
 function isNonEmptyString(value, requireNonSpace = false) {
     return (typeof value === 'string'
         && (requireNonSpace
-            ? value.trim() !== ''
+            ? value.trim() !== '' // Boolean(value.trim())
             : value.length > 0));
 }
 function isPrimitiveValue(value) {
@@ -376,7 +376,6 @@ function hasNonTrivialEntries(obj, requireAll = false) {
         ? Object.values(obj).every(v => !isEmpty(v))
         : Object.values(obj).some(v => !isEmpty(v)));
 }
-// @TODO add overload on param `keys` where keys = `{ required: string[], optional: string[] }`
 /**
  * @deprecated
  * @note uses `key in obj` for each element of param `keys`

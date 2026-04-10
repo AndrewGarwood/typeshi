@@ -2,9 +2,9 @@ import { StringCleanOptions } from "../regex";
 import { DirectoryFileOptions, FileData, FileExtension } from "./types/Io";
 import { DelimiterCharacterEnum } from "./types";
 /** checks if `pathString (value)` points to an existing directory */
-export declare function isDirectory(value: any): value is string;
+export declare function isDirectory(value: any): boolean;
 /** checks if `pathString (value)` points to an existing file */
-export declare function isFile(value: string): value is string;
+export declare function isFile(value: string): boolean;
 /**
  * Determines the proper delimiter based on file type or extension
  * @param filePath `string` Path to the file

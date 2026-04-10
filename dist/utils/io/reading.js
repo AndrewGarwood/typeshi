@@ -472,8 +472,8 @@ async function getOneToOneDictionary(arg1, keyColumn, valueColumn, keyOptions, v
  */
 async function getColumnValues(arg1, columnName, cleaner, allowDuplicates = false) {
     const source = (0, logging_1.getSourceString)(__filename, getColumnValues.name);
-    validate.stringArgument(source, { columnName });
-    validate.booleanArgument(source, { allowDuplicates });
+    // validate.stringArgument(source, {columnName});
+    // validate.booleanArgument(source, {allowDuplicates});
     if (cleaner)
         validate.functionArgument(source, { cleaner });
     let rows = await handleFileArgument(arg1, getColumnValues.name, [columnName]);
@@ -497,7 +497,7 @@ async function getColumnValues(arg1, columnName, cleaner, allowDuplicates = fals
  */
 async function getIndexedColumnValues(arg1, columnName, cleaner) {
     const source = `[reading.getIndexedColumnValues()]`;
-    validate.stringArgument(source, { columnName });
+    // validate.stringArgument(source, {columnName});
     if (cleaner)
         validate.functionArgument(source, { cleaner });
     let rows = await handleFileArgument(arg1, getIndexedColumnValues.name, [columnName]);

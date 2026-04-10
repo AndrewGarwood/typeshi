@@ -81,7 +81,7 @@ export declare function isInteger(value: unknown, requireNonNegative?: boolean):
  * - `if` `false` then `value` is allowed to be an array
  * @returns **`isObject`** `boolean` `value is T`
  */
-export declare function isObject<T extends object = Record<string, any>>(value: unknown, requireNonEmpty?: boolean, requireNonArray?: boolean): value is T;
+export declare function isObject<T extends object = Record<keyof any, any>>(value: unknown, requireNonEmpty?: boolean, requireNonArray?: boolean): value is T;
 export declare function isPositveInteger(value: unknown): value is number;
 export declare const isType: <T>(value: any, guard: (v: any, ...args: any[]) => v is T, ...args: any[]) => value is T;
 /**
@@ -235,4 +235,4 @@ export declare function hasNonTrivialEntries<T extends object>(obj: T, requireAl
  * - **`true`** `if` `obj` is of type 'object' and has the required key(s),
  * - **`false`** `otherwise`
  */
-export declare function hasKeys<T extends object>(obj: T, keys: Array<keyof T> | string[] | string, requireAll?: boolean, restrictKeys?: boolean): boolean;
+export declare function hasKeys<T extends object = any>(obj: T, keys: Array<keyof T> | string[] | string, requireAll?: boolean, restrictKeys?: boolean): boolean;

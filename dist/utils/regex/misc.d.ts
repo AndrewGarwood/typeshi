@@ -4,12 +4,12 @@
 /**
  * `extractFileNameFromPath`
  * essentially a wrapper for path.basename() for short-hand convenience
- * @param filePath `string` e.g. pass in the node module variable  `__filename`
+ * @param filepath `string` e.g. pass in the node module variable  `__filename`
  * @param removeExtension `boolean` `optional, default = true` - flag indicating
- * whether or not to remove the file extension from the fileName
- * @returns **`fileName`** `string`
+ * whether or not to remove the file extension from the filename
+ * @returns **`filename`** `string`
  */
-export declare function extractFileName(filePath: string, removeExtension?: boolean): string;
+export declare function extractFileName(filepath: string, removeExtension?: boolean): string;
 /**
  * = `= /^[^/\\:*?"<>|]+(\.[^/\\:*?"<>|]+)$/`
  */
@@ -33,3 +33,17 @@ export declare const KOREA_ADDRESS_LATIN_TEXT_PATTERN: RegExp;
  * @returns **`leaf`**: `string` - the extracted `leaf` or the original value if no extraction performed
  */
 export declare function extractLeaf(value: string, classDelimiter: string): string;
+/**
+ * @param keepParentheses `boolean (optional)` `default = false`
+ * @returns **new RegExp** with same flags as `re`
+ * - returns `re` if does not have `groupName`
+ * @example
+ * const re = /(?<name>)\s*abcdefg/;
+ * let groupName = 'name';
+ * let value = 'Bob';
+ * let result1 = replaceGroupWithLiteral(re, groupName, value, false);
+ * // result1.source === 'Bob\\s*abcdefg'
+ * let result2 = replaceGroupWithLiteral(re, groupName, value, true);
+ * // result2.source === '(Bob)\\s*abcdefg'
+ */
+export declare function replaceGroupWithLiteral(re: RegExp, groupName: string, value: string, keepParentheses?: boolean): RegExp;

@@ -8,6 +8,7 @@ exports.extractEmail = extractEmail;
  * @file src/utils/regex/email.ts
  */
 const Str_1 = require("./Str");
+// @TODO parameterize replacements in parsed displayName
 /**
  * @param s `string`
  * - e.g. `"{local}@{domain}"`, `"{displayName} <{local}@{domain}>"`
